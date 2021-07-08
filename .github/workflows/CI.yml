@@ -44,7 +44,7 @@ jobs:
         with:
           mdbook-version: "0.4.10"
       - name: Build and test Goose book
-        run: mdbook build book && mdbook test book
+        run: pwd; ls -la; ls -la book/; ls -la book/src/; mdbook build book && mdbook test book
       - name: Deploy Goose book
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/book'
