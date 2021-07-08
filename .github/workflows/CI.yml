@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [ main, book ]
+    branches: [main, book]
   pull_request:
-    branches: [ main, book ]
+    branches: [main, book]
 
 env:
-    RUST_BACKTRACE: 1
+  RUST_BACKTRACE: 1
 
 jobs:
   style:
@@ -15,38 +15,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Verify code formatting
-      run: cargo fmt -- --check
-    - name: Verify code style
-      run: cargo clippy --all-targets --all-features -- -D warnings
+      - uses: actions/checkout@v2
+      - name: Verify code formatting
+        run: cargo fmt -- --check
+      - name: Verify code style
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
   build:
     name: Build and run tests
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose --all-features
-    - name: Docs
-      run: cargo rustdoc --lib --examples
-    - name: Run tests
-      run: cargo test --verbose --all-features
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --verbose --all-features
+      - name: Docs
+        run: cargo rustdoc --lib --examples
+      - name: Run tests
+        run: cargo test --verbose --all-features
 
   deploy:
     name: Build and deploy book
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup, build and test Goose book
-      uses: peaceiris/actions-mdbook@v1
-      with:
-        mdbook-version: '0.4.10'
-      run: mdbook build book && mdbook test book
-    - name: Deploy Goose book
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/book'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./book/html
+      - name: Setup mdbook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: "0.4.10"
+      - name: Build and test Goose book
+        run: mdbook build book && mdbook test book
+      - name: Deploy Goose book
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/book'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/html
