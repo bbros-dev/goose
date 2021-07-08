@@ -33,3 +33,20 @@ jobs:
       run: cargo rustdoc --lib --examples
     - name: Run tests
       run: cargo test --verbose --all-features
+
+  deploy:
+    name: build and run tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup, build and test Goose book
+      uses: peaceiris/actions-mdbook@v1
+      with:
+        mdbook-version: '0.4.10'
+      run: mdbook build book && mdbook test book
+    - name: Deploy Goose book
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./book/html
