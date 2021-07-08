@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, book ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, book ]
 
 env:
     RUST_BACKTRACE: 1
@@ -46,7 +46,7 @@ jobs:
       run: mdbook build book && mdbook test book
     - name: Deploy Goose book
       uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/book'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./book/html
