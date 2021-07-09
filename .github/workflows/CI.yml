@@ -47,8 +47,8 @@ jobs:
       - name: Build and test Goose book
         run: pwd; ls -la; ls -la book/; ls -la book/src/; mdbook build book && mdbook test book
       - name: Deploy Goose book
-        uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/book'
+        uses: peaceiris/actions-gh-pages@v3.5.4-6
+        if: github.event.repository.fork == true
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./book/html
