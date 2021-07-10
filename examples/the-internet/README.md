@@ -2,7 +2,7 @@
 
 This example runs Swanling against a local (container) version of ['the-internet'](https://github.com/saucelabs/the-internet) - we don't think it polite to hammer someones [Heroku app](http://the-internet.herokuapp.com/) with a tool as aggressive as a Swanling can be.
 
-The Dockerfile.swanling will build the Swanling container.  Please feel free to extend the endpoints tested by contributing a rust file and adding a corresponding `RUN` statement in the Dockerfile.
+The `Dockerfile/swanling` will build the Swanling container.  Please feel free to extend the endpoints tested by contributing a rust file and adding a corresponding `RUN` statement in the Dockerfile.
 
 ## Podman
 

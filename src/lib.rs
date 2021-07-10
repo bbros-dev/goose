@@ -13,14 +13,8 @@
 //!
 //! ## Documentation
 //!
-//! - [README](https://github.com/tag1consulting/goose/blob/main/README.md)
+//! - [README](https://github.com/begleybrothers/swanling/blob/main/README.md)
 //! - [Developer documentation](https://docs.rs/goose/)
-//! - [Blogs and more](https://tag1.com/goose/)
-//!   - [Goose vs Locust and jMeter](https://www.tag1consulting.com/blog/jmeter-vs-locust-vs-goose)
-//!   - [Real-life load testing with Goose](https://www.tag1consulting.com/blog/real-life-goose-load-testing)
-//!   - [Gaggle: a distributed load test](https://www.tag1consulting.com/blog/show-me-how-flock-flies-working-gaggle-goose)
-//!   - [Optimizing Goose performance](https://www.tag1consulting.com/blog/golden-goose-egg-compile-time-adventure)
-//!
 //! ## Creating and running a Goose load test
 //!
 //! ### Creating a simple Goose load test
@@ -465,7 +459,7 @@ use crate::metrics::{GooseCoordinatedOmissionMitigation, GooseMetric, GooseMetri
 #[cfg(feature = "gaggle")]
 use crate::worker::{register_shutdown_pipe_handler, GaggleMetrics};
 
-/// Constant defining Goose's default port when running a Gaggle.
+/// Constant defining Goose's default port when running a Regatta.
 const DEFAULT_PORT: &str = "5115";
 
 /// Constant defining Goose's default telnet Controller port.
@@ -487,7 +481,7 @@ type UnsequencedGooseTasks = Vec<GooseTask>;
 /// Internal representation of sequenced tasks.
 type SequencedGooseTasks = BTreeMap<usize, Vec<GooseTask>>;
 
-/// Returns the unique identifier of the running Worker when running in Gaggle mode.
+/// Returns the unique identifier of the running Worker when running in Regatta mode.
 ///
 /// The first Worker to connect to the Manager is assigned an ID of 1. For each
 /// subsequent Worker to connect to the Manager the ID is incremented by 1. This
@@ -498,7 +492,7 @@ pub fn get_worker_id() -> usize {
 
 #[cfg(not(feature = "gaggle"))]
 #[derive(Debug, Clone)]
-/// Socket used for coordinating a Gaggle distributed load test.
+/// Socket used for coordinating a Regatta distributed load test.
 pub(crate) struct Socket {}
 
 /// An enumeration of all errors a [`GooseAttack`](./struct.GooseAttack.html) can return.
@@ -639,9 +633,9 @@ pub enum AttackMode {
     Undefined,
     /// A single standalone process performing a load test.
     StandAlone,
-    /// The controlling process in a Gaggle distributed load test.
+    /// The controlling process in a Regatta distributed load test.
     Manager,
-    /// One of one or more working processes in a Gaggle distributed load test.
+    /// One of one or more working processes in a Regatta distributed load test.
     Worker,
 }
 
@@ -912,7 +906,7 @@ struct GooseAttackRunState {
     /// Thread-safe boolean flag indicating if the [`GooseAttack`](./struct.GooseAttack.html)
     /// has been canceled.
     canceled: Arc<AtomicBool>,
-    /// Optional socket used to coordinate a distributed Gaggle.
+    /// Optional socket used to coordinate a distributed Regatta.
     socket: Option<Socket>,
 }
 
@@ -927,7 +921,7 @@ pub struct GooseAttack {
     task_sets: Vec<GooseTaskSet>,
     /// A weighted vector containing a GooseUser object for each GooseUser that will run during this load test.
     weighted_users: Vec<GooseUser>,
-    /// A weighted vector containing a lightweight GaggleUser object that is sent to all Workers if running in Gaggle mode.
+    /// A weighted vector containing a lightweight GaggleUser object that is sent to all Workers if running in Regatta mode.
     weighted_gaggle_users: Vec<GaggleUser>,
     /// Optional default values for Goose run-time options.
     defaults: GooseDefaults,
@@ -1191,7 +1185,7 @@ impl GooseAttack {
     /// logs in during `test_start`, subsequent [`GooseUser`](./goose/struct.GooseUser.html)
     /// do not retain this session and are therefor not already logged in.
     ///
-    /// When running in a distributed Gaggle, this task is only run one time by the
+    /// When running in a distributed Regatta, this task is only run one time by the
     /// Manager.
     ///
     /// # Example
@@ -1220,7 +1214,7 @@ impl GooseAttack {
     /// all defined task sets. This would generally be used to clean up anything
     /// that was specifically set up for the load test.
     ///
-    /// When running in a distributed Gaggle, this task is only run one time by the
+    /// When running in a distributed Regatta, this task is only run one time by the
     /// Manager.
     ///
     /// # Example
@@ -2470,7 +2464,7 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Configure whether or not to enable the telnet Controller. Always disable when in Gaggle mode.
+    // Configure whether or not to enable the telnet Controller. Always disable when in Regatta mode.
     fn set_no_telnet(&mut self) {
         // Currently Gaggles are not Controller-aware, force disable.
         if [AttackMode::Manager, AttackMode::Worker].contains(&self.attack_mode) {
@@ -2483,7 +2477,7 @@ impl GooseAttack {
         }
     }
 
-    // Configure whether or not to enable the WebSocket Controller. Always disable when in Gaggle mode.
+    // Configure whether or not to enable the WebSocket Controller. Always disable when in Regatta mode.
     fn set_no_websocket(&mut self) {
         // Currently Gaggles are not Controller-aware, force disable.
         if [AttackMode::Manager, AttackMode::Worker].contains(&self.attack_mode) {
@@ -2515,7 +2509,7 @@ impl GooseAttack {
         }
 
         if self.configuration.no_autostart {
-            // Can't disable autostart in Gaggle mode.
+            // Can't disable autostart in Regatta mode.
             if [AttackMode::Manager, AttackMode::Worker].contains(&self.attack_mode) {
                 return Err(GooseError::InvalidOption {
                     option: key.to_string(),
@@ -2654,7 +2648,7 @@ impl GooseAttack {
         // Configure expect_workers if running in Manager attack mode.
         self.set_expect_workers()?;
 
-        // Configure host and ports if running in a Gaggle distributed load test.
+        // Configure host and ports if running in a Regatta distributed load test.
         self.set_gaggle_host_and_port()?;
 
         // Configure how long to run.
