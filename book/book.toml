@@ -1,6 +1,6 @@
 [book]
 title = "The Goose Book"
-authors = [""]
+authors = ["Jeremy Andrews"]
 description = "Load testing framework, inspired by Locust, implemented with Rust."
 language = "en"
 
