@@ -210,7 +210,7 @@ fn test_defaults() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Configure load test with set_default, run as Gaggle.
+// Configure load test with set_default, run as Regatta.
 fn test_defaults_gaggle() {
     // Multiple tests run together, so set a unique name.
     let request_log = "gaggle-defaults".to_string() + REQUEST_LOG;
@@ -397,7 +397,7 @@ fn test_no_defaults() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Configure load test with run time options (not with defaults), run as Gaggle.
+// Configure load test with run time options (not with defaults), run as Regatta.
 fn test_no_defaults_gaggle() {
     let requests_file = "gaggle-nodefaults".to_string() + REQUEST_LOG;
     let debug_file = "gaggle-nodefaults".to_string() + DEBUG_LOG;

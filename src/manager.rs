@@ -517,7 +517,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                 else {
                     let mut message = Message::new();
 
-                    // When starting a Gaggle, some Workers may start before others and
+                    // When starting a Regatta, some Workers may start before others and
                     // will send regular heartbeats to the Manager to confirm the load
                     // test is still waiting to start.
                     if !load_test_running {

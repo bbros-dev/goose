@@ -371,7 +371,7 @@ pub struct GooseRequestMetricAggregate {
     pub fail_count: usize,
     /// Load test hash.
     ///
-    /// The hash is primarily used when running a distributed Gaggle, allowing the Manager to confirm
+    /// The hash is primarily used when running a distributed Regatta, allowing the Manager to confirm
     /// that all Workers are running the same load test plan.
     pub load_test_hash: u64,
 }
@@ -801,7 +801,7 @@ impl GooseTaskMetricAggregate {
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct GooseMetrics {
-    /// A hash of the load test, primarily used to validate all Workers in a Gaggle
+    /// A hash of the load test, primarily used to validate all Workers in a Regatta
     /// are running the same load test.
     pub hash: u64,
     /// An optional system timestamp indicating when the load test started.

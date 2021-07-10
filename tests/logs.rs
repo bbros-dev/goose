@@ -417,7 +417,7 @@ fn test_requests_logs_json() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable json-formatted requests log, in Gaggle mode.
+// Enable json-formatted requests log, in Regatta mode.
 fn test_requests_logs_json_gaggle() {
     run_gaggle_test(TestType::Requests, "json");
 }
@@ -431,7 +431,7 @@ fn test_requests_logs_csv() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable csv-formatted requests log, in Gaggle mode.
+// Enable csv-formatted requests log, in Regatta mode.
 fn test_requests_logs_csv_gaggle() {
     run_gaggle_test(TestType::Requests, "csv");
 }
@@ -445,7 +445,7 @@ fn test_requests_logs_raw() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable raw-formatted requests log, in Gaggle mode.
+// Enable raw-formatted requests log, in Regatta mode.
 fn test_requests_logs_raw_gaggle() {
     run_gaggle_test(TestType::Requests, "raw");
 }
@@ -459,7 +459,7 @@ fn test_tasks_logs_json() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable json-formatted tasks log, in Gaggle mode.
+// Enable json-formatted tasks log, in Regatta mode.
 fn test_tasks_logs_json_gaggle() {
     run_gaggle_test(TestType::Tasks, "json");
 }
@@ -473,7 +473,7 @@ fn test_tasks_logs_csv() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable csv-formatted tasks log, in Gaggle mode.
+// Enable csv-formatted tasks log, in Regatta mode.
 fn test_tasks_logs_csv_gaggle() {
     run_gaggle_test(TestType::Tasks, "csv");
 }
@@ -487,7 +487,7 @@ fn test_tasks_logs_raw() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable raw-formatted tasks log, in Gaggle mode.
+// Enable raw-formatted tasks log, in Regatta mode.
 fn test_tasks_logs_raw_gaggle() {
     run_gaggle_test(TestType::Tasks, "raw");
 }
@@ -501,7 +501,7 @@ fn test_error_logs_raw() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable raw-formatted error log, in Gaggle mode.
+// Enable raw-formatted error log, in Regatta mode.
 fn test_error_logs_raw_gaggle() {
     run_gaggle_test(TestType::Error, "raw");
 }
@@ -515,7 +515,7 @@ fn test_error_logs_json() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable json-formatted error log, in Gaggle mode.
+// Enable json-formatted error log, in Regatta mode.
 fn test_error_logs_json_gaggle() {
     run_gaggle_test(TestType::Error, "json");
 }
@@ -529,7 +529,7 @@ fn test_error_logs_csv() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable csv-formatted error log, in Gaggle mode.
+// Enable csv-formatted error log, in Regatta mode.
 fn test_error_logs_csv_gaggle() {
     run_gaggle_test(TestType::Error, "csv");
 }
@@ -543,7 +543,7 @@ fn test_debug_logs_raw() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable raw-formatted debug log, in Gaggle mode.
+// Enable raw-formatted debug log, in Regatta mode.
 fn test_debug_logs_raw_gaggle() {
     run_gaggle_test(TestType::Debug, "raw");
 }
@@ -557,7 +557,7 @@ fn test_debug_logs_json() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable json-formatted debug log, in Gaggle mode.
+// Enable json-formatted debug log, in Regatta mode.
 fn test_debug_logs_json_gaggle() {
     run_gaggle_test(TestType::Debug, "json");
 }
@@ -571,7 +571,7 @@ fn test_debug_logs_csv() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable csv-formatted debug log, in Gaggle mode.
+// Enable csv-formatted debug log, in Regatta mode.
 fn test_debug_logs_csv_gaggle() {
     run_gaggle_test(TestType::Debug, "csv");
 }
@@ -585,7 +585,7 @@ fn test_all_logs_raw() {
 #[test]
 #[serial]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Enable raw-formatted debug log and metrics log, in Gaggle mode.
+// Enable raw-formatted debug log and metrics log, in Regatta mode.
 fn test_all_logs_raw_gaggle() {
     run_gaggle_test(TestType::All, "raw");
 }

@@ -199,7 +199,7 @@ fn run_gaggle_test(test_type: TestType) {
     // Workers launched in own threads, store thread handles.
     let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
 
-    // Build common configuration elements, adding Manager Gaggle flags.
+    // Build common configuration elements, adding Manager Regatta flags.
     let manager_configuration = match test_type {
         TestType::NoResetMetrics => common_build_configuration(
             &server,
@@ -241,7 +241,7 @@ fn test_one_taskset() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Test a single task set with multiple weighted tasks, in Gaggle mode.
+// Test a single task set with multiple weighted tasks, in Regatta mode.
 fn test_one_taskset_gaggle() {
     run_gaggle_test(TestType::NoResetMetrics);
 }
@@ -252,13 +252,13 @@ fn test_one_taskset_reset_metrics() {
     run_standalone_test(TestType::ResetMetrics);
 }
 
-/* @TODO: @FIXME: Goose is not resetting metrics when running in Gaggle mode.
- * Issue: https://github.com/tag1consulting/goose/issues/193
+/* @TODO: @FIXME: Goose is not resetting metrics when running in Regatta mode.
+ * Issue: https://github.com/begleybrothers/swanling/issues/193
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Test a single task set with multiple weighted tasks, enable --no-reset-metrics
-// in Gaggle mode.
+// in Regatta mode.
 fn test_one_taskset_reset_metrics_gaggle() {
     run_gaggle_test(TestType::ResetMetrics);
 }
