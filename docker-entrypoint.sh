@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-cargo run --features "${GOOSE_FEATURES}" --release --example "${GOOSE_EXAMPLE}" -- $@
+cargo run --features "${SWANLING_FEATURES}" --release --example "${SWANLING_EXAMPLE}" -- $@

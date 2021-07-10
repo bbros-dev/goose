@@ -1,15 +1,14 @@
 FROM rust:1-slim-buster AS base
 
-LABEL maintainer="Narayan Newton <nnewton@tag1consulting.com>"
-LABEL org.label-schema.vendor="Tag1 Consulting" \
-  org.label-schema.url="https://github.com/tag1consulting/goose" \
-  org.label-schema.name="Goose" \
+LABEL org.label-schema.vendor="Begley Brothers Inc" \
+  org.label-schema.url="https://github.com/begleybrothers/swanling" \
+  org.label-schema.name="Swanling" \
   org.label-schema.version="mainline" \
-  org.label-schema.vcs-url="github.com:tag1consulting/goose.git" \
+  org.label-schema.vcs-url="github.com:begleybrothers/swanling.git" \
   org.label-schema.docker.schema-version="1.0"
 
-ENV GOOSE_EXAMPLE=umami \
-    GOOSE_FEATURES="gaggle"
+ENV SWANLING_EXAMPLE=umami \
+    SWANLING_FEATURES="regatta"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -21,7 +20,7 @@ RUN apt-get update && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
-RUN cargo build --features "${GOOSE_FEATURES}" --release --example "${GOOSE_EXAMPLE}"
+RUN cargo build --features "${SWANLING_FEATURES}" --release --example "${SWANLING_EXAMPLE}"
 RUN chmod +x ./docker-entrypoint.sh
 
 EXPOSE 5115

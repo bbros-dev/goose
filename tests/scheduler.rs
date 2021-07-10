@@ -386,7 +386,7 @@ fn test_round_robin_taskset() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating GooseTaskSets in round robin order, in
-// Gaggle mode.
+// Regatta mode.
 fn test_round_robin_taskset_gaggle() {
     run_gaggle_test(&TestType::TaskSets, &GooseScheduler::RoundRobin);
 }
@@ -401,7 +401,7 @@ fn test_round_robin_task() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple GooseTasks allocated in round robin order, in
-// Gaggle mode.
+// Regatta mode.
 fn test_round_robin_task_gaggle() {
     run_gaggle_test(&TestType::Tasks, &GooseScheduler::RoundRobin);
 }
@@ -416,7 +416,7 @@ fn test_serial_taskset() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating GooseTaskSets in serial order, in
-// Gaggle mode.
+// Regatta mode.
 fn test_serial_taskset_gaggle() {
     run_gaggle_test(&TestType::TaskSets, &GooseScheduler::Serial);
 }
@@ -437,7 +437,7 @@ fn test_random_taskset() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating GooseTaskSets in random order, in
-// Gaggle mode.
+// Regatta mode.
 fn test_random_taskset_gaggle() {
     run_gaggle_test(&TestType::TaskSets, &GooseScheduler::Random);
 }

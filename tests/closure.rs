@@ -215,7 +215,7 @@ fn validate_closer_test(
 }
 
 // Helper to run the test, takes a flag for indicating if running in standalone
-// mode or Gaggle mode.
+// mode or Regatta mode.
 fn run_load_test(is_gaggle: bool) {
     // Start mock server.
     let server = MockServer::start();

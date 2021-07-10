@@ -192,7 +192,7 @@ fn run_gaggle_test(test_type: TestType) {
     // Workers launched in own threads, store thread handles.
     let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
 
-    // Build common configuration elements, adding Manager Gaggle flags.
+    // Build common configuration elements, adding Manager Regatta flags.
     let manager_configuration = match test_type {
         TestType::NoErrorSummary => common_build_configuration(
             &server,
@@ -234,7 +234,7 @@ fn test_error_summary() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Confirm that errors show up in the summary when enabled, in Gaggle mode.
+// Confirm that errors show up in the summary when enabled, in Regatta mode.
 fn test_error_summary_gaggle() {
     run_gaggle_test(TestType::ErrorSummary);
 }
@@ -249,7 +249,7 @@ fn test_no_error_summary() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Confirm that errors do not show up in the summary when --no-error-summary is enabled,
-// in Gaggle mode.
+// in Regatta mode.
 fn test_no_error_summary_gaggle() {
     run_gaggle_test(TestType::NoErrorSummary);
 }

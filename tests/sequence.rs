@@ -353,7 +353,7 @@ fn test_not_sequenced() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Load test with multiple tasks and no sequences defined, in Gaggle mode.
+// Load test with multiple tasks and no sequences defined, in Regatta mode.
 fn test_not_sequenced_gaggle() {
     run_gaggle_test(TestType::NotSequenced);
 }
@@ -376,7 +376,7 @@ fn test_sequenced_sequential() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple tasks and sequences defined, using the
-// round robin scheduler, in Gaggle mode.
+// round robin scheduler, in Regatta mode.
 fn test_sequenced_round_robin_gaggle() {
     run_gaggle_test(TestType::SequencedRoundRobin);
 }
@@ -385,7 +385,7 @@ fn test_sequenced_round_robin_gaggle() {
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
 // Load test with multiple tasks and sequences defined, using the
-// sequential scheduler, in Gaggle mode.
+// sequential scheduler, in Regatta mode.
 fn test_sequenced_sequential_gaggle() {
     run_gaggle_test(TestType::SequencedSerial);
 }

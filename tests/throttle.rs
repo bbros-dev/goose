@@ -223,8 +223,8 @@ fn test_throttle() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 // Enable throttle to confirm it limits the number of request per second, in
-// Gaggle mode. Increase the throttle and confirm it increases the number of
-// requests per second, in Gaggle mode.
+// Regatta mode. Increase the throttle and confirm it increases the number of
+// requests per second, in Regatta mode.
 fn test_throttle_gaggle() {
     // Multiple tests run together, so set a unique name.
     let request_log = "gaggle-".to_string() + REQUEST_LOG;

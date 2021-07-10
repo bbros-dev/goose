@@ -724,7 +724,7 @@ impl GooseDebug {
     }
 }
 
-/// The elements needed to build an individual user state on a Gaggle Worker.
+/// The elements needed to build an individual user state on a Regatta Worker.
 #[derive(Debug, Clone)]
 pub struct GaggleUser {
     /// An index into the internal [`GooseAttack`](../struct.GooseAttack.html)`.task_sets`

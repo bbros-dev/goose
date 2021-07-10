@@ -205,7 +205,7 @@ fn test_setup() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Test test_start(), in Gaggle mode.
+// Test test_start(), in Regatta mode.
 fn test_setup_gaggle() {
     run_gaggle_test(TestType::Start);
 }
@@ -219,7 +219,7 @@ fn test_teardown() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Test test_stop(), in Gaggle mode.
+// Test test_stop(), in Regatta mode.
 fn test_teardown_gaggle() {
     run_gaggle_test(TestType::Stop);
 }
@@ -233,7 +233,7 @@ fn test_setup_teardown() {
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-/// Test test_start and test_stop together, in Gaggle mode.
+/// Test test_start and test_stop together, in Regatta mode.
 fn test_setup_teardown_gaggle() {
     run_gaggle_test(TestType::StartAndStop);
 }

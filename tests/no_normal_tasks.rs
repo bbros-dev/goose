@@ -107,7 +107,7 @@ fn get_tasks() -> GooseTaskSet {
 }
 
 // Helper to run the test, takes a flag for indicating if running in standalone
-// mode or Gaggle mode.
+// mode or Regatta mode.
 fn run_load_test(is_gaggle: bool) {
     // Start the mock server.
     let server = MockServer::start();
@@ -115,7 +115,7 @@ fn run_load_test(is_gaggle: bool) {
     // Setup the mock endpoints needed for this test.
     let mock_endpoints = setup_mock_server_endpoints(&server);
 
-    // Configure and run test differently in standalone versus Gaggle mode.
+    // Configure and run test differently in standalone versus Regatta mode.
     match is_gaggle {
         false => {
             // Build common configuration.
@@ -162,7 +162,7 @@ fn test_no_normal_tasks() {
 
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
-// Test taskset with only on_start() and on_stop() tasks, in Gaggle mode.
+// Test taskset with only on_start() and on_stop() tasks, in Regatta mode.
 fn test_no_normal_tasks_gaggle() {
     // Run load test with is_gaggle set to true.
     run_load_test(true);
