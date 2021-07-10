@@ -1,8 +1,8 @@
-# Swan
+# Swanling
 
-Swan is a tool for load testing and benchmarking websites and HTTP based micro-services.
+Swanling is a tool for load testing and benchmarking websites and HTTP based micro-services.
 
-The [Swan road-map](#road-map) envisions features that are not typically found in benchmarking or load testing tools.
+The [Swanling road-map](#road-map) envisions features that are not typically found in benchmarking or load testing tools.
 
 [![crates.io](https://img.shields.io/crates/v/swanling.svg)](https://crates.io/crates/swanling)
 [![Documentation](https://docs.rs/swanling/badge.svg)](https://docs.rs/swanling)
@@ -33,8 +33,8 @@ These features are incomplete or off by default.
 
 ## History
 
-Swanling started as a fork of [Swanling](https://github.com/begleybrothers/swanling).
-Many thanks to Jeremy Andrews and the other Swanling contributors:
+Swanling started as a fork of [Goose](https://github.com/tag1consulting/goose).
+Many thanks to Jeremy Andrews and the other Goose contributors:
 
 - Jeremy Andrews
 - Fabian Franz
