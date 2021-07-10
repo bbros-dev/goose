@@ -3,8 +3,8 @@ use serial_test::serial;
 
 mod common;
 
-use swanling::swanling::SwanlingMethod;
 use swanling::prelude::*;
+use swanling::swanling::SwanlingMethod;
 use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
@@ -56,7 +56,10 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 }
 
 // Build appropriate configuration for these tests.
-fn common_build_configuration(server: &MockServer, custom: &mut Vec<&str>) -> SwanlingConfiguration {
+fn common_build_configuration(
+    server: &MockServer,
+    custom: &mut Vec<&str>,
+) -> SwanlingConfiguration {
     // Common elements in all our tests.
     let mut configuration = vec![
         "--users",
@@ -179,7 +182,12 @@ fn run_standalone_test(test_type: TestType) {
     );
 
     // Confirm that the load test ran correctly.
-    validate_one_taskset(&swanling_metrics, &mock_endpoints, &configuration, test_type);
+    validate_one_taskset(
+        &swanling_metrics,
+        &mock_endpoints,
+        &configuration,
+        test_type,
+    );
 }
 
 // Helper to run all standalone tests.

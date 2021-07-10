@@ -6,7 +6,8 @@ use std::{str, thread, time};
 use tungstenite::Message;
 
 use swanling::controller::{
-    SwanlingControllerCommand, SwanlingControllerWebSocketRequest, SwanlingControllerWebSocketResponse,
+    SwanlingControllerCommand, SwanlingControllerWebSocketRequest,
+    SwanlingControllerWebSocketResponse,
 };
 use swanling::prelude::*;
 use swanling::SwanlingConfiguration;
@@ -96,7 +97,10 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 // common::build_configuration() to get defaults most all tests needs, but
 // for these tests we don't want a default configuration. We keep the signature
 // the same to simplify reuse, accepting the MockServer but not using it.
-fn common_build_configuration(_server: &MockServer, custom: &mut Vec<&str>) -> SwanlingConfiguration {
+fn common_build_configuration(
+    _server: &MockServer,
+    custom: &mut Vec<&str>,
+) -> SwanlingConfiguration {
     // Common elements in all our tests.
     let mut configuration: Vec<&str> = vec!["--no-autostart", "--co-mitigation", "disabled"];
 

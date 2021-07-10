@@ -3,8 +3,8 @@ use serial_test::serial;
 
 mod common;
 
-use swanling::swanling::SwanlingTaskSet;
 use swanling::prelude::*;
+use swanling::swanling::SwanlingTaskSet;
 use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.

@@ -2127,7 +2127,9 @@ impl SwanlingAttack {
             }
 
             // Load messages from user threads until the receiver queue is empty.
-            let received_message = self.receive_metrics(swanling_attack_run_state, flush).await?;
+            let received_message = self
+                .receive_metrics(swanling_attack_run_state, flush)
+                .await?;
 
             // As worker, push metrics up to manager.
             if self.attack_mode == AttackMode::Worker && received_message {

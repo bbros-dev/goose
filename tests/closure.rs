@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 mod common;
 
-use swanling::swanling::SwanlingMethod;
 use swanling::prelude::*;
+use swanling::swanling::SwanlingMethod;
 use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.

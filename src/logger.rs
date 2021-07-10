@@ -139,8 +139,8 @@ use std::str::FromStr;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 
-use crate::swanling::SwanlingDebug;
 use crate::metrics::{SwanlingErrorMetric, SwanlingRequestMetric, SwanlingTaskMetric};
+use crate::swanling::SwanlingDebug;
 use crate::{SwanlingConfiguration, SwanlingDefaults, SwanlingError};
 
 /// Optional unbounded receiver for logger thread, if debug logger is enabled.

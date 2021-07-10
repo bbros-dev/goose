@@ -2,8 +2,8 @@ use gumdrop::Options;
 use httpmock::MockServer;
 use std::io::{self, BufRead};
 
-use swanling::swanling::{SwanlingTask, SwanlingTaskSet};
 use swanling::metrics::SwanlingMetrics;
+use swanling::swanling::{SwanlingTask, SwanlingTaskSet};
 use swanling::{SwanlingAttack, SwanlingConfiguration};
 
 type WorkerHandles = Vec<std::thread::JoinHandle<()>>;

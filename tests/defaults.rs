@@ -204,7 +204,12 @@ fn test_defaults() {
         .execute()
         .unwrap();
 
-    validate_test(swanling_metrics, &mock_endpoints, &[request_log], &[debug_log]);
+    validate_test(
+        swanling_metrics,
+        &mock_endpoints,
+        &[request_log],
+        &[debug_log],
+    );
 }
 
 #[test]
@@ -332,7 +337,12 @@ fn test_defaults_gaggle() {
         let file = debug_log.to_string() + &i.to_string();
         debug_logs.push(file);
     }
-    validate_test(swanling_metrics, &mock_endpoints, &request_logs, &debug_logs);
+    validate_test(
+        swanling_metrics,
+        &mock_endpoints,
+        &request_logs,
+        &debug_logs,
+    );
 }
 
 #[test]

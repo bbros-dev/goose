@@ -130,7 +130,10 @@ fn validate_test(test_type: &TestType, mock_endpoints: &[MockRef]) {
 }
 
 // Build an appropriate SwanlingAttack object for test type, using supplied configuration.
-fn build_swanling_attack(test_type: &TestType, configuration: SwanlingConfiguration) -> SwanlingAttack {
+fn build_swanling_attack(
+    test_type: &TestType,
+    configuration: SwanlingConfiguration,
+) -> SwanlingAttack {
     let taskset = taskset!("LoadTest").register_task(task!(get_index).set_weight(9).unwrap());
     let start_task = task!(setup);
     let stop_task = task!(teardown);

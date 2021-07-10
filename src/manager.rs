@@ -255,7 +255,8 @@ pub(crate) async fn manager_main(mut swanling_attack: SwanlingAttack) -> Swanlin
     // Creates a TCP address.
     let address = format!(
         "tcp://{}:{}",
-        swanling_attack.configuration.manager_bind_host, swanling_attack.configuration.manager_bind_port
+        swanling_attack.configuration.manager_bind_host,
+        swanling_attack.configuration.manager_bind_port
     );
     debug!("preparing to listen for workers at: {}", &address);
 
@@ -390,7 +391,8 @@ pub(crate) async fn manager_main(mut swanling_attack: SwanlingAttack) -> Swanlin
                 if !workers.contains(&pipe) {
                     // Check if we are expecting another worker. Expect workers is required
                     // so unwrap() is safe.
-                    if workers.len() >= swanling_attack.configuration.expect_workers.unwrap() as usize
+                    if workers.len()
+                        >= swanling_attack.configuration.expect_workers.unwrap() as usize
                     {
                         warn!(
                             "telling extra worker ({} of {}) to exit",

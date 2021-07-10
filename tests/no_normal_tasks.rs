@@ -5,8 +5,8 @@ use httpmock::{
 
 mod common;
 
-use swanling::swanling::SwanlingTaskSet;
 use swanling::prelude::*;
+use swanling::swanling::SwanlingTaskSet;
 use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
@@ -26,7 +26,9 @@ const RUN_TIME: usize = 2;
 pub async fn login(user: &SwanlingUser) -> SwanlingTaskResult {
     let request_builder = user.swanling_post(LOGIN_PATH).await?;
     let params = [("username", "me"), ("password", "s3crET!")];
-    let _swanling = user.swanling_send(request_builder.form(&params), None).await?;
+    let _swanling = user
+        .swanling_send(request_builder.form(&params), None)
+        .await?;
     Ok(())
 }
 

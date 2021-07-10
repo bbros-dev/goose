@@ -35,7 +35,7 @@ pub(crate) enum SwanlingControllerProtocol {
 /// they must be formatted as json as defined by
 /// [SwanlingControllerWebSocketRequest](./struct.SwanlingControllerWebSocketRequest.html).
 ///
-/// GOOSE DEVELOPER NOTE: The following steps are required to add a new command:
+/// SWANLING DEVELOPER NOTE: The following steps are required to add a new command:
 ///  1. Define the command here in the SwanlingControllerCommand enum.
 ///  2. Add the regular expression for matching the new command in the `command`
 /// [`regex::RegexSet`](https://docs.rs/regex/*/regex/struct.RegexSet.html) in

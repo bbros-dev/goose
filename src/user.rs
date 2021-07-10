@@ -3,9 +3,9 @@ use std::sync::atomic::Ordering;
 use std::time;
 
 use crate::get_worker_id;
-use crate::swanling::{SwanlingTaskFunction, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand};
 use crate::logger::SwanlingLog;
 use crate::metrics::{SwanlingMetric, SwanlingTaskMetric};
+use crate::swanling::{SwanlingTaskFunction, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand};
 
 pub(crate) async fn user_main(
     thread_number: usize,

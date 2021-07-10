@@ -296,7 +296,9 @@ use tokio::sync::{Mutex, RwLock};
 use url::Url;
 
 use crate::logger::SwanlingLog;
-use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetric, SwanlingRequestMetric};
+use crate::metrics::{
+    SwanlingCoordinatedOmissionMitigation, SwanlingMetric, SwanlingRequestMetric,
+};
 use crate::{SwanlingConfiguration, SwanlingError, WeightedSwanlingTasks};
 
 /// By default Swanling sets the following User-Agent header when making requests.
@@ -601,7 +603,11 @@ impl SwanlingTaskSet {
     ///     Ok(())
     /// }
     /// ```
-    pub fn set_wait_time(mut self, min_wait: usize, max_wait: usize) -> Result<Self, SwanlingError> {
+    pub fn set_wait_time(
+        mut self,
+        min_wait: usize,
+        max_wait: usize,
+    ) -> Result<Self, SwanlingError> {
         trace!(
             "{} set_wait time: min: {} max: {}",
             self.name,
@@ -898,7 +904,10 @@ impl SwanlingUser {
     }
 
     /// Create a new single-use user.
-    pub fn single(base_url: Url, configuration: &SwanlingConfiguration) -> Result<Self, SwanlingError> {
+    pub fn single(
+        base_url: Url,
+        configuration: &SwanlingConfiguration,
+    ) -> Result<Self, SwanlingError> {
         let mut single_user = SwanlingUser::new(0, base_url, 0, 0, configuration, 0)?;
         // Only one user, so index is 0.
         single_user.weighted_users_index = 0;
@@ -992,7 +1001,9 @@ impl SwanlingUser {
     ) -> Result<SwanlingResponse, SwanlingTaskError> {
         let request_builder = self.swanling_get(path).await?;
 
-        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
+        Ok(self
+            .swanling_send(request_builder, Some(request_name))
+            .await?)
     }
 
     /// A helper to make a `POST` request of a path and collect relevant metrics.
@@ -1021,7 +1032,11 @@ impl SwanlingUser {
     ///     Ok(())
     /// }
     /// ```
-    pub async fn post(&self, path: &str, body: &str) -> Result<SwanlingResponse, SwanlingTaskError> {
+    pub async fn post(
+        &self,
+        path: &str,
+        body: &str,
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
         let request_builder = self.swanling_post(path).await?.body(body.to_string());
 
         Ok(self.swanling_send(request_builder, None).await?)
@@ -1056,7 +1071,9 @@ impl SwanlingUser {
     ) -> Result<SwanlingResponse, SwanlingTaskError> {
         let request_builder = self.swanling_post(path).await?.body(body.to_string());
 
-        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
+        Ok(self
+            .swanling_send(request_builder, Some(request_name))
+            .await?)
     }
 
     /// A helper to make a `HEAD` request of a path and collect relevant metrics.
@@ -1119,7 +1136,9 @@ impl SwanlingUser {
     ) -> Result<SwanlingResponse, SwanlingTaskError> {
         let request_builder = self.swanling_head(path).await?;
 
-        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
+        Ok(self
+            .swanling_send(request_builder, Some(request_name))
+            .await?)
     }
 
     /// A helper to make a `DELETE` request of a path and collect relevant metrics.
@@ -1182,7 +1201,9 @@ impl SwanlingUser {
     ) -> Result<SwanlingResponse, SwanlingTaskError> {
         let request_builder = self.swanling_delete(path).await?;
 
-        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
+        Ok(self
+            .swanling_send(request_builder, Some(request_name))
+            .await?)
     }
 
     /// Prepends the correct host on the path, then prepares a
@@ -1537,11 +1558,17 @@ impl SwanlingUser {
                 // Calculate the expected cadence for this SwanlingTask request.
                 let cadence = match co_mitigation {
                     // Expected cadence is the average time between requests.
-                    SwanlingCoordinatedOmissionMitigation::Average => request_cadence.average_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Average => {
+                        request_cadence.average_cadence
+                    }
                     // Expected cadence is the maximum time between requests.
-                    SwanlingCoordinatedOmissionMitigation::Maximum => request_cadence.maximum_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Maximum => {
+                        request_cadence.maximum_cadence
+                    }
                     // Expected cadence is the minimum time between requests.
-                    SwanlingCoordinatedOmissionMitigation::Minimum => request_cadence.minimum_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Minimum => {
+                        request_cadence.minimum_cadence
+                    }
                     // This is not possible as we would have exited already if coordinated
                     // omission mitigation was disabled.
                     SwanlingCoordinatedOmissionMitigation::Disabled => unreachable!(),
@@ -1630,7 +1657,10 @@ impl SwanlingUser {
         }
     }
 
-    fn send_request_metric_to_parent(&self, request_metric: SwanlingRequestMetric) -> SwanlingTaskResult {
+    fn send_request_metric_to_parent(
+        &self,
+        request_metric: SwanlingRequestMetric,
+    ) -> SwanlingTaskResult {
         // If requests-file is enabled, send a copy of the raw request to the logger thread.
         if !self.config.request_log.is_empty() {
             if let Some(logger) = self.logger.as_ref() {
@@ -1965,7 +1995,10 @@ impl SwanlingUser {
     ///     Ok(())
     /// }
     /// ```
-    pub async fn set_client_builder(&self, builder: ClientBuilder) -> Result<(), SwanlingTaskError> {
+    pub async fn set_client_builder(
+        &self,
+        builder: ClientBuilder,
+    ) -> Result<(), SwanlingTaskError> {
         *self.client.lock().await = builder.build()?;
 
         Ok(())
@@ -2096,7 +2129,9 @@ pub fn get_base_url(
 
 /// The function type of a swanling task function.
 pub type SwanlingTaskFunction = Arc<
-    dyn for<'r> Fn(&'r SwanlingUser) -> Pin<Box<dyn Future<Output = SwanlingTaskResult> + Send + 'r>>
+    dyn for<'r> Fn(
+            &'r SwanlingUser,
+        ) -> Pin<Box<dyn Future<Output = SwanlingTaskResult> + Send + 'r>>
         + Send
         + Sync,
 >;

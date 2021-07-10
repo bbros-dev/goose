@@ -8,9 +8,9 @@ use url::Url;
 
 const EMPTY_ARGS: Vec<&str> = vec![];
 
-use crate::swanling::{SwanlingUser, SwanlingUserCommand};
 use crate::manager::SwanlingUserInitializer;
 use crate::metrics::{SwanlingErrorMetrics, SwanlingRequestMetrics, SwanlingTaskMetrics};
+use crate::swanling::{SwanlingUser, SwanlingUserCommand};
 use crate::{get_worker_id, AttackMode, SwanlingAttack, SwanlingConfiguration, WORKER_ID};
 
 /// Workers send GaggleMetrics to the Manager process to be aggregated together.
@@ -229,16 +229,20 @@ pub(crate) async fn worker_main(swanling_attack: &SwanlingAttack) -> SwanlingAtt
     worker_swanling_attack.configuration.request_format =
         swanling_attack.configuration.request_format.clone();
     // The task_log option is configured on the Worker.
-    worker_swanling_attack.configuration.task_log = swanling_attack.configuration.task_log.to_string();
+    worker_swanling_attack.configuration.task_log =
+        swanling_attack.configuration.task_log.to_string();
     // The task_format option is configured on the Worker.
-    worker_swanling_attack.configuration.task_format = swanling_attack.configuration.task_format.clone();
+    worker_swanling_attack.configuration.task_format =
+        swanling_attack.configuration.task_format.clone();
     // The error_log option is configured on the Worker.
-    worker_swanling_attack.configuration.error_log = swanling_attack.configuration.error_log.to_string();
+    worker_swanling_attack.configuration.error_log =
+        swanling_attack.configuration.error_log.to_string();
     // The error_format option is configured on the Worker.
     worker_swanling_attack.configuration.error_format =
         swanling_attack.configuration.error_format.clone();
     // The debug_log option is configured on the Worker.
-    worker_swanling_attack.configuration.debug_log = swanling_attack.configuration.debug_log.to_string();
+    worker_swanling_attack.configuration.debug_log =
+        swanling_attack.configuration.debug_log.to_string();
     // The debug_format option is configured on the Worker.
     worker_swanling_attack.configuration.debug_format =
         swanling_attack.configuration.debug_format.clone();

@@ -418,13 +418,13 @@
 extern crate log;
 
 pub mod controller;
-pub mod swanling;
 pub mod logger;
 #[cfg(feature = "gaggle")]
 mod manager;
 pub mod metrics;
 pub mod prelude;
 mod report;
+pub mod swanling;
 mod throttle;
 mod user;
 pub mod util;
@@ -453,9 +453,11 @@ use tokio::fs::File;
 use tokio::runtime::Runtime;
 
 use crate::controller::{SwanlingControllerProtocol, SwanlingControllerRequest};
-use crate::swanling::{GaggleUser, SwanlingTask, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand};
 use crate::logger::{SwanlingLogFormat, SwanlingLoggerJoinHandle, SwanlingLoggerTx};
 use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetric, SwanlingMetrics};
+use crate::swanling::{
+    GaggleUser, SwanlingTask, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand,
+};
 #[cfg(feature = "gaggle")]
 use crate::worker::{register_shutdown_pipe_handler, GaggleMetrics};
 
@@ -574,7 +576,9 @@ impl fmt::Display for SwanlingError {
     // Implement display of error with `{}` marker.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            SwanlingError::Io(ref source) => write!(f, "SwanlingError: {} ({})", self.describe(), source),
+            SwanlingError::Io(ref source) => {
+                write!(f, "SwanlingError: {} ({})", self.describe(), source)
+            }
             SwanlingError::Reqwest(ref source) => {
                 write!(f, "SwanlingError: {} ({})", self.describe(), source)
             }
@@ -3161,7 +3165,12 @@ impl SwanlingAttack {
 
             // Copy the SwanlingUser-throttle receiver channel, used by all threads.
             thread_user.throttle = if self.configuration.throttle_requests > 0 {
-                Some(swanling_attack_run_state.throttle_threads_tx.clone().unwrap())
+                Some(
+                    swanling_attack_run_state
+                        .throttle_threads_tx
+                        .clone()
+                        .unwrap(),
+                )
             } else {
                 None
             };
@@ -3220,11 +3229,14 @@ impl SwanlingAttack {
                 swanling_attack_run_state.spawn_user_in_ms -= sleep_delay;
                 tokio::time::Duration::from_millis(sleep_delay as u64)
             } else {
-                tokio::time::Duration::from_millis(swanling_attack_run_state.spawn_user_in_ms as u64)
+                tokio::time::Duration::from_millis(
+                    swanling_attack_run_state.spawn_user_in_ms as u64,
+                )
             };
             debug!("sleeping {:?}...", sleep_duration);
             swanling_attack_run_state.drift_timer =
-                util::sleep_minus_drift(sleep_duration, swanling_attack_run_state.drift_timer).await;
+                util::sleep_minus_drift(sleep_duration, swanling_attack_run_state.drift_timer)
+                    .await;
         }
 
         // If enough users have been spawned, move onto the next attack phase.
@@ -3339,7 +3351,9 @@ impl SwanlingAttack {
         if !self.configuration.no_metrics {
             // Set the second parameter to true, ensuring that Swanling waits until all metrics
             // are received.
-            let _received_message = self.receive_metrics(swanling_attack_run_state, true).await?;
+            let _received_message = self
+                .receive_metrics(swanling_attack_run_state, true)
+                .await?;
         }
 
         #[cfg(feature = "gaggle")]
@@ -3440,7 +3454,10 @@ impl SwanlingAttack {
     }
 
     // Called internally in local-mode and gaggle-mode.
-    async fn start_attack(mut self, socket: Option<Socket>) -> Result<SwanlingAttack, SwanlingError> {
+    async fn start_attack(
+        mut self,
+        socket: Option<Socket>,
+    ) -> Result<SwanlingAttack, SwanlingError> {
         trace!("start_attack: socket({:?})", socket);
 
         // The SwanlingAttackRunState is used while spawning and running the
@@ -3475,7 +3492,10 @@ impl SwanlingAttack {
                     } else {
                         // Prepare to start the load test, resetting timers and counters.
                         self.reset_run_state(&mut swanling_attack_run_state).await?;
-                        self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Starting);
+                        self.set_attack_phase(
+                            &mut swanling_attack_run_state,
+                            AttackPhase::Starting,
+                        );
                     }
                 }
                 // In the Start phase, Swanling launches SwanlingUser threads and starts a SwanlingAttack.
@@ -3497,16 +3517,22 @@ impl SwanlingAttack {
                     // has been running.
                     self.update_duration();
                     // Tell all running SwanlingUsers to stop.
-                    self.stop_running_users(&mut swanling_attack_run_state).await?;
+                    self.stop_running_users(&mut swanling_attack_run_state)
+                        .await?;
                     // Stop any running SwanlingUser threads.
                     self.stop_attack().await?;
                     // Collect all metrics sent by SwanlingUser threads.
-                    self.sync_metrics(&mut swanling_attack_run_state, true).await?;
+                    self.sync_metrics(&mut swanling_attack_run_state, true)
+                        .await?;
                     // Write an html report, if enabled.
-                    self.write_html_report(&mut swanling_attack_run_state).await?;
+                    self.write_html_report(&mut swanling_attack_run_state)
+                        .await?;
                     // Shutdown Swanling or go into an idle waiting state.
                     if swanling_attack_run_state.shutdown_after_stop {
-                        self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Shutdown);
+                        self.set_attack_phase(
+                            &mut swanling_attack_run_state,
+                            AttackPhase::Shutdown,
+                        );
                     } else {
                         // Print metrics, if enabled.
                         if !self.configuration.no_metrics {
@@ -3640,7 +3666,11 @@ pub trait SwanlingDefaultType<T> {
     fn set_default(self, key: SwanlingDefault, value: T) -> Result<Box<Self>, SwanlingError>;
 }
 impl SwanlingDefaultType<&str> for SwanlingAttack {
-    fn set_default(mut self, key: SwanlingDefault, value: &str) -> Result<Box<Self>, SwanlingError> {
+    fn set_default(
+        mut self,
+        key: SwanlingDefault,
+        value: &str,
+    ) -> Result<Box<Self>, SwanlingError> {
         match key {
             // Set valid defaults.
             SwanlingDefault::HatchRate => self.defaults.hatch_rate = Some(value.to_string()),
@@ -3652,7 +3682,9 @@ impl SwanlingDefaultType<&str> for SwanlingAttack {
             SwanlingDefault::ErrorLog => self.defaults.error_log = Some(value.to_string()),
             SwanlingDefault::DebugLog => self.defaults.debug_log = Some(value.to_string()),
             SwanlingDefault::TelnetHost => self.defaults.telnet_host = Some(value.to_string()),
-            SwanlingDefault::WebSocketHost => self.defaults.websocket_host = Some(value.to_string()),
+            SwanlingDefault::WebSocketHost => {
+                self.defaults.websocket_host = Some(value.to_string())
+            }
             SwanlingDefault::ManagerBindHost => {
                 self.defaults.manager_bind_host = Some(value.to_string())
             }
@@ -3728,7 +3760,11 @@ impl SwanlingDefaultType<&str> for SwanlingAttack {
     }
 }
 impl SwanlingDefaultType<usize> for SwanlingAttack {
-    fn set_default(mut self, key: SwanlingDefault, value: usize) -> Result<Box<Self>, SwanlingError> {
+    fn set_default(
+        mut self,
+        key: SwanlingDefault,
+        value: usize,
+    ) -> Result<Box<Self>, SwanlingError> {
         match key {
             SwanlingDefault::Users => self.defaults.users = Some(value),
             SwanlingDefault::RunTime => self.defaults.run_time = Some(value),
@@ -3739,7 +3775,9 @@ impl SwanlingDefaultType<usize> for SwanlingAttack {
             SwanlingDefault::ExpectWorkers => self.defaults.expect_workers = Some(value as u16),
             SwanlingDefault::TelnetPort => self.defaults.telnet_port = Some(value as u16),
             SwanlingDefault::WebSocketPort => self.defaults.websocket_port = Some(value as u16),
-            SwanlingDefault::ManagerBindPort => self.defaults.manager_bind_port = Some(value as u16),
+            SwanlingDefault::ManagerBindPort => {
+                self.defaults.manager_bind_port = Some(value as u16)
+            }
             SwanlingDefault::ManagerPort => self.defaults.manager_port = Some(value as u16),
             // Otherwise display a helpful and explicit error.
             SwanlingDefault::Host
@@ -3758,9 +3796,9 @@ impl SwanlingDefaultType<usize> for SwanlingAttack {
                     option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(SwanlingDefault::{:?}, {}) expected &str value, received usize",
-                        key, value
-                    ),
+                    "set_default(SwanlingDefault::{:?}, {}) expected &str value, received usize",
+                    key, value
+                ),
                 })
             }
             SwanlingDefault::NoResetMetrics
@@ -3780,9 +3818,9 @@ impl SwanlingDefaultType<usize> for SwanlingAttack {
                     option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(SwanlingDefault::{:?}, {}) expected bool value, received usize",
-                        key, value
-                    ),
+                    "set_default(SwanlingDefault::{:?}, {}) expected bool value, received usize",
+                    key, value
+                ),
                 })
             }
             SwanlingDefault::RequestFormat
@@ -3813,7 +3851,11 @@ impl SwanlingDefaultType<usize> for SwanlingAttack {
     }
 }
 impl SwanlingDefaultType<bool> for SwanlingAttack {
-    fn set_default(mut self, key: SwanlingDefault, value: bool) -> Result<Box<Self>, SwanlingError> {
+    fn set_default(
+        mut self,
+        key: SwanlingDefault,
+        value: bool,
+    ) -> Result<Box<Self>, SwanlingError> {
         match key {
             SwanlingDefault::NoResetMetrics => self.defaults.no_reset_metrics = Some(value),
             SwanlingDefault::NoMetrics => self.defaults.no_metrics = Some(value),
@@ -3865,9 +3907,9 @@ impl SwanlingDefaultType<bool> for SwanlingAttack {
                     option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(SwanlingDefault::{:?}, {}) expected usize value, received bool",
-                        key, value
-                    ),
+                    "set_default(SwanlingDefault::{:?}, {}) expected usize value, received bool",
+                    key, value
+                ),
                 })
             }
             SwanlingDefault::RequestFormat
@@ -4234,7 +4276,11 @@ pub struct SwanlingConfiguration {
 fn allocate_tasks(
     task_set: &SwanlingTaskSet,
     scheduler: &SwanlingScheduler,
-) -> (WeightedSwanlingTasks, WeightedSwanlingTasks, WeightedSwanlingTasks) {
+) -> (
+    WeightedSwanlingTasks,
+    WeightedSwanlingTasks,
+    WeightedSwanlingTasks,
+) {
     debug!(
         "allocating SwanlingTasks on SwanlingUsers with {:?} scheduler",
         scheduler
@@ -4374,7 +4420,10 @@ fn allocate_tasks(
 }
 
 /// Build a weighted vector of vectors of unsequenced SwanlingTasks.
-fn weight_unsequenced_tasks(unsequenced_tasks: &[SwanlingTask], u: usize) -> (Vec<Vec<usize>>, usize) {
+fn weight_unsequenced_tasks(
+    unsequenced_tasks: &[SwanlingTask],
+    u: usize,
+) -> (Vec<Vec<usize>>, usize) {
     // Build a vector of vectors to be used to schedule users.
     let mut available_unsequenced_tasks = Vec::with_capacity(unsequenced_tasks.len());
     let mut total_tasks = 0;
