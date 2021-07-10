@@ -1,8 +1,8 @@
 # Logging Load Test Requests
 
-Goose can optionally log details about all load test requests to a file. To enable, add the `--request-log=request.log` command line option, where `request.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
+Swanling can optionally log details about all load test requests to a file. To enable, add the `--request-log=request.log` command line option, where `request.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
 
-When operating in Gaggle-mode, the `--request-log` option can only be enabled on the Worker processes, configuring Goose to spread out the overhead of writing logs.
+When operating in Regatta-mode, the `--request-log` option can only be enabled on the Worker processes, configuring Swanling to spread out the overhead of writing logs.
 
 By default, logs are written in JSON Lines format. For example:
 
@@ -12,11 +12,11 @@ By default, logs are written in JSON Lines format. For example:
 {"coordinated_omission_elapsed":0,"elapsed":23181,"error":"","final_url":"http://apache/misc/jquery-extend-3.4.0.js?v=1.4.4","method":"Get","name":"static asset","redirected":false,"response_time":16,"status_code":200,"success":true,"update":false,"url":"http://apache/misc/jquery-extend-3.4.0.js?v=1.4.4","user":1,"user_cadence":0}
 ```
 
-Logs include the entire [`GooseRequestMetric`] object as defined in `src/goose.rs`, which are created on all requests.
+Logs include the entire [`SwanlingRequestMetric`] object as defined in `src/swanling.rs`, which are created on all requests.
 
-In the first line of the above example, `GooseUser` thread 7 made a successful `GET` request for `/misc/feed.png`, which takes 4 milliseconds. The second line is `GooseUser` thread 2 making a successful `GET` request for `/user/4816`, which takes 28 milliseconds.
+In the first line of the above example, `SwanlingUser` thread 7 made a successful `GET` request for `/misc/feed.png`, which takes 4 milliseconds. The second line is `SwanlingUser` thread 2 making a successful `GET` request for `/user/4816`, which takes 28 milliseconds.
 
-By default Goose logs requests in JSON Lines format. The `--request-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`GooseRequestMetric`] object.
+By default Swanling logs requests in JSON Lines format. The `--request-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`SwanlingRequestMetric`] object.
 
 For example, `csv` output of similar requests as those logged above would like like:
 ```csv

@@ -1,6 +1,6 @@
 # Getting Started
 
-The [in-line documentation](https://docs.rs/goose/*/goose/#creating-a-simple-goose-load-test) offers much more detail about Goose specifics. For a general background to help you get started with Rust and Goose, read on.
+The [in-line documentation](https://docs.rs/swanling/*/swanling/#creating-a-simple-swanling-load-test) offers much more detail about Swanling specifics. For a general background to help you get started with Rust and Swanling, read on.
 
 [Cargo](https://doc.rust-lang.org/cargo/) is the Rust package manager. To create a new load test, use Cargo to create a new application (you can name your application anything, we've generically selected `loadtest`):
 
@@ -10,11 +10,11 @@ $ cargo new loadtest
 $ cd loadtest/
 ```
 
-This creates a new directory named `loadtest/` containing `loadtest/Cargo.toml` and `loadtest/src/main.rs`. Start by editing `Cargo.toml` adding Goose under the dependencies heading:
+This creates a new directory named `loadtest/` containing `loadtest/Cargo.toml` and `loadtest/src/main.rs`. Start by editing `Cargo.toml` adding Swanling under the dependencies heading:
 
 ```toml
 [dependencies]
-goose = "^0.12"
+swanling = "^0.12"
 ```
 
 At this point it's possible to compile all dependencies, though the resulting binary only displays "Hello, world!":
@@ -22,40 +22,40 @@ At this point it's possible to compile all dependencies, though the resulting bi
 ```
 $ cargo run
     Updating crates.io index
-  Downloaded goose v0.12.0
+  Downloaded swanling v0.12.0
       ...
-   Compiling goose v0.12.0
+   Compiling swanling v0.12.0
    Compiling loadtest v0.1.0 (/home/jandrews/devel/rust/loadtest)
     Finished dev [unoptimized + debuginfo] target(s) in 52.97s
      Running `target/debug/loadtest`
 Hello, world!
 ```
 
-To create an actual load test, you first have to add the following boilerplate to the top of `src/main.rs` to make Goose's functionality available to your code:
+To create an actual load test, you first have to add the following boilerplate to the top of `src/main.rs` to make Swanling's functionality available to your code:
 
 ```rust
-use goose::prelude::*;
+use swanling::prelude::*;
 ```
 
-Then create a new load testing function. For our example we're simply going to load the front page of the website we're load-testing. Goose passes all load testing functions a pointer to a GooseUser object, which is used to track metrics and make web requests. Thanks to the Reqwest library, the Goose client manages things like cookies, headers, and sessions for you. Load testing functions must be declared async, which helps ensure that your simulated users don't become CPU-locked.
+Then create a new load testing function. For our example we're simply going to load the front page of the website we're load-testing. Swanling passes all load testing functions a pointer to a SwanlingUser object, which is used to track metrics and make web requests. Thanks to the Reqwest library, the Swanling client manages things like cookies, headers, and sessions for you. Load testing functions must be declared async, which helps ensure that your simulated users don't become CPU-locked.
 
 In load test functions you typically do not set the host, and instead configure the host at run time, so you can easily run your load test against different environments without recompiling. The following `loadtest_index` function simply loads the front page of our web page:
 
 ```rust
-async fn loadtest_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose_metrics = user.get("/").await?;
+async fn loadtest_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling_metrics = user.get("/").await?;
 
     Ok(())
 }
 ```
 
-The function is declared `async` so that we don't block a CPU-core while loading web pages. All Goose load test functions are passed in a reference to a `GooseUser` object, and return a `GooseTaskResult` which is either an empty `Ok(())` on success, or a `GooseTaskError` on failure. We use the `GooseUser` object to make requests, in this case we make a `GET` request for the front page, `/`. The `.await` frees up the CPU-core while we wait for the web page to respond, and the tailing `?` passes up any unexpected errors that may be returned from this request. When the request completes, Goose returns metrics which we store in the  `_goose_metrics` variable. The variable is prefixed with an underscore (`_`) to tell the compiler we are intentionally not using the results. Finally, after making a single successful request, we return `Ok(())` to let Goose know this task function completed successfully.
+The function is declared `async` so that we don't block a CPU-core while loading web pages. All Swanling load test functions are passed in a reference to a `SwanlingUser` object, and return a `SwanlingTaskResult` which is either an empty `Ok(())` on success, or a `SwanlingTaskError` on failure. We use the `SwanlingUser` object to make requests, in this case we make a `GET` request for the front page, `/`. The `.await` frees up the CPU-core while we wait for the web page to respond, and the tailing `?` passes up any unexpected errors that may be returned from this request. When the request completes, Swanling returns metrics which we store in the  `_swanling_metrics` variable. The variable is prefixed with an underscore (`_`) to tell the compiler we are intentionally not using the results. Finally, after making a single successful request, we return `Ok(())` to let Swanling know this task function completed successfully.
 
-We have to tell Goose about our new task function. Edit the `main()` function, setting a return type and replacing the hello world text as follows:
+We have to tell Swanling about our new task function. Edit the `main()` function, setting a return type and replacing the hello world text as follows:
 
 ```rust
-fn main() -> Result<(), GooseError> {
-    GooseAttack::initialize()?
+fn main() -> Result<(), SwanlingError> {
+    SwanlingAttack::initialize()?
         .register_taskset(taskset!("LoadtestTasks")
             .register_task(task!(loadtest_index))
         )
@@ -66,7 +66,7 @@ fn main() -> Result<(), GooseError> {
 }
 ```
 
-If you're new to Rust, `main()`'s return type of `Result<(), GooseError>` may look strange. It essentially says that `main` will return nothing (`()`) on success, and will return a `GooseError` on failure. This is helpful as several of `GooseAttack`'s methods can fail, returning an error. In our example, `initialize()` and `execute()` each may fail. The `?` that follows the method's name tells our program to exit and return an error on failure, otherwise continue on. The `print()` method consumes the `GooseMetrics` object returned by `GooseAttack.execute()` and prints a summary if metrics are enabled. The final line, `Ok(())` returns the empty result expected on success.
+If you're new to Rust, `main()`'s return type of `Result<(), SwanlingError>` may look strange. It essentially says that `main` will return nothing (`()`) on success, and will return a `SwanlingError` on failure. This is helpful as several of `SwanlingAttack`'s methods can fail, returning an error. In our example, `initialize()` and `execute()` each may fail. The `?` that follows the method's name tells our program to exit and return an error on failure, otherwise continue on. The `print()` method consumes the `SwanlingMetrics` object returned by `SwanlingAttack.execute()` and prints a summary if metrics are enabled. The final line, `Ok(())` returns the empty result expected on success.
 
 And that's it, you've created your first load test! Let's run it and see what happens.
 
@@ -75,10 +75,10 @@ $ cargo run
    Compiling loadtest v0.1.0 (/home/jandrews/devel/rust/loadtest)
     Finished dev [unoptimized + debuginfo] target(s) in 3.56s
      Running `target/debug/loadtest`
-Error: InvalidOption { option: "--host", value: "", detail: "A host must be defined via the --host option, the GooseAttack.set_default() function, or the GooseTaskSet.set_host() function (no host defined for LoadtestTasks)." }
+Error: InvalidOption { option: "--host", value: "", detail: "A host must be defined via the --host option, the SwanlingAttack.set_default() function, or the SwanlingTaskSet.set_host() function (no host defined for LoadtestTasks)." }
 ```
 
-Goose is unable to run, as it hasn't been told the host you want to load test. So, let's try again, this time passing in the `--host` flag. After running for a few seconds, we then press `ctrl-c` to stop the load test:
+Swanling is unable to run, as it hasn't been told the host you want to load test. So, let's try again, this time passing in the `--host` flag. After running for a few seconds, we then press `ctrl-c` to stop the load test:
 
 ```bash
 $ cargo run -- --host http://local.dev/
@@ -140,7 +140,7 @@ All 8 users hatched, resetting metrics (disable with --no-reset-metrics).
  GET /                   | 19     | 21     | 53     | 69     | 250    | 250
 ```
 
-By default, Goose will hatch 1 GooseUser per second, up to the number of CPU cores available on the server used for load testing. In the above example, the server has 8 CPU cores, so it took 8 seconds to hatch all users. After all users are hatched, Goose flushes all metrics collected during the hatching process so all subsequent metrics are taken with all users running. Before flushing the metrics, they are displayed to the console so the data is not lost.
+By default, Swanling will hatch 1 SwanlingUser per second, up to the number of CPU cores available on the server used for load testing. In the above example, the server has 8 CPU cores, so it took 8 seconds to hatch all users. After all users are hatched, Swanling flushes all metrics collected during the hatching process so all subsequent metrics are taken with all users running. Before flushing the metrics, they are displayed to the console so the data is not lost.
 
 The same metrics are displayed per-task and per-request. In our simple example, our single task only makes one request, so in this case both metrics show the same results.
 
@@ -154,6 +154,6 @@ The second table shows the average time required to load a page (20.68 milliseco
 
 The per-request metrics include a third table, showing the slowest page load time for a range of percentiles. In our example, in the 50% fastest page loads, the slowest page loaded in 19 ms. In the 75% fastest page loads, the slowest page loaded in 21 ms, etc.
 
-In real load tests, you'll most likely have multiple task sets each with multiple tasks, and Goose will show you metrics for each along with an aggregate of them all together.
+In real load tests, you'll most likely have multiple task sets each with multiple tasks, and Swanling will show you metrics for each along with an aggregate of them all together.
 
-Refer to the [examples directory](https://github.com/tag1consulting/goose/tree/master/examples) for more complicated and useful load test examples.
+Refer to the [examples directory](https://github.com/begleybrothers/swanling/tree/master/examples) for more complicated and useful load test examples.

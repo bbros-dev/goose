@@ -1,6 +1,6 @@
 # Contributors
 
-Here is a list of the contributors who have helped improve Goose. Big shout-out to them!
+Here is a list of the contributors who have helped improve Swanling. Big shout-out to them!
 
 - Jeremy Andrews
 - Fabian Franz

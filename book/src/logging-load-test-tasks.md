@@ -1,8 +1,8 @@
 # Logging Load Test Tasks
 
-Goose can optionally log details about all load test tasks to a file. To enable, add the `--task-log=task.log` command line option, where `task.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
+Swanling can optionally log details about all load test tasks to a file. To enable, add the `--task-log=task.log` command line option, where `task.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
 
-When operating in Gaggle-mode, the `--task-log` option can only be enabled on the Worker processes, configuring Goose to spread out the overhead of writing logs.
+When operating in Regatta-mode, the `--task-log` option can only be enabled on the Worker processes, configuring Swanling to spread out the overhead of writing logs.
 
 By default, logs are written in JSON Lines format. For example:
 
@@ -14,11 +14,11 @@ By default, logs are written in JSON Lines format. For example:
 {"elapsed":22157,"name":"(Anon) user page","run_time":35,"success":true,"task_index":2,"taskset_index":0,"user":4}
 ```
 
-Logs include the entire [`GooseTaskMetric`] object as defined in `src/goose.rs`, which are created each time any task is run.
+Logs include the entire [`SwanlingTaskMetric`] object as defined in `src/swanling.rs`, which are created each time any task is run.
 
-In the first line of the above example, `GooseUser` thread 0 succesfully ran the `(Anon) front page` task in 97 milliseconds. In the second line `GooseUser` thread 5 succesfully ran the `(Anon) node page` task in 41 milliseconds.
+In the first line of the above example, `SwanlingUser` thread 0 succesfully ran the `(Anon) front page` task in 97 milliseconds. In the second line `SwanlingUser` thread 5 succesfully ran the `(Anon) node page` task in 41 milliseconds.
 
-By default Goose logs tass in JSON Lines format. The `--task-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`GooseTaskMetric`] object.
+By default Swanling logs tass in JSON Lines format. The `--task-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`SwanlingTaskMetric`] object.
 
 For example, `csv` output of similar tasks as those logged above would like like:
 ```csv

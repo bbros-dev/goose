@@ -1,8 +1,8 @@
 # Logging Load Test Errors
 
-Goose can optionally log details about all load test errors to a file. To enable, add the `--error-file=error.log` command line option, where `error.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
+Swanling can optionally log details about all load test errors to a file. To enable, add the `--error-file=error.log` command line option, where `error.log` is either a relative or absolute path of the log file to create. Any existing file that may already exist will be overwritten.
 
-When operating in Gaggle-mode, the `--error-file` option can only be enabled on the Worker processes, configuring Goose to spread out the overhead of writing logs.
+When operating in Regatta-mode, the `--error-file` option can only be enabled on the Worker processes, configuring Swanling to spread out the overhead of writing logs.
 
 By default, logs are written in JSON Lines format. For example:
 
@@ -13,9 +13,9 @@ By default, logs are written in JSON Lines format. For example:
 {"elapsed":2404,"error":"503 Service Unavailable: /user/4375","final_url":"http://apache/user/4375","method":"Get","name":"(Anon) user page","redirected":false,"response_time":5,"status_code":503,"url":"http://apache/user/4375","user":2}
 ```
 
-Logs include the entire [`GooseErrorMetric`] object as defined in `src/goose.rs`, which are created when requests result in an error.
+Logs include the entire [`SwanlingErrorMetric`] object as defined in `src/swanling.rs`, which are created when requests result in an error.
 
-By default Goose logs errors in JSON Lines format. The `--errors-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`GooseErrorMetric`] object.
+By default Swanling logs errors in JSON Lines format. The `--errors-format` option can be used to log in `csv`, `json` or `raw` format. The `raw` format is Rust's debug output of the entire [`SwanlingErrorMetric`] object.
 
 For example, `csv` output of similar errors as those logged above would like like:
 ```csv
