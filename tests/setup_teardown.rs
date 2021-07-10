@@ -6,8 +6,8 @@ use serial_test::serial;
 
 mod common;
 
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -35,22 +35,22 @@ enum TestType {
 }
 
 // Test task.
-pub async fn setup(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.post(SETUP_PATH, "setting up load test").await?;
+pub async fn setup(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.post(SETUP_PATH, "setting up load test").await?;
     Ok(())
 }
 
 // Test task.
-pub async fn teardown(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user
+pub async fn teardown(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user
         .post(TEARDOWN_PATH, "cleaning up after load test")
         .await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
@@ -80,7 +80,7 @@ fn common_build_configuration(
     server: &MockServer,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -129,8 +129,8 @@ fn validate_test(test_type: &TestType, mock_endpoints: &[MockRef]) {
     }
 }
 
-// Build an appropriate GooseAttack object for test type, using supplied configuration.
-fn build_goose_attack(test_type: &TestType, configuration: GooseConfiguration) -> GooseAttack {
+// Build an appropriate SwanlingAttack object for test type, using supplied configuration.
+fn build_swanling_attack(test_type: &TestType, configuration: SwanlingConfiguration) -> SwanlingAttack {
     let taskset = taskset!("LoadTest").register_task(task!(get_index).set_weight(9).unwrap());
     let start_task = task!(setup);
     let stop_task = task!(teardown);
@@ -157,10 +157,10 @@ fn run_standalone_test(test_type: TestType) {
     let configuration = common_build_configuration(&server, None, None);
 
     // Use configuration to generate the load test.
-    let goose_attack = build_goose_attack(&test_type, configuration);
+    let swanling_attack = build_swanling_attack(&test_type, configuration);
 
     // Run the load test.
-    common::run_load_test(goose_attack, None);
+    common::run_load_test(swanling_attack, None);
 
     // Confirm the load test ran correctly.
     validate_test(&test_type, &mock_endpoints);
@@ -178,19 +178,19 @@ fn run_gaggle_test(test_type: TestType) {
     let worker_configuration = common_build_configuration(&server, Some(true), None);
 
     // Use Worker configuration to generate the load test.
-    let goose_attack = build_goose_attack(&test_type, worker_configuration);
+    let swanling_attack = build_swanling_attack(&test_type, worker_configuration);
 
     // Workers launched in own threads, store thread handles.
-    let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
+    let worker_handles = common::launch_gaggle_workers(swanling_attack, EXPECT_WORKERS);
 
     // Build Manager configuration.
     let manager_configuration = common_build_configuration(&server, None, Some(EXPECT_WORKERS));
 
     // Use Manager configuration to generate the load test.
-    let goose_attack = build_goose_attack(&test_type, manager_configuration);
+    let swanling_attack = build_swanling_attack(&test_type, manager_configuration);
 
     // Run the load test.
-    common::run_load_test(goose_attack, Some(worker_handles));
+    common::run_load_test(swanling_attack, Some(worker_handles));
 
     // Confirm the load test ran correctly.
     validate_test(&test_type, &mock_endpoints);

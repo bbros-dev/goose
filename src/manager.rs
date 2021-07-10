@@ -8,20 +8,20 @@ use std::sync::Arc;
 use std::{thread, time};
 
 use crate::metrics::{
-    self, GooseErrorMetricAggregate, GooseErrorMetrics, GooseRequestMetricAggregate,
-    GooseRequestMetrics, GooseTaskMetricAggregate, GooseTaskMetrics,
+    self, SwanlingErrorMetricAggregate, SwanlingErrorMetrics, SwanlingRequestMetricAggregate,
+    SwanlingRequestMetrics, SwanlingTaskMetricAggregate, SwanlingTaskMetrics,
 };
 use crate::util;
 use crate::worker::GaggleMetrics;
-use crate::{GooseAttack, GooseConfiguration, GooseUserCommand};
+use crate::{SwanlingAttack, SwanlingConfiguration, SwanlingUserCommand};
 
 /// How long the manager will wait for all workers to stop after the load test ends.
 const GRACEFUL_SHUTDOWN_TIMEOUT: usize = 30;
 
 /// All elements required to initialize a user in a worker process.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GooseUserInitializer {
-    /// An index into the internal `GooseTest.task_sets` vector, indicating which GooseTaskSet is running.
+pub struct SwanlingUserInitializer {
+    /// An index into the internal `SwanlingTest.task_sets` vector, indicating which SwanlingTaskSet is running.
     pub task_sets_index: usize,
     /// The base_url for this user thread.
     pub base_url: String,
@@ -29,8 +29,8 @@ pub struct GooseUserInitializer {
     pub min_wait: usize,
     /// Maximum amount of time to sleep after running a task.
     pub max_wait: usize,
-    /// A local copy of the global GooseConfiguration.
-    pub config: GooseConfiguration,
+    /// A local copy of the global SwanlingConfiguration.
+    pub config: SwanlingConfiguration,
     /// How long the load test should run, in seconds.
     pub run_time: usize,
     /// Numerical identifier for worker.
@@ -42,12 +42,12 @@ lazy_static! {
     static ref ACTIVE_WORKERS: AtomicUsize = AtomicUsize::new(0);
 }
 
-fn distribute_users(goose_attack: &GooseAttack) -> (usize, usize) {
+fn distribute_users(swanling_attack: &SwanlingAttack) -> (usize, usize) {
     // Users and expect_workers is required to get here, so unwrap() is safe.
-    let users_per_worker = goose_attack.configuration.users.unwrap()
-        / (goose_attack.configuration.expect_workers.unwrap() as usize);
-    let users_remainder = goose_attack.configuration.users.unwrap()
-        % (goose_attack.configuration.expect_workers.unwrap() as usize);
+    let users_per_worker = swanling_attack.configuration.users.unwrap()
+        / (swanling_attack.configuration.expect_workers.unwrap() as usize);
+    let users_remainder = swanling_attack.configuration.users.unwrap()
+        % (swanling_attack.configuration.expect_workers.unwrap() as usize);
     if users_remainder > 0 {
         info!(
             "each worker to start {} users, assigning 1 extra to {} workers",
@@ -75,9 +75,9 @@ fn pipe_closed(_pipe: Pipe, event: PipeEvent) {
 
 /// Merge per-user task metrics from user thread into global parent metrics
 fn merge_tasks_from_worker(
-    parent_task: &GooseTaskMetricAggregate,
-    user_task: &GooseTaskMetricAggregate,
-) -> GooseTaskMetricAggregate {
+    parent_task: &SwanlingTaskMetricAggregate,
+    user_task: &SwanlingTaskMetricAggregate,
+) -> SwanlingTaskMetricAggregate {
     // Make a mutable copy where we can merge things
     let mut merged_task = parent_task.clone();
     // Iterate over user times, and merge into global time
@@ -99,10 +99,10 @@ fn merge_tasks_from_worker(
 
 /// Merge per-user request metrics from user thread into global parent metrics
 fn merge_requests_from_worker(
-    parent_request: &GooseRequestMetricAggregate,
-    user_request: &GooseRequestMetricAggregate,
+    parent_request: &SwanlingRequestMetricAggregate,
+    user_request: &SwanlingRequestMetricAggregate,
     status_codes: bool,
-) -> GooseRequestMetricAggregate {
+) -> SwanlingRequestMetricAggregate {
     // Make a mutable copy where we can merge things
     let mut merged_request = parent_request.clone();
     // Iterate over user response times, and merge into global response time
@@ -152,9 +152,9 @@ fn merge_requests_from_worker(
 
 /// Merge per-Worker errors into global Manager metrics
 fn merge_errors_from_worker(
-    manager_error: &GooseErrorMetricAggregate,
-    worker_error: &GooseErrorMetricAggregate,
-) -> GooseErrorMetricAggregate {
+    manager_error: &SwanlingErrorMetricAggregate,
+    worker_error: &SwanlingErrorMetricAggregate,
+) -> SwanlingErrorMetricAggregate {
     // Make a mutable copy where we can merge things
     let mut merged_error = manager_error.clone();
     // Add in how many additional times this happened on the Worker.
@@ -163,10 +163,10 @@ fn merge_errors_from_worker(
     merged_error
 }
 
-/// Helper to send GooseUserCommand::Exit command to worker.
+/// Helper to send SwanlingUserCommand::Exit command to worker.
 fn tell_worker_to_exit(server: &Socket) -> bool {
     let mut message = Message::new();
-    serde_cbor::to_writer(&mut message, &GooseUserCommand::Exit)
+    serde_cbor::to_writer(&mut message, &SwanlingUserCommand::Exit)
         .map_err(|error| eprintln!("{:?}", error))
         .expect("failed to serialize user command");
     send_message_to_worker(server, message)
@@ -192,23 +192,23 @@ fn send_message_to_worker(server: &Socket, message: Message) -> bool {
 }
 
 /// Helper to merge in request metrics from Worker.
-fn merge_request_metrics(goose_attack: &mut GooseAttack, requests: GooseRequestMetrics) {
+fn merge_request_metrics(swanling_attack: &mut SwanlingAttack, requests: SwanlingRequestMetrics) {
     if !requests.is_empty() {
         debug!("requests metrics received: {:?}", requests.len());
         for (request_key, request) in requests {
             trace!("request_key: {}", request_key);
             let merged_request;
-            if let Some(parent_request) = goose_attack.metrics.requests.get(&request_key) {
+            if let Some(parent_request) = swanling_attack.metrics.requests.get(&request_key) {
                 merged_request = merge_requests_from_worker(
                     parent_request,
                     &request,
-                    goose_attack.configuration.status_codes,
+                    swanling_attack.configuration.status_codes,
                 );
             } else {
                 // First time seeing this request, simply insert it.
                 merged_request = request.clone();
             }
-            goose_attack
+            swanling_attack
                 .metrics
                 .requests
                 .insert(request_key.to_string(), merged_request);
@@ -217,32 +217,32 @@ fn merge_request_metrics(goose_attack: &mut GooseAttack, requests: GooseRequestM
 }
 
 /// Helper to merge in task metrics from Worker.
-fn merge_task_metrics(goose_attack: &mut GooseAttack, tasks: GooseTaskMetrics) {
+fn merge_task_metrics(swanling_attack: &mut SwanlingAttack, tasks: SwanlingTaskMetrics) {
     for task_set in tasks {
         for task in task_set {
             let merged_task = merge_tasks_from_worker(
-                &goose_attack.metrics.tasks[task.taskset_index][task.task_index],
+                &swanling_attack.metrics.tasks[task.taskset_index][task.task_index],
                 &task,
             );
-            goose_attack.metrics.tasks[task.taskset_index][task.task_index] = merged_task;
+            swanling_attack.metrics.tasks[task.taskset_index][task.task_index] = merged_task;
         }
     }
 }
 
 /// Helper to merge in errors from the Worker.
-fn merge_error_metrics(goose_attack: &mut GooseAttack, errors: GooseErrorMetrics) {
+fn merge_error_metrics(swanling_attack: &mut SwanlingAttack, errors: SwanlingErrorMetrics) {
     if !errors.is_empty() {
         debug!("errors received: {:?}", errors.len());
         for (error_key, error) in errors {
             trace!("error_key: {}", error_key);
             let merged_error;
-            if let Some(parent_error) = goose_attack.metrics.errors.get(&error_key) {
+            if let Some(parent_error) = swanling_attack.metrics.errors.get(&error_key) {
                 merged_error = merge_errors_from_worker(parent_error, &error);
             } else {
                 // First time seeing this error, simply insert it.
                 merged_error = error.clone();
             }
-            goose_attack
+            swanling_attack
                 .metrics
                 .errors
                 .insert(error_key.to_string(), merged_error);
@@ -251,11 +251,11 @@ fn merge_error_metrics(goose_attack: &mut GooseAttack, errors: GooseErrorMetrics
 }
 
 /// Main manager loop.
-pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
+pub(crate) async fn manager_main(mut swanling_attack: SwanlingAttack) -> SwanlingAttack {
     // Creates a TCP address.
     let address = format!(
         "tcp://{}:{}",
-        goose_attack.configuration.manager_bind_host, goose_attack.configuration.manager_bind_port
+        swanling_attack.configuration.manager_bind_host, swanling_attack.configuration.manager_bind_port
     );
     debug!("preparing to listen for workers at: {}", &address);
 
@@ -280,21 +280,21 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
     info!(
         "manager listening on {}, waiting for {} workers",
         &address,
-        goose_attack.configuration.expect_workers.unwrap(),
+        swanling_attack.configuration.expect_workers.unwrap(),
     );
 
     // Calculate how many users each worker will be responsible for.
-    let (users_per_worker, mut users_remainder) = distribute_users(&goose_attack);
+    let (users_per_worker, mut users_remainder) = distribute_users(&swanling_attack);
 
     // A mutable bucket of users to be assigned to workers.
-    let mut available_users = goose_attack.weighted_gaggle_users.clone();
+    let mut available_users = swanling_attack.weighted_gaggle_users.clone();
 
     // Track how many workers we've seen.
     let mut workers: HashSet<Pipe> = HashSet::new();
 
     // Track start time, we'll reset this when the test actually starts.
     let mut started = time::Instant::now();
-    goose_attack.started = Some(started);
+    swanling_attack.started = Some(started);
     let mut running_metrics_timer = time::Instant::now();
     let mut exit_timer = time::Instant::now();
     let mut load_test_running = false;
@@ -305,18 +305,18 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
     util::setup_ctrlc_handler(&canceled);
 
     // Initialize the optional task metrics.
-    goose_attack
+    swanling_attack
         .metrics
-        .initialize_task_metrics(&goose_attack.task_sets, &goose_attack.configuration);
+        .initialize_task_metrics(&swanling_attack.task_sets, &swanling_attack.configuration);
 
     // Update metrics, which doesn't happen automatically on the Master as we don't
     // invoke start_attack. Hatch rate is required here so unwrap() is safe.
-    let hatch_rate = util::get_hatch_rate(goose_attack.configuration.hatch_rate.clone());
-    let maximum_hatched = hatch_rate * goose_attack.run_time as f32;
-    if maximum_hatched < goose_attack.configuration.users.unwrap() as f32 {
-        goose_attack.metrics.users = maximum_hatched as usize;
+    let hatch_rate = util::get_hatch_rate(swanling_attack.configuration.hatch_rate.clone());
+    let maximum_hatched = hatch_rate * swanling_attack.run_time as f32;
+    if maximum_hatched < swanling_attack.configuration.users.unwrap() as f32 {
+        swanling_attack.metrics.users = maximum_hatched as usize;
     } else {
-        goose_attack.metrics.users = goose_attack.configuration.users.unwrap();
+        swanling_attack.metrics.users = swanling_attack.configuration.users.unwrap();
     }
 
     // Worker control loop.
@@ -344,12 +344,12 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
         if load_test_running {
             if !load_test_finished {
                 // Test ran to completion or was canceled with ctrl-c.
-                if util::timer_expired(started, goose_attack.run_time)
+                if util::timer_expired(started, swanling_attack.run_time)
                     || canceled.load(Ordering::SeqCst)
                 {
                     info!("stopping after {} seconds...", started.elapsed().as_secs());
-                    goose_attack.metrics.duration =
-                        goose_attack.started.unwrap().elapsed().as_secs() as usize;
+                    swanling_attack.metrics.duration =
+                        swanling_attack.started.unwrap().elapsed().as_secs() as usize;
                     load_test_finished = true;
                     exit_timer = time::Instant::now();
                 }
@@ -362,13 +362,13 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
             }
 
             // When displaying running metrics, sync data from user threads first.
-            if let Some(running_metrics) = goose_attack.configuration.running_metrics {
+            if let Some(running_metrics) = swanling_attack.configuration.running_metrics {
                 if util::timer_expired(running_metrics_timer, running_metrics) {
                     // Reset timer each time we display metrics.
                     running_metrics_timer = time::Instant::now();
-                    goose_attack.metrics.duration =
-                        goose_attack.started.unwrap().elapsed().as_secs() as usize;
-                    goose_attack.metrics.print_running();
+                    swanling_attack.metrics.duration =
+                        swanling_attack.started.unwrap().elapsed().as_secs() as usize;
+                    swanling_attack.metrics.print_running();
                 }
             }
         } else if canceled.load(Ordering::SeqCst) {
@@ -382,7 +382,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                 // Message received, grab the pipe to determine which worker it is.
                 let pipe = msg.pipe().expect("fatal error getting worker pipe");
 
-                // Workers always send a vector of GooseMetric objects.
+                // Workers always send a vector of SwanlingMetric objects.
                 let mut gaggle_metrics: Vec<GaggleMetrics> =
                     serde_cbor::from_reader(msg.as_slice()).unwrap();
 
@@ -390,15 +390,15 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                 if !workers.contains(&pipe) {
                     // Check if we are expecting another worker. Expect workers is required
                     // so unwrap() is safe.
-                    if workers.len() >= goose_attack.configuration.expect_workers.unwrap() as usize
+                    if workers.len() >= swanling_attack.configuration.expect_workers.unwrap() as usize
                     {
                         warn!(
                             "telling extra worker ({} of {}) to exit",
                             workers.len() + 1,
-                            goose_attack.configuration.expect_workers.unwrap()
+                            swanling_attack.configuration.expect_workers.unwrap()
                         );
                         // We already have enough workers, tell this extra one to
-                        // GooseUserCommand::Exit.
+                        // SwanlingUserCommand::Exit.
                         if !tell_worker_to_exit(&server) {
                             // All workers have exited, shut down the
                             // load test.
@@ -411,7 +411,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                         // GaggleMetrics::WorkerInit object or it's invalid.
                         if gaggle_metrics.len() != 1 {
                             warn!("invalid message from Worker, exiting load test");
-                            // Invalid message, tell worker to GooseUserCommand::Exit.
+                            // Invalid message, tell worker to SwanlingUserCommand::Exit.
                             if !tell_worker_to_exit(&server) {
                                 // All workers have exited, shut down the
                                 // load test.
@@ -419,10 +419,10 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                             }
                         }
 
-                        let goose_metric = gaggle_metrics.pop().unwrap();
-                        if let GaggleMetrics::WorkerInit(load_test_hash) = goose_metric {
-                            if load_test_hash != goose_attack.metrics.hash {
-                                if goose_attack.configuration.no_hash_check {
+                        let swanling_metric = gaggle_metrics.pop().unwrap();
+                        if let GaggleMetrics::WorkerInit(load_test_hash) = swanling_metric {
+                            if load_test_hash != swanling_attack.metrics.hash {
+                                if swanling_attack.configuration.no_hash_check {
                                     warn!("worker is running a different load test, ignoring");
                                 } else {
                                     panic!("worker is running a different load test, set --no-hash-check to ignore");
@@ -430,7 +430,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                             }
                         } else {
                             // Unexpected object received, tell the worker
-                            // to GooseUserCommand::Exit.
+                            // to SwanlingUserCommand::Exit.
                             warn!("invalid object from Worker, exiting load test");
                             if !tell_worker_to_exit(&server) {
                                 // All workers have exited, shut down the
@@ -444,7 +444,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                         info!(
                             "worker {} of {} connected",
                             workers.len(),
-                            goose_attack.configuration.expect_workers.unwrap(),
+                            swanling_attack.configuration.expect_workers.unwrap(),
                         );
 
                         // Send new worker a batch of users.
@@ -465,14 +465,14 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                                     panic!("not enough available users!?");
                                 }
                             };
-                            // Build a vector of GooseUser initializers for next worker.
-                            users.push(GooseUserInitializer {
+                            // Build a vector of SwanlingUser initializers for next worker.
+                            users.push(SwanlingUserInitializer {
                                 task_sets_index: user.task_sets_index,
                                 base_url: user.base_url.read().await.to_string(),
                                 min_wait: user.min_wait,
                                 max_wait: user.max_wait,
                                 config: user.config.clone(),
-                                run_time: goose_attack.run_time,
+                                run_time: swanling_attack.run_time,
                                 worker_id: workers.len(),
                             });
                         }
@@ -499,17 +499,17 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
 
                         // Expect workers is required so unwrap() is safe.
                         if workers.len()
-                            == goose_attack.configuration.expect_workers.unwrap() as usize
+                            == swanling_attack.configuration.expect_workers.unwrap() as usize
                         {
                             info!("gaggle distributed load test started");
                             // Reset start time, the distributed load test is truly starting now.
                             started = time::Instant::now();
-                            goose_attack.started = Some(started);
+                            swanling_attack.started = Some(started);
                             running_metrics_timer = time::Instant::now();
                             load_test_running = true;
 
                             // Run any configured test_start() functions.
-                            goose_attack.run_test_start().await.unwrap();
+                            swanling_attack.run_test_start().await.unwrap();
                         }
                     }
                 }
@@ -522,7 +522,7 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                     // test is still waiting to start.
                     if !load_test_running {
                         // Assume this is the Worker heartbeat, tell it to keep waiting.
-                        serde_cbor::to_writer(&mut message, &GooseUserCommand::Wait)
+                        serde_cbor::to_writer(&mut message, &SwanlingUserCommand::Wait)
                             .map_err(|error| eprintln!("{:?}", error))
                             .expect("failed to serialize user command");
                         if !send_message_to_worker(&server, message) {
@@ -536,15 +536,15 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
                         match metric {
                             // Merge in request metrics from Worker.
                             GaggleMetrics::Requests(requests) => {
-                                merge_request_metrics(&mut goose_attack, requests)
+                                merge_request_metrics(&mut swanling_attack, requests)
                             }
                             // Merge in task metrics from Worker.
                             GaggleMetrics::Tasks(tasks) => {
-                                merge_task_metrics(&mut goose_attack, tasks)
+                                merge_task_metrics(&mut swanling_attack, tasks)
                             }
                             // Merge in error metrics from Worker.
                             GaggleMetrics::Errors(errors) => {
-                                merge_error_metrics(&mut goose_attack, errors)
+                                merge_error_metrics(&mut swanling_attack, errors)
                             }
                             // Ignore Worker heartbeats.
                             GaggleMetrics::WorkerInit(_) => (),
@@ -553,13 +553,13 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
 
                     if load_test_finished {
                         debug!("telling worker to exit");
-                        serde_cbor::to_writer(&mut message, &GooseUserCommand::Exit)
+                        serde_cbor::to_writer(&mut message, &SwanlingUserCommand::Exit)
                             .map_err(|error| eprintln!("{:?}", error))
                             .expect("failed to serialize user command");
                     }
                     // Notify the worker that the load test is still running.
                     else {
-                        serde_cbor::to_writer(&mut message, &GooseUserCommand::Run)
+                        serde_cbor::to_writer(&mut message, &SwanlingUserCommand::Run)
                             .map_err(|error| eprintln!("{:?}", error))
                             .expect("failed to serialize user command");
                     }
@@ -587,9 +587,9 @@ pub(crate) async fn manager_main(mut goose_attack: GooseAttack) -> GooseAttack {
         }
     }
     // Run any configured test_stop() functions.
-    goose_attack.run_test_stop().await.unwrap();
+    swanling_attack.run_test_stop().await.unwrap();
 
-    goose_attack
+    swanling_attack
 }
 
 #[cfg(test)]
@@ -601,25 +601,25 @@ mod tests {
     #[test]
     fn test_distribute_users() {
         let ten_users_two_workers: Vec<&str> = vec!["--users", "10", "--expect-workers", "2"];
-        let config = GooseConfiguration::parse_args_default(&ten_users_two_workers).unwrap();
-        let goose_attack = GooseAttack::initialize_with_config(config).unwrap();
-        let (users_per_process, users_remainder) = distribute_users(&goose_attack);
+        let config = SwanlingConfiguration::parse_args_default(&ten_users_two_workers).unwrap();
+        let swanling_attack = SwanlingAttack::initialize_with_config(config).unwrap();
+        let (users_per_process, users_remainder) = distribute_users(&swanling_attack);
         assert_eq!(users_per_process, 5);
         assert_eq!(users_remainder, 0);
 
         let one_user_one_worker: Vec<&str> = vec!["--users", "1", "--expect-workers", "1"];
-        let config = GooseConfiguration::parse_args_default(&one_user_one_worker).unwrap();
-        let goose_attack = GooseAttack::initialize_with_config(config).unwrap();
-        let (users_per_process, users_remainder) = distribute_users(&goose_attack);
+        let config = SwanlingConfiguration::parse_args_default(&one_user_one_worker).unwrap();
+        let swanling_attack = SwanlingAttack::initialize_with_config(config).unwrap();
+        let (users_per_process, users_remainder) = distribute_users(&swanling_attack);
         assert_eq!(users_per_process, 1);
         assert_eq!(users_remainder, 0);
 
         let onehundred_users_twentyone_workers: Vec<&str> =
             vec!["--users", "100", "--expect-workers", "21"];
         let config =
-            GooseConfiguration::parse_args_default(&onehundred_users_twentyone_workers).unwrap();
-        let goose_attack = GooseAttack::initialize_with_config(config).unwrap();
-        let (users_per_process, users_remainder) = distribute_users(&goose_attack);
+            SwanlingConfiguration::parse_args_default(&onehundred_users_twentyone_workers).unwrap();
+        let swanling_attack = SwanlingAttack::initialize_with_config(config).unwrap();
+        let (users_per_process, users_remainder) = distribute_users(&swanling_attack);
         assert_eq!(users_per_process, 4);
         assert_eq!(users_remainder, 16);
     }

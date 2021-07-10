@@ -3,9 +3,9 @@ use std::sync::Arc;
 
 mod common;
 
-use goose::goose::GooseMethod;
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::swanling::SwanlingMethod;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -15,14 +15,14 @@ const ABOUT_PATH: &str = "/about.html";
 const EXPECT_WORKERS: usize = 2;
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
@@ -78,7 +78,7 @@ fn common_build_configuration(
     users: usize,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -114,24 +114,24 @@ fn common_build_configuration(
 }
 
 // Dynamically build taskset.
-fn build_taskset() -> GooseTaskSet {
+fn build_taskset() -> SwanlingTaskSet {
     // Get common configuration for building endpoints and the load test itself.
     let test_endpoints = configure_mock_endpoints();
 
-    let mut taskset = GooseTaskSet::new("LoadTest");
+    let mut taskset = SwanlingTaskSet::new("LoadTest");
     for item in &test_endpoints {
         let path = item.path;
         let weight = item.weight;
 
-        let closure: GooseTaskFunction = Arc::new(move |user| {
+        let closure: SwanlingTaskFunction = Arc::new(move |user| {
             Box::pin(async move {
-                let _goose = user.get(path).await?;
+                let _swanling = user.get(path).await?;
 
                 Ok(())
             })
         });
 
-        let task = GooseTask::new(closure).set_weight(weight).unwrap();
+        let task = SwanlingTask::new(closure).set_weight(weight).unwrap();
         // We need to do the variable dance as taskset.register_task returns self and hence moves
         // self out of `taskset`. By storing it in a new local variable and then moving it over
         // we can avoid that error.
@@ -145,8 +145,8 @@ fn build_taskset() -> GooseTaskSet {
 // Common validation for the load tests in this file.
 fn validate_closer_test(
     mock_endpoints: &[MockRef],
-    goose_metrics: &GooseMetrics,
-    configuration: &GooseConfiguration,
+    swanling_metrics: &SwanlingMetrics,
+    configuration: &SwanlingConfiguration,
 ) {
     // Get the configuration that was used for building the load test.
     let test_endpoints = configure_mock_endpoints();
@@ -161,8 +161,8 @@ fn validate_closer_test(
             "Endpoint was not called > 0 for item: {:#?}",
             &item
         );
-        let expect_error = format!("Item does not exist in goose_metrics: {:#?}", &item);
-        let endpoint_metrics = goose_metrics
+        let expect_error = format!("Item does not exist in swanling_metrics: {:#?}", &item);
+        let endpoint_metrics = swanling_metrics
             .requests
             .get(&format!("GET {}", item.path))
             .expect(&expect_error);
@@ -174,9 +174,9 @@ fn validate_closer_test(
             item.path,
             &item
         );
-        assert!(endpoint_metrics.method == GooseMethod::Get);
+        assert!(endpoint_metrics.method == SwanlingMethod::Get);
 
-        // Confirm that Goose and the server saw the same number of page loads.
+        // Confirm that Swanling and the server saw the same number of page loads.
         let status_code: u16 = item.status_code;
 
         assert!(
@@ -210,8 +210,8 @@ fn validate_closer_test(
     let difference = about.hits() as i32 - one_third_index as i32;
     assert!(difference >= -2 && difference <= 2);
 
-    // Verify that Goose started the correct number of users.
-    assert!(goose_metrics.users == configuration.users.unwrap());
+    // Verify that Swanling started the correct number of users.
+    assert!(swanling_metrics.users == configuration.users.unwrap());
 }
 
 // Helper to run the test, takes a flag for indicating if running in standalone
@@ -226,19 +226,19 @@ fn run_load_test(is_gaggle: bool) {
     // Get configuration for building the load test itself.
     let test_endpoints = configure_mock_endpoints();
 
-    let (configuration, goose_metrics) = match is_gaggle {
+    let (configuration, swanling_metrics) = match is_gaggle {
         false => {
             // Build configuration.
             let configuration =
                 common_build_configuration(&server, test_endpoints.len(), None, None);
 
-            // Run the Goose Attack.
-            let goose_metrics = common::run_load_test(
+            // Run the Swanling Attack.
+            let swanling_metrics = common::run_load_test(
                 common::build_load_test(configuration.clone(), &build_taskset(), None, None),
                 None,
             );
 
-            (configuration, goose_metrics)
+            (configuration, swanling_metrics)
         }
         true => {
             // Each worker has the same identical configuration.
@@ -259,8 +259,8 @@ fn run_load_test(is_gaggle: bool) {
                 Some(EXPECT_WORKERS),
             );
 
-            // Run the Goose Attack.
-            let goose_metrics = common::run_load_test(
+            // Run the Swanling Attack.
+            let swanling_metrics = common::run_load_test(
                 common::build_load_test(
                     manager_configuration.clone(),
                     &build_taskset(),
@@ -270,12 +270,12 @@ fn run_load_test(is_gaggle: bool) {
                 Some(worker_handles),
             );
 
-            (manager_configuration, goose_metrics)
+            (manager_configuration, swanling_metrics)
         }
     };
 
     // Confirm the load test ran correctly.
-    validate_closer_test(&mock_endpoints, &goose_metrics, &configuration);
+    validate_closer_test(&mock_endpoints, &swanling_metrics, &configuration);
 }
 
 #[test]

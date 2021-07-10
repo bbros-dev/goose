@@ -3,9 +3,9 @@ use serial_test::serial;
 
 mod common;
 
-use goose::goose::GooseMethod;
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::swanling::SwanlingMethod;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -28,14 +28,14 @@ enum TestType {
 }
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
@@ -56,7 +56,7 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 }
 
 // Build appropriate configuration for these tests.
-fn common_build_configuration(server: &MockServer, custom: &mut Vec<&str>) -> GooseConfiguration {
+fn common_build_configuration(server: &MockServer, custom: &mut Vec<&str>) -> SwanlingConfiguration {
     // Common elements in all our tests.
     let mut configuration = vec![
         "--users",
@@ -77,9 +77,9 @@ fn common_build_configuration(server: &MockServer, custom: &mut Vec<&str>) -> Go
 
 // Helper to confirm all variations generate appropriate results.
 fn validate_one_taskset(
-    goose_metrics: &GooseMetrics,
+    swanling_metrics: &SwanlingMetrics,
     mock_endpoints: &[MockRef],
-    configuration: &GooseConfiguration,
+    configuration: &SwanlingConfiguration,
     test_type: TestType,
 ) {
     // Confirm that we loaded the mock endpoints.
@@ -91,26 +91,26 @@ fn validate_one_taskset(
     let difference = mock_endpoints[ABOUT_KEY].hits() as i32 - one_third_index as i32;
     assert!(difference >= -2 && difference <= 2);
 
-    // Get index and about out of goose metrics.
-    let index_metrics = goose_metrics
+    // Get index and about out of swanling metrics.
+    let index_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", INDEX_PATH))
         .unwrap();
-    let about_metrics = goose_metrics
+    let about_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", ABOUT_PATH))
         .unwrap();
 
     // Confirm that the path and method are correct in the statistics.
     assert!(index_metrics.path == INDEX_PATH);
-    assert!(index_metrics.method == GooseMethod::Get);
+    assert!(index_metrics.method == SwanlingMethod::Get);
     assert!(about_metrics.path == ABOUT_PATH);
-    assert!(about_metrics.method == GooseMethod::Get);
+    assert!(about_metrics.method == SwanlingMethod::Get);
 
     let status_code: u16 = 200;
     match test_type {
         TestType::ResetMetrics => {
-            // Statistics were reset after all users were started, so Goose should report
+            // Statistics were reset after all users were started, so Swanling should report
             // fewer page loads than the server actually saw.
             println!(
                 "raw_data.counter: {}, mock_endpoint_called: {}",
@@ -130,7 +130,7 @@ fn validate_one_taskset(
             assert!(about_metrics.success_count < mock_endpoints[ABOUT_KEY].hits());
         }
         TestType::NoResetMetrics => {
-            // Statistics were not reset, so Goose should report the same number of page
+            // Statistics were not reset, so Swanling should report the same number of page
             // loads as the server actually saw.
             mock_endpoints[INDEX_KEY].assert_hits(index_metrics.raw_data.counter);
             mock_endpoints[INDEX_KEY].assert_hits(index_metrics.status_code_counts[&status_code]);
@@ -145,12 +145,12 @@ fn validate_one_taskset(
     assert!(index_metrics.fail_count == 0);
     assert!(about_metrics.fail_count == 0);
 
-    // Verify that Goose started the correct number of users.
-    assert!(goose_metrics.users == configuration.users.unwrap());
+    // Verify that Swanling started the correct number of users.
+    assert!(swanling_metrics.users == configuration.users.unwrap());
 }
 
 // Returns the appropriate taskset needed to build these tests.
-fn get_tasks() -> GooseTaskSet {
+fn get_tasks() -> SwanlingTaskSet {
     taskset!("LoadTest")
         .register_task(task!(get_index).set_weight(9).unwrap())
         .register_task(task!(get_about).set_weight(3).unwrap())
@@ -172,14 +172,14 @@ fn run_standalone_test(test_type: TestType) {
     // Build common configuration elements.
     let configuration = common_build_configuration(&server, &mut configuration_flags);
 
-    // Run the Goose Attack.
-    let goose_metrics = common::run_load_test(
+    // Run the Swanling Attack.
+    let swanling_metrics = common::run_load_test(
         common::build_load_test(configuration.clone(), &get_tasks(), None, None),
         None,
     );
 
     // Confirm that the load test ran correctly.
-    validate_one_taskset(&goose_metrics, &mock_endpoints, &configuration, test_type);
+    validate_one_taskset(&swanling_metrics, &mock_endpoints, &configuration, test_type);
 }
 
 // Helper to run all standalone tests.
@@ -194,10 +194,10 @@ fn run_gaggle_test(test_type: TestType) {
     let worker_configuration = common::build_configuration(&server, vec!["--worker"]);
 
     // Build the load test for the Workers.
-    let goose_attack = common::build_load_test(worker_configuration, &get_tasks(), None, None);
+    let swanling_attack = common::build_load_test(worker_configuration, &get_tasks(), None, None);
 
     // Workers launched in own threads, store thread handles.
-    let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
+    let worker_handles = common::launch_gaggle_workers(swanling_attack, EXPECT_WORKERS);
 
     // Build common configuration elements, adding Manager Regatta flags.
     let manager_configuration = match test_type {
@@ -217,15 +217,15 @@ fn run_gaggle_test(test_type: TestType) {
     };
 
     // Build the load test for the Manager.
-    let manager_goose_attack =
+    let manager_swanling_attack =
         common::build_load_test(manager_configuration.clone(), &get_tasks(), None, None);
 
-    // Run the Goose Attack.
-    let goose_metrics = common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    let swanling_metrics = common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm that the load test ran correctly.
     validate_one_taskset(
-        &goose_metrics,
+        &swanling_metrics,
         &mock_endpoints,
         &manager_configuration,
         test_type,
@@ -252,7 +252,7 @@ fn test_one_taskset_reset_metrics() {
     run_standalone_test(TestType::ResetMetrics);
 }
 
-/* @TODO: @FIXME: Goose is not resetting metrics when running in Regatta mode.
+/* @TODO: @FIXME: Swanling is not resetting metrics when running in Regatta mode.
  * Issue: https://github.com/begleybrothers/swanling/issues/193
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]

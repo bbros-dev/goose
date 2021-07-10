@@ -1,23 +1,23 @@
-//! # Goose
+//! # Swanling
 //!
-//! Have you ever been attacked by a goose?
+//! Have you ever been attacked by a swanling?
 //!
-//! Goose is a load testing framework inspired by [Locust](https://locust.io/).
+//! Swanling is a load testing framework inspired by [Locust](https://locust.io/).
 //! User behavior is defined with standard Rust code.
 //!
-//! Goose load tests, called Goose Attacks, are built by creating an application
-//! with Cargo, and declaring a dependency on the Goose library.
+//! Swanling load tests, called Swanling Attacks, are built by creating an application
+//! with Cargo, and declaring a dependency on the Swanling library.
 //!
-//! Goose uses [`reqwest`](https://docs.rs/reqwest/) to provide a convenient HTTP
+//! Swanling uses [`reqwest`](https://docs.rs/reqwest/) to provide a convenient HTTP
 //! client.
 //!
 //! ## Documentation
 //!
 //! - [README](https://github.com/begleybrothers/swanling/blob/main/README.md)
-//! - [Developer documentation](https://docs.rs/goose/)
-//! ## Creating and running a Goose load test
+//! - [Developer documentation](https://docs.rs/swanling/)
+//! ## Creating and running a Swanling load test
 //!
-//! ### Creating a simple Goose load test
+//! ### Creating a simple Swanling load test
 //!
 //! First create a new empty cargo application, for example:
 //!
@@ -27,85 +27,85 @@
 //! $ cd loadtest/
 //! ```
 //!
-//! Add Goose as a dependency in `Cargo.toml`:
+//! Add Swanling as a dependency in `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
-//! goose = "0.12"
+//! swanling = "0.12"
 //! ```
 //!
 //! Add the following boilerplate `use` declaration at the top of your `src/main.rs`:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //! ```
 //!
 //! Using the above prelude will automatically add the following `use` statements
 //! necessary for your load test, so you don't need to manually add them:
 //!
 //! ```rust
-//! use goose::goose::{
-//!     GooseTask, GooseTaskError, GooseTaskFunction, GooseTaskResult, GooseTaskSet, GooseUser,
+//! use swanling::swanling::{
+//!     SwanlingTask, SwanlingTaskError, SwanlingTaskFunction, SwanlingTaskResult, SwanlingTaskSet, SwanlingUser,
 //! };
-//! use goose::metrics::GooseMetrics;
-//! use goose::{
-//!     task, taskset, GooseAttack, GooseDefault, GooseDefaultType, GooseError, GooseScheduler,
+//! use swanling::metrics::SwanlingMetrics;
+//! use swanling::{
+//!     task, taskset, SwanlingAttack, SwanlingDefault, SwanlingDefaultType, SwanlingError, SwanlingScheduler,
 //! };
 //! ```
 //!
 //! Below your `main` function (which currently is the default `Hello, world!`), add
 //! one or more load test functions. The names of these functions are arbitrary, but it is
 //! recommended you use self-documenting names. Load test functions must be async. Each load
-//! test function must accept a reference to a [`GooseUser`](./goose/struct.GooseUser.html) object
-//! and return a [`GooseTaskResult`](./goose/type.GooseTaskResult.html). For example:
+//! test function must accept a reference to a [`SwanlingUser`](./swanling/struct.SwanlingUser.html) object
+//! and return a [`SwanlingTaskResult`](./swanling/type.SwanlingTaskResult.html). For example:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
-//! async fn loadtest_foo(user: &GooseUser) -> GooseTaskResult {
-//!   let _goose = user.get("/path/to/foo").await?;
+//! async fn loadtest_foo(user: &SwanlingUser) -> SwanlingTaskResult {
+//!   let _swanling = user.get("/path/to/foo").await?;
 //!
 //!   Ok(())
 //! }
 //! ```
 //!
-//! In the above example, we're using the [`GooseUser`](./goose/struct.GooseUser.html) helper
-//! [`get`](./goose/struct.GooseUser.html#method.get) to load a path on the website we are load
+//! In the above example, we're using the [`SwanlingUser`](./swanling/struct.SwanlingUser.html) helper
+//! [`get`](./swanling/struct.SwanlingUser.html#method.get) to load a path on the website we are load
 //! testing. This helper creates a
 //! [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
 //! object and uses it to build and execute a request for the above path. If you want access
 //! to the [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-//! object, you can instead use the [`goose_get`](./goose/struct.GooseUser.html#method.goose_get)
+//! object, you can instead use the [`swanling_get`](./swanling/struct.SwanlingUser.html#method.swanling_get)
 //! helper, for example to set a timeout on this specific request:
 //!
 //! ```rust
 //! use std::time;
 //!
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
-//! async fn loadtest_bar(user: &GooseUser) -> GooseTaskResult {
-//!     let request_builder = user.goose_get("/path/to/bar").await?;
-//!     let _goose = user.goose_send(request_builder.timeout(time::Duration::from_secs(3)), None).await?;
+//! async fn loadtest_bar(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let request_builder = user.swanling_get("/path/to/bar").await?;
+//!     let _swanling = user.swanling_send(request_builder.timeout(time::Duration::from_secs(3)), None).await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 //!
 //! We pass the [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-//! object to [`goose_send`](./goose/struct.GooseUser.html#method.goose_send) which builds and
+//! object to [`swanling_send`](./swanling/struct.SwanlingUser.html#method.swanling_send) which builds and
 //! executes it, also collecting useful metrics. The
 //! [`.await`](https://doc.rust-lang.org/std/keyword.await.html) at the end is necessary as
-//! [`goose_send`](./goose/struct.GooseUser.html#method.goose_send) is an async function.
+//! [`swanling_send`](./swanling/struct.SwanlingUser.html#method.swanling_send) is an async function.
 //!
-//! Once all our tasks are created, we edit the main function to initialize goose and register
+//! Once all our tasks are created, we edit the main function to initialize swanling and register
 //! the tasks. In this very simple example we only have two tasks to register, while in a real
 //! load test you can have any number of task sets with any number of individual tasks.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
-//! fn main() -> Result<(), GooseError> {
-//!     let _goose_metrics = GooseAttack::initialize()?
+//! fn main() -> Result<(), SwanlingError> {
+//!     let _swanling_metrics = SwanlingAttack::initialize()?
 //!         .register_taskset(taskset!("LoadtestTasks")
 //!             // Register the foo task, assigning it a weight of 10.
 //!             .register_task(task!(loadtest_foo).set_weight(10)?)
@@ -115,35 +115,35 @@
 //!             .register_task(task!(loadtest_bar).set_name("bar").set_weight(2)?)
 //!         )
 //!         // You could also set a default host here, for example:
-//!         .set_default(GooseDefault::Host, "http://dev.local/")?
+//!         .set_default(SwanlingDefault::Host, "http://dev.local/")?
 //!         // We set a default run time so this test runs to completion.
-//!         .set_default(GooseDefault::RunTime, 1)?
+//!         .set_default(SwanlingDefault::RunTime, 1)?
 //!         .execute()?;
 //!
 //!     Ok(())
 //! }
 //!
 //! // A task function that loads `/path/to/foo`.
-//! async fn loadtest_foo(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/path/to/foo").await?;
+//! async fn loadtest_foo(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/path/to/foo").await?;
 //!
 //!     Ok(())
 //! }
 //!
 //! // A task function that loads `/path/to/bar`.
-//! async fn loadtest_bar(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/path/to/bar").await?;
+//! async fn loadtest_bar(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/path/to/bar").await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 //!
-//! Goose now spins up a configurable number of users, each simulating a user on your
+//! Swanling now spins up a configurable number of users, each simulating a user on your
 //! website. Thanks to [`reqwest`](https://docs.rs/reqwest/), each user maintains its own
 //! web client state, handling cookies and more so your "users" can log in, fill out forms,
 //! and more, as real users on your sites would do.
 //!
-//! ### Running the Goose load test
+//! ### Running the Swanling load test
 //!
 //! Attempts to run our example will result in an error, as we have not yet defined the
 //! host against which this load test should be run. We intentionally do not hard code the
@@ -155,7 +155,7 @@
 //!    Compiling loadtest v0.1.0 (~/loadtest)
 //!     Finished release [optimized] target(s) in 1.52s
 //!      Running `target/release/loadtest`
-//! Error: InvalidOption { option: "--host", value: "", detail: "A host must be defined via the --host option, the GooseAttack.set_default() function, or the GooseTaskSet.set_host() function (no host defined for WebsiteUser)." }
+//! Error: InvalidOption { option: "--host", value: "", detail: "A host must be defined via the --host option, the SwanlingAttack.set_default() function, or the SwanlingTaskSet.set_host() function (no host defined for WebsiteUser)." }
 //! ```
 //! Pass in the `-h` flag to see all available run-time options. For now, we'll use a few
 //! options to customize our load test.
@@ -164,14 +164,14 @@
 //! $ cargo run --release -- --host http://dev.local -t 30s -v
 //! ```
 //!
-//! The first option we specified is `--host`, and in this case tells Goose to run the load test
-//! against a VM on my local network. The `-t 30s` option tells Goose to end the load test after 30
+//! The first option we specified is `--host`, and in this case tells Swanling to run the load test
+//! against a VM on my local network. The `-t 30s` option tells Swanling to end the load test after 30
 //! seconds (for real load tests you'll certainly want to run it longer, you can use `h`, `m`, and
 //! `s` to specify hours, minutes and seconds respectively. For example, `-t1h30m` would run the
-//! load test for 1 hour 30 minutes). Finally, the `-v` flag tells goose to display INFO and higher
+//! load test for 1 hour 30 minutes). Finally, the `-v` flag tells swanling to display INFO and higher
 //! level logs to stdout, giving more insight into what is happening. (Additional `-v` flags will
 //! result in considerably more debug output, and are not recommended for running actual load tests;
-//! they're only useful if you're trying to debug Goose itself.)
+//! they're only useful if you're trying to debug Swanling itself.)
 //!
 //! Running the test results in the following output (broken up to explain it as it goes):
 //!
@@ -182,7 +182,7 @@
 //! 15:42:23 [ INFO] Logfile verbosity level: WARN
 //! ```
 //!
-//! If we set the `--log-file` flag, Goose will write a log file with WARN and higher level logs
+//! If we set the `--log-file` flag, Swanling will write a log file with WARN and higher level logs
 //! as you run the test from (add a `-g` flag to log all INFO and higher level logs).
 //!
 //! ```bash
@@ -191,7 +191,7 @@
 //! 15:42:23 [ INFO] hatch_rate = 1
 //! ```
 //!
-//! Goose will default to launching 1 user per available CPU core, and will launch them all in
+//! Swanling will default to launching 1 user per available CPU core, and will launch them all in
 //! one second. You can change how many users are launched with the `-u` option, and you can
 //! change how many users are launched per second with the `-r` option. For example, `-u30 -r2`
 //! would launch 30 users over 15 seconds (two users per second).
@@ -211,8 +211,8 @@
 //! 15:42:31 [ INFO] printing running metrics after 8 seconds...
 //! ```
 //!
-//! Each user is launched in its own thread with its own user state. Goose is able to make
-//! very efficient use of server resources. By default Goose resets the metrics after all
+//! Each user is launched in its own thread with its own user state. Swanling is able to make
+//! very efficient use of server resources. By default Swanling resets the metrics after all
 //! users are launched, but first it outputs the metrics collected while ramping up:
 //!
 //! ```bash
@@ -255,8 +255,8 @@
 //! All 8 users hatched, resetting metrics (disable with --no-reset-metrics).
 //! ```
 //!
-//! Goose can optionally display running metrics if started with `--running-metrics INT`
-//! where INT is an integer value in seconds. For example, if Goose is started with
+//! Swanling can optionally display running metrics if started with `--running-metrics INT`
+//! where INT is an integer value in seconds. For example, if Swanling is started with
 //! `--running-metrics 15` it will display running values approximately every 15 seconds.
 //! Running metrics are broken into several tables. First are the per-task metrics which
 //! are further split into two sections. The first section shows how many requests have
@@ -297,7 +297,7 @@
 //! type and path or name. The first request shows up as `GET /path/to/foo` as the
 //! request was not named. The second request shows up as `GET bar` as the request
 //! was named. The times to complete each are slightly smaller as this is only the
-//! time to make the request, not the time for Goose to execute the entire task.
+//! time to make the request, not the time for Swanling to execute the entire task.
 //!
 //! ```bash
 //!  === PER REQUEST METRICS ===
@@ -317,7 +317,7 @@
 //!  Aggregated               |       21.20 |          8 |         156 |         19
 //! ```
 //!
-//! Note that Goose respected the per-task weights we set, and `foo` (with a weight of 10)
+//! Note that Swanling respected the per-task weights we set, and `foo` (with a weight of 10)
 //! is being loaded five times as often as `bar` (with a weight of 2). On average
 //! each page is returning within `21.2` milliseconds. The quickest page response was
 //! for `foo` in `8` milliseconds. The slowest page response was for `bar` in `156`
@@ -418,7 +418,7 @@
 extern crate log;
 
 pub mod controller;
-pub mod goose;
+pub mod swanling;
 pub mod logger;
 #[cfg(feature = "gaggle")]
 mod manager;
@@ -452,20 +452,20 @@ use std::{fmt, io, time};
 use tokio::fs::File;
 use tokio::runtime::Runtime;
 
-use crate::controller::{GooseControllerProtocol, GooseControllerRequest};
-use crate::goose::{GaggleUser, GooseTask, GooseTaskSet, GooseUser, GooseUserCommand};
-use crate::logger::{GooseLogFormat, GooseLoggerJoinHandle, GooseLoggerTx};
-use crate::metrics::{GooseCoordinatedOmissionMitigation, GooseMetric, GooseMetrics};
+use crate::controller::{SwanlingControllerProtocol, SwanlingControllerRequest};
+use crate::swanling::{GaggleUser, SwanlingTask, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand};
+use crate::logger::{SwanlingLogFormat, SwanlingLoggerJoinHandle, SwanlingLoggerTx};
+use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetric, SwanlingMetrics};
 #[cfg(feature = "gaggle")]
 use crate::worker::{register_shutdown_pipe_handler, GaggleMetrics};
 
-/// Constant defining Goose's default port when running a Regatta.
+/// Constant defining Swanling's default port when running a Regatta.
 const DEFAULT_PORT: &str = "5115";
 
-/// Constant defining Goose's default telnet Controller port.
+/// Constant defining Swanling's default telnet Controller port.
 const DEFAULT_TELNET_PORT: &str = "5116";
 
-/// Constant defining Goose's default WebSocket Controller port.
+/// Constant defining Swanling's default WebSocket Controller port.
 const DEFAULT_WEBSOCKET_PORT: &str = "5117";
 
 // WORKER_ID is only used when running a gaggle (a distributed load test).
@@ -474,12 +474,12 @@ lazy_static! {
 }
 
 /// Internal representation of a weighted task list.
-type WeightedGooseTasks = Vec<(usize, String)>;
+type WeightedSwanlingTasks = Vec<(usize, String)>;
 
 /// Internal representation of unsequenced tasks.
-type UnsequencedGooseTasks = Vec<GooseTask>;
+type UnsequencedSwanlingTasks = Vec<SwanlingTask>;
 /// Internal representation of sequenced tasks.
-type SequencedGooseTasks = BTreeMap<usize, Vec<GooseTask>>;
+type SequencedSwanlingTasks = BTreeMap<usize, Vec<SwanlingTask>>;
 
 /// Returns the unique identifier of the running Worker when running in Regatta mode.
 ///
@@ -495,9 +495,9 @@ pub fn get_worker_id() -> usize {
 /// Socket used for coordinating a Regatta distributed load test.
 pub(crate) struct Socket {}
 
-/// An enumeration of all errors a [`GooseAttack`](./struct.GooseAttack.html) can return.
+/// An enumeration of all errors a [`SwanlingAttack`](./struct.SwanlingAttack.html) can return.
 #[derive(Debug)]
-pub enum GooseError {
+pub enum SwanlingError {
     /// Wraps a [`std::io::Error`](https://doc.rust-lang.org/std/io/struct.Error.html).
     Io(io::Error),
     /// Wraps a [`reqwest::Error`](https://docs.rs/reqwest/*/reqwest/struct.Error.html).
@@ -546,57 +546,57 @@ pub enum GooseError {
         /// An optional explanation of the error.
         detail: String,
     },
-    /// [`GooseAttack`](./struct.GooseAttack.html) has no [`GooseTaskSet`](./goose/struct.GooseTaskSet.html) defined.
+    /// [`SwanlingAttack`](./struct.SwanlingAttack.html) has no [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html) defined.
     NoTaskSets {
         /// An optional explanation of the error.
         detail: String,
     },
 }
 /// Implement a helper to provide a text description of all possible types of errors.
-impl GooseError {
+impl SwanlingError {
     fn describe(&self) -> &str {
         match *self {
-            GooseError::Io(_) => "io::Error",
-            GooseError::Reqwest(_) => "reqwest::Error",
-            GooseError::TokioJoin(_) => "tokio::task::JoinError",
-            GooseError::FeatureNotEnabled { .. } => "required compile-time feature not enabled",
-            GooseError::InvalidHost { .. } => "failed to parse hostname",
-            GooseError::InvalidOption { .. } => "invalid option or value specified",
-            GooseError::InvalidWaitTime { .. } => "invalid wait_time specified",
-            GooseError::InvalidWeight { .. } => "invalid weight specified",
-            GooseError::NoTaskSets { .. } => "no task sets defined",
+            SwanlingError::Io(_) => "io::Error",
+            SwanlingError::Reqwest(_) => "reqwest::Error",
+            SwanlingError::TokioJoin(_) => "tokio::task::JoinError",
+            SwanlingError::FeatureNotEnabled { .. } => "required compile-time feature not enabled",
+            SwanlingError::InvalidHost { .. } => "failed to parse hostname",
+            SwanlingError::InvalidOption { .. } => "invalid option or value specified",
+            SwanlingError::InvalidWaitTime { .. } => "invalid wait_time specified",
+            SwanlingError::InvalidWeight { .. } => "invalid weight specified",
+            SwanlingError::NoTaskSets { .. } => "no task sets defined",
         }
     }
 }
 
 /// Implement format trait to allow displaying errors.
-impl fmt::Display for GooseError {
+impl fmt::Display for SwanlingError {
     // Implement display of error with `{}` marker.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            GooseError::Io(ref source) => write!(f, "GooseError: {} ({})", self.describe(), source),
-            GooseError::Reqwest(ref source) => {
-                write!(f, "GooseError: {} ({})", self.describe(), source)
+            SwanlingError::Io(ref source) => write!(f, "SwanlingError: {} ({})", self.describe(), source),
+            SwanlingError::Reqwest(ref source) => {
+                write!(f, "SwanlingError: {} ({})", self.describe(), source)
             }
-            GooseError::TokioJoin(ref source) => {
-                write!(f, "GooseError: {} ({})", self.describe(), source)
+            SwanlingError::TokioJoin(ref source) => {
+                write!(f, "SwanlingError: {} ({})", self.describe(), source)
             }
-            GooseError::InvalidHost {
+            SwanlingError::InvalidHost {
                 ref parse_error, ..
-            } => write!(f, "GooseError: {} ({})", self.describe(), parse_error),
-            _ => write!(f, "GooseError: {}", self.describe()),
+            } => write!(f, "SwanlingError: {} ({})", self.describe(), parse_error),
+            _ => write!(f, "SwanlingError: {}", self.describe()),
         }
     }
 }
 
 // Define the lower level source of this error, if any.
-impl std::error::Error for GooseError {
+impl std::error::Error for SwanlingError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
-            GooseError::Io(ref source) => Some(source),
-            GooseError::Reqwest(ref source) => Some(source),
-            GooseError::TokioJoin(ref source) => Some(source),
-            GooseError::InvalidHost {
+            SwanlingError::Io(ref source) => Some(source),
+            SwanlingError::Reqwest(ref source) => Some(source),
+            SwanlingError::TokioJoin(ref source) => Some(source),
+            SwanlingError::InvalidHost {
                 ref parse_error, ..
             } => Some(parse_error),
             _ => None,
@@ -605,28 +605,28 @@ impl std::error::Error for GooseError {
 }
 
 /// Auto-convert Reqwest errors.
-impl From<reqwest::Error> for GooseError {
-    fn from(err: reqwest::Error) -> GooseError {
-        GooseError::Reqwest(err)
+impl From<reqwest::Error> for SwanlingError {
+    fn from(err: reqwest::Error) -> SwanlingError {
+        SwanlingError::Reqwest(err)
     }
 }
 
 /// Auto-convert IO errors.
-impl From<io::Error> for GooseError {
-    fn from(err: io::Error) -> GooseError {
-        GooseError::Io(err)
+impl From<io::Error> for SwanlingError {
+    fn from(err: io::Error) -> SwanlingError {
+        SwanlingError::Io(err)
     }
 }
 
 /// Auto-convert TokioJoin errors.
-impl From<tokio::task::JoinError> for GooseError {
-    fn from(err: tokio::task::JoinError) -> GooseError {
-        GooseError::TokioJoin(err)
+impl From<tokio::task::JoinError> for SwanlingError {
+    fn from(err: tokio::task::JoinError) -> SwanlingError {
+        SwanlingError::TokioJoin(err)
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-/// A [`GooseAttack`](./struct.GooseAttack.html) load test operates in one (and only one)
+/// A [`SwanlingAttack`](./struct.SwanlingAttack.html) load test operates in one (and only one)
 /// of the following modes.
 pub enum AttackMode {
     /// During early startup before one of the following modes gets assigned.
@@ -640,31 +640,31 @@ pub enum AttackMode {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-/// A [`GooseAttack`](./struct.GooseAttack.html) load test moves through each of the following
+/// A [`SwanlingAttack`](./struct.SwanlingAttack.html) load test moves through each of the following
 /// phases during a complete load test.
 pub enum AttackPhase {
     /// No load test is running, configuration can be changed by a Controller.
     Idle,
-    /// [`GooseUser`](./goose/struct.GooseUser.html)s are launching and beginning to generate
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s are launching and beginning to generate
     /// load.
     Starting,
-    /// All [`GooseUser`](./goose/struct.GooseUser.html)s have launched and are generating load.
+    /// All [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s have launched and are generating load.
     Running,
-    /// [`GooseUser`](./goose/struct.GooseUser.html)s are stopping.
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s are stopping.
     Stopping,
     /// Exiting the load test.
     Shutdown,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-/// Used to define the order [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s and
-/// [`GooseTask`](./goose/struct.GooseTask.html)s are allocated.
+/// Used to define the order [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s and
+/// [`SwanlingTask`](./swanling/struct.SwanlingTask.html)s are allocated.
 ///
 /// In order to configure the scheduler, and to see examples of the different scheduler
 /// variants, review the
-/// [`GooseAttack::set_scheduler`](./struct.GooseAttack.html#method.set_scheduler)
+/// [`SwanlingAttack::set_scheduler`](./struct.SwanlingAttack.html#method.set_scheduler)
 /// documentation.
-pub enum GooseScheduler {
+pub enum SwanlingScheduler {
     /// Allocate one of each available type at a time (default).
     RoundRobin,
     /// Allocate in the order and weighting defined.
@@ -673,9 +673,9 @@ pub enum GooseScheduler {
     Random,
 }
 
-/// Optional default values for Goose run-time options.
+/// Optional default values for Swanling run-time options.
 #[derive(Clone, Debug, Default)]
-pub struct GooseDefaults {
+pub struct SwanlingDefaults {
     /// An optional default host to run this load test against.
     host: Option<String>,
     /// An optional default number of users to simulate.
@@ -686,8 +686,8 @@ pub struct GooseDefaults {
     run_time: Option<usize>,
     /// An optional default log level.
     log_level: Option<u8>,
-    /// An optional default for the goose log file name.
-    goose_log: Option<String>,
+    /// An optional default for the swanling log file name.
+    swanling_log: Option<String>,
     /// An optional default value for verbosity level.
     verbose: Option<u8>,
     /// An optional default for printing running metrics.
@@ -705,19 +705,19 @@ pub struct GooseDefaults {
     /// An optional default for the requests log file name.
     request_log: Option<String>,
     /// An optional default for the requests log file format.
-    request_format: Option<GooseLogFormat>,
+    request_format: Option<SwanlingLogFormat>,
     /// An optional default for the tasks log file name.
     task_log: Option<String>,
     /// An optional default for the tasks log file format.
-    task_format: Option<GooseLogFormat>,
+    task_format: Option<SwanlingLogFormat>,
     /// An optional default for the error log file name.
     error_log: Option<String>,
     /// An optional default for the error log format.
-    error_format: Option<GooseLogFormat>,
+    error_format: Option<SwanlingLogFormat>,
     /// An optional default for the debug log file name.
     debug_log: Option<String>,
     /// An optional default for the debug log format.
-    debug_format: Option<GooseLogFormat>,
+    debug_format: Option<SwanlingLogFormat>,
     /// An optional default for not logging response body in debug log.
     no_debug_body: Option<bool>,
     /// An optional default for not enabling telnet Controller thread.
@@ -727,7 +727,7 @@ pub struct GooseDefaults {
     /// An optional default for not auto-starting the load test.
     no_autostart: Option<bool>,
     /// An optional default for coordinated omission mitigation.
-    co_mitigation: Option<GooseCoordinatedOmissionMitigation>,
+    co_mitigation: Option<SwanlingCoordinatedOmissionMitigation>,
     /// An optional default to track additional status code metrics.
     status_codes: Option<bool>,
     /// An optional default maximum requests per second.
@@ -760,9 +760,9 @@ pub struct GooseDefaults {
     manager_port: Option<u16>,
 }
 
-/// Allows the optional configuration of Goose's defaults.
+/// Allows the optional configuration of Swanling's defaults.
 #[derive(Debug)]
-pub enum GooseDefault {
+pub enum SwanlingDefault {
     /// An optional default host to run this load test against.
     Host,
     /// An optional default number of users to simulate.
@@ -774,7 +774,7 @@ pub enum GooseDefault {
     /// An optional default log level.
     LogLevel,
     /// An optional default for the log file name.
-    GooseLog,
+    SwanlingLog,
     /// An optional default value for verbosity level.
     Verbose,
     /// An optional default for printing running metrics.
@@ -849,38 +849,38 @@ pub enum GooseDefault {
 
 #[derive(Debug)]
 /// Internal global run state for load test.
-struct GooseAttackRunState {
-    /// A timestamp tracking when the previous [`GooseUser`](./goose/struct.GooseUser.html)
+struct SwanlingAttackRunState {
+    /// A timestamp tracking when the previous [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
     /// was launched.
     spawn_user_timer: std::time::Instant,
-    /// How many milliseconds until the next [`GooseUser`](./goose/struct.GooseUser.html)
+    /// How many milliseconds until the next [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
     /// should be spawned.
     spawn_user_in_ms: usize,
-    /// A counter tracking which [`GooseUser`](./goose/struct.GooseUser.html) is being
+    /// A counter tracking which [`SwanlingUser`](./swanling/struct.SwanlingUser.html) is being
     /// spawned.
     spawn_user_counter: usize,
     /// This variable accounts for time spent doing things which is then subtracted from
     /// the time sleeping to avoid an unintentional drift in events that are supposed to
     /// happen regularly.
     drift_timer: tokio::time::Instant,
-    /// Unbounded sender used by all [`GooseUser`](./goose/struct.GooseUser.html)
+    /// Unbounded sender used by all [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
     /// threads to send metrics to parent.
-    all_threads_metrics_tx: flume::Sender<GooseMetric>,
-    /// Unbounded receiver used by Goose parent to receive metrics from
-    /// [`GooseUser`](./goose/struct.GooseUser.html)s.
-    metrics_rx: flume::Receiver<GooseMetric>,
+    all_threads_metrics_tx: flume::Sender<SwanlingMetric>,
+    /// Unbounded receiver used by Swanling parent to receive metrics from
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s.
+    metrics_rx: flume::Receiver<SwanlingMetric>,
     /// Optional unbounded receiver for logger thread, if enabled.
-    logger_handle: GooseLoggerJoinHandle,
-    /// Optional unbounded sender from all [`GooseUser`](./goose/struct.GooseUser.html)s
+    logger_handle: SwanlingLoggerJoinHandle,
+    /// Optional unbounded sender from all [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s
     /// to logger thread, if enabled.
-    all_threads_logger_tx: GooseLoggerTx,
-    /// Optional receiver for all [`GooseUser`](./goose/struct.GooseUser.html)s from
+    all_threads_logger_tx: SwanlingLoggerTx,
+    /// Optional receiver for all [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s from
     /// throttle thread, if enabled.
     throttle_threads_tx: Option<flume::Sender<bool>>,
     /// Optional sender for throttle thread, if enabled.
     parent_to_throttle_tx: Option<flume::Sender<bool>>,
     /// Optional channel allowing controller thread to make requests, if not disabled.
-    controller_channel_rx: Option<flume::Receiver<GooseControllerRequest>>,
+    controller_channel_rx: Option<flume::Receiver<SwanlingControllerRequest>>,
     /// Optional unbuffered writer for html-formatted report file, if enabled.
     report_file: Option<File>,
     /// A flag tracking whether or not the header has been written when the metrics
@@ -888,22 +888,22 @@ struct GooseAttackRunState {
     metrics_header_displayed: bool,
     /// When entering the idle phase use this flag to only display a message one time.
     idle_status_displayed: bool,
-    /// Collection of all [`GooseUser`](./goose/struct.GooseUser.html) threads so they
+    /// Collection of all [`SwanlingUser`](./swanling/struct.SwanlingUser.html) threads so they
     /// can be stopped later.
     users: Vec<tokio::task::JoinHandle<()>>,
     /// All unbounded senders to allow communication with
-    /// [`GooseUser`](./goose/struct.GooseUser.html) threads.
-    user_channels: Vec<flume::Sender<GooseUserCommand>>,
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html) threads.
+    user_channels: Vec<flume::Sender<SwanlingUserCommand>>,
     /// Timer tracking when to display running metrics, if enabled.
     running_metrics_timer: std::time::Instant,
     /// Boolean flag indicating if running metrics should be displayed.
     display_running_metrics: bool,
-    /// Boolean flag indicating if all [`GooseUser`](./goose/struct.GooseUser.html)s
+    /// Boolean flag indicating if all [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s
     /// have been spawned.
     all_users_spawned: bool,
-    /// Boolean flag indicating of Goose should shutdown after stopping a running load test.
+    /// Boolean flag indicating of Swanling should shutdown after stopping a running load test.
     shutdown_after_stop: bool,
-    /// Thread-safe boolean flag indicating if the [`GooseAttack`](./struct.GooseAttack.html)
+    /// Thread-safe boolean flag indicating if the [`SwanlingAttack`](./struct.SwanlingAttack.html)
     /// has been canceled.
     canceled: Arc<AtomicBool>,
     /// Optional socket used to coordinate a distributed Regatta.
@@ -912,93 +912,93 @@ struct GooseAttackRunState {
 
 /// Global internal state for the load test.
 #[derive(Clone)]
-pub struct GooseAttack {
-    /// An optional task that is run one time before starting GooseUsers and running GooseTaskSets.
-    test_start_task: Option<GooseTask>,
-    /// An optional task that is run one time after all GooseUsers have finished.
-    test_stop_task: Option<GooseTask>,
-    /// A vector containing one copy of each GooseTaskSet defined by this load test.
-    task_sets: Vec<GooseTaskSet>,
-    /// A weighted vector containing a GooseUser object for each GooseUser that will run during this load test.
-    weighted_users: Vec<GooseUser>,
+pub struct SwanlingAttack {
+    /// An optional task that is run one time before starting SwanlingUsers and running SwanlingTaskSets.
+    test_start_task: Option<SwanlingTask>,
+    /// An optional task that is run one time after all SwanlingUsers have finished.
+    test_stop_task: Option<SwanlingTask>,
+    /// A vector containing one copy of each SwanlingTaskSet defined by this load test.
+    task_sets: Vec<SwanlingTaskSet>,
+    /// A weighted vector containing a SwanlingUser object for each SwanlingUser that will run during this load test.
+    weighted_users: Vec<SwanlingUser>,
     /// A weighted vector containing a lightweight GaggleUser object that is sent to all Workers if running in Regatta mode.
     weighted_gaggle_users: Vec<GaggleUser>,
-    /// Optional default values for Goose run-time options.
-    defaults: GooseDefaults,
+    /// Optional default values for Swanling run-time options.
+    defaults: SwanlingDefaults,
     /// Configuration object holding options set when launching the load test.
-    configuration: GooseConfiguration,
+    configuration: SwanlingConfiguration,
     /// How long (in seconds) the load test should run.
     run_time: usize,
     /// The load test operates in only one of the following modes: StandAlone, Manager, or Worker.
     attack_mode: AttackMode,
     /// Which phase the load test is currently operating in.
     attack_phase: AttackPhase,
-    /// Defines the order [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s and
-    /// [`GooseTask`](./goose/struct.GooseTask.html)s are allocated.
-    scheduler: GooseScheduler,
+    /// Defines the order [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s and
+    /// [`SwanlingTask`](./swanling/struct.SwanlingTask.html)s are allocated.
+    scheduler: SwanlingScheduler,
     /// When the load test started.
     started: Option<time::Instant>,
     /// All metrics merged together.
-    metrics: GooseMetrics,
+    metrics: SwanlingMetrics,
 }
-/// Goose's internal global state.
-impl GooseAttack {
-    /// Load configuration and initialize a [`GooseAttack`](./struct.GooseAttack.html).
+/// Swanling's internal global state.
+impl SwanlingAttack {
+    /// Load configuration and initialize a [`SwanlingAttack`](./struct.SwanlingAttack.html).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// let mut goose_attack = GooseAttack::initialize();
+    /// let mut swanling_attack = SwanlingAttack::initialize();
     /// ```
-    pub fn initialize() -> Result<GooseAttack, GooseError> {
-        Ok(GooseAttack {
+    pub fn initialize() -> Result<SwanlingAttack, SwanlingError> {
+        Ok(SwanlingAttack {
             test_start_task: None,
             test_stop_task: None,
             task_sets: Vec::new(),
             weighted_users: Vec::new(),
             weighted_gaggle_users: Vec::new(),
-            defaults: GooseDefaults::default(),
-            configuration: GooseConfiguration::parse_args_default_or_exit(),
+            defaults: SwanlingDefaults::default(),
+            configuration: SwanlingConfiguration::parse_args_default_or_exit(),
             run_time: 0,
             attack_mode: AttackMode::Undefined,
             attack_phase: AttackPhase::Idle,
-            scheduler: GooseScheduler::RoundRobin,
+            scheduler: SwanlingScheduler::RoundRobin,
             started: None,
-            metrics: GooseMetrics::default(),
+            metrics: SwanlingMetrics::default(),
         })
     }
 
-    /// Initialize a [`GooseAttack`](./struct.GooseAttack.html) with an already loaded
+    /// Initialize a [`SwanlingAttack`](./struct.SwanlingAttack.html) with an already loaded
     /// configuration.
     ///
     /// This is generally used by Worker instances and tests.
     ///
     /// # Example
     /// ```rust
-    /// use goose::{GooseAttack, GooseConfiguration};
+    /// use swanling::{SwanlingAttack, SwanlingConfiguration};
     /// use gumdrop::Options;
     ///
-    /// let configuration = GooseConfiguration::parse_args_default_or_exit();
-    /// let mut goose_attack = GooseAttack::initialize_with_config(configuration);
+    /// let configuration = SwanlingConfiguration::parse_args_default_or_exit();
+    /// let mut swanling_attack = SwanlingAttack::initialize_with_config(configuration);
     /// ```
     pub fn initialize_with_config(
-        configuration: GooseConfiguration,
-    ) -> Result<GooseAttack, GooseError> {
-        Ok(GooseAttack {
+        configuration: SwanlingConfiguration,
+    ) -> Result<SwanlingAttack, SwanlingError> {
+        Ok(SwanlingAttack {
             test_start_task: None,
             test_stop_task: None,
             task_sets: Vec::new(),
             weighted_users: Vec::new(),
             weighted_gaggle_users: Vec::new(),
-            defaults: GooseDefaults::default(),
+            defaults: SwanlingDefaults::default(),
             configuration,
             run_time: 0,
             attack_mode: AttackMode::Undefined,
             attack_phase: AttackPhase::Idle,
-            scheduler: GooseScheduler::RoundRobin,
+            scheduler: SwanlingScheduler::RoundRobin,
             started: None,
-            metrics: GooseMetrics::default(),
+            metrics: SwanlingMetrics::default(),
         })
     }
 
@@ -1006,7 +1006,7 @@ impl GooseAttack {
     /// a configurable log file.
     ///
     /// This method is invoked by
-    /// [`GooseAttack.execute()`](./struct.GooseAttack.html#method.execute).
+    /// [`SwanlingAttack.execute()`](./struct.SwanlingAttack.html#method.execute).
     pub(crate) fn initialize_logger(&self) {
         // Allow optionally controlling debug output level
         let debug_level;
@@ -1032,21 +1032,21 @@ impl GooseAttack {
             _ => LevelFilter::Trace,
         };
 
-        let goose_log: Option<PathBuf>;
+        let swanling_log: Option<PathBuf>;
         // Use --log-file if set.
-        if !self.configuration.goose_log.is_empty() {
-            goose_log = Some(PathBuf::from(&self.configuration.goose_log));
+        if !self.configuration.swanling_log.is_empty() {
+            swanling_log = Some(PathBuf::from(&self.configuration.swanling_log));
         }
-        // Otherwise use goose_attack.defaults.goose_log if set.
-        else if let Some(default_goose_log) = &self.defaults.goose_log {
-            goose_log = Some(PathBuf::from(default_goose_log));
+        // Otherwise use swanling_attack.defaults.swanling_log if set.
+        else if let Some(default_swanling_log) = &self.defaults.swanling_log {
+            swanling_log = Some(PathBuf::from(default_swanling_log));
         }
         // Otherwise disable the log.
         else {
-            goose_log = None;
+            swanling_log = None;
         }
 
-        if let Some(log_to_file) = goose_log {
+        if let Some(log_to_file) = swanling_log {
             match CombinedLogger::init(vec![
                 SimpleLogger::new(debug_level, Config::default()),
                 WriteLogger::new(
@@ -1074,12 +1074,12 @@ impl GooseAttack {
         info!("Logfile verbosity level: {}", log_level);
     }
 
-    /// Define the order [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s are
-    /// allocated to new [`GooseUser`](./goose/struct.GooseUser.html)s as they are
+    /// Define the order [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s are
+    /// allocated to new [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s as they are
     /// launched.
     ///
-    /// By default, [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s are allocated
-    /// to new [`GooseUser`](./goose/struct.GooseUser.html)s in a round robin style.
+    /// By default, [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s are allocated
+    /// to new [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s in a round robin style.
     /// For example, if TaskSet A has a weight of 5, TaskSet B has a weight of 3, and
     /// you launch 20 users, they will be launched in the following order:
     ///  A, B, A, B, A, B, A, A, A, B, A, B, A, B, A, A, A, B, A, B
@@ -1094,20 +1094,20 @@ impl GooseAttack {
     /// In the serial case, the following pattern is repeated:
     ///  A, A, A, A, A, B, B, B
     ///
-    /// In the following example, [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s
-    /// are allocated to launching [`GooseUser`](./goose/struct.GooseUser.html)s in a
+    /// In the following example, [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s
+    /// are allocated to launching [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s in a
     /// random order. This means running the test multiple times can generate
     /// different amounts of load, as depending on your weighting rules you may
-    /// have a different number of [`GooseUser`](./goose/struct.GooseUser.html)s
-    /// running each [`GooseTaskSet`](./goose/struct.GooseTaskSet.html) each time.
+    /// have a different number of [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s
+    /// running each [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html) each time.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     GooseAttack::initialize()?
-    ///         .set_scheduler(GooseScheduler::Random)
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     SwanlingAttack::initialize()?
+    ///         .set_scheduler(SwanlingScheduler::Random)
     ///         .register_taskset(taskset!("A Tasks")
     ///             .set_weight(5)?
     ///             .register_task(task!(a_task_1))
@@ -1120,32 +1120,32 @@ impl GooseAttack {
     ///     Ok(())
     /// }
     ///
-    /// async fn a_task_1(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/foo").await?;
+    /// async fn a_task_1(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/foo").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn b_task_1(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/bar").await?;
+    /// async fn b_task_1(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/bar").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn set_scheduler(mut self, scheduler: GooseScheduler) -> Self {
+    pub fn set_scheduler(mut self, scheduler: SwanlingScheduler) -> Self {
         self.scheduler = scheduler;
         self
     }
 
-    /// A load test must contain one or more [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s
-    /// be registered into Goose's global state with this method for it to run.
+    /// A load test must contain one or more [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s
+    /// be registered into Swanling's global state with this method for it to run.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     SwanlingAttack::initialize()?
     ///         .register_taskset(taskset!("ExampleTasks")
     ///             .register_task(task!(example_task))
     ///         )
@@ -1156,19 +1156,19 @@ impl GooseAttack {
     ///     Ok(())
     /// }
     ///
-    /// async fn example_task(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/foo").await?;
+    /// async fn example_task(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/foo").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn other_task(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/bar").await?;
+    /// async fn other_task(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/bar").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn register_taskset(mut self, mut taskset: GooseTaskSet) -> Self {
+    pub fn register_taskset(mut self, mut taskset: SwanlingTaskSet) -> Self {
         taskset.task_sets_index = self.task_sets.len();
         self.task_sets.push(taskset);
         self
@@ -1178,11 +1178,11 @@ impl GooseAttack {
     /// start running. This is would generally be used to set up anything required
     /// for the load test.
     ///
-    /// The [`GooseUser`](./goose/struct.GooseUser.html) used to run the `test_start`
+    /// The [`SwanlingUser`](./swanling/struct.SwanlingUser.html) used to run the `test_start`
     /// tasks is not preserved and does not otherwise affect the subsequent
-    /// [`GooseUser`](./goose/struct.GooseUser.html)s that run the rest of the load
-    /// test. For example, if the [`GooseUser`](./goose/struct.GooseUser.html)
-    /// logs in during `test_start`, subsequent [`GooseUser`](./goose/struct.GooseUser.html)
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s that run the rest of the load
+    /// test. For example, if the [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
+    /// logs in during `test_start`, subsequent [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
     /// do not retain this session and are therefor not already logged in.
     ///
     /// When running in a distributed Regatta, this task is only run one time by the
@@ -1190,22 +1190,22 @@ impl GooseAttack {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     SwanlingAttack::initialize()?
     ///         .test_start(task!(setup));
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn setup(user: &GooseUser) -> GooseTaskResult {
+    /// async fn setup(user: &SwanlingUser) -> SwanlingTaskResult {
     ///     // do stuff to set up load test ...
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn test_start(mut self, task: GooseTask) -> Self {
+    pub fn test_start(mut self, task: SwanlingTask) -> Self {
         self.test_start_task = Some(task);
         self
     }
@@ -1219,29 +1219,29 @@ impl GooseAttack {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     SwanlingAttack::initialize()?
     ///         .test_stop(task!(teardown));
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn teardown(user: &GooseUser) -> GooseTaskResult {
+    /// async fn teardown(user: &SwanlingUser) -> SwanlingTaskResult {
     ///     // do stuff to tear down the load test ...
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn test_stop(mut self, task: GooseTask) -> Self {
+    pub fn test_stop(mut self, task: SwanlingTask) -> Self {
         self.test_stop_task = Some(task);
         self
     }
 
-    /// Use configured GooseScheduler to build out a properly weighted list of
-    /// [`GooseTaskSet`](./goose/struct.GooseTaskSet.html)s to be assigned to
-    /// [`GooseUser`](./goose/struct.GooseUser.html)s
+    /// Use configured SwanlingScheduler to build out a properly weighted list of
+    /// [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html)s to be assigned to
+    /// [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s
     fn allocate_task_sets(&mut self) -> Vec<usize> {
         trace!("allocate_task_sets");
 
@@ -1286,7 +1286,7 @@ impl GooseAttack {
         // Now build the weighted list with the appropriate scheduler.
         let mut weighted_task_sets = Vec::new();
         match self.scheduler {
-            GooseScheduler::RoundRobin => {
+            SwanlingScheduler::RoundRobin => {
                 // Allocate task sets round robin.
                 let task_sets_len = available_task_sets.len();
                 loop {
@@ -1305,7 +1305,7 @@ impl GooseAttack {
                     }
                 }
             }
-            GooseScheduler::Serial => {
+            SwanlingScheduler::Serial => {
                 // Allocate task sets serially in the weighted order defined.
                 for (task_set_index, task_sets) in available_task_sets.iter().enumerate() {
                     debug!(
@@ -1316,7 +1316,7 @@ impl GooseAttack {
                     weighted_task_sets.append(&mut task_sets.clone());
                 }
             }
-            GooseScheduler::Random => {
+            SwanlingScheduler::Random => {
                 // Allocate task sets randomly.
                 loop {
                     let task_set = available_task_sets.choose_mut(&mut rand::thread_rng());
@@ -1326,7 +1326,7 @@ impl GooseAttack {
                                 weighted_task_sets.push(s);
                             }
                         }
-                        None => warn!("randomly allocating a GooseTaskSet failed, trying again"),
+                        None => warn!("randomly allocating a SwanlingTaskSet failed, trying again"),
                     }
                     if weighted_task_sets.len() >= total_task_sets {
                         break;
@@ -1337,8 +1337,8 @@ impl GooseAttack {
         weighted_task_sets
     }
 
-    /// Allocate a vector of weighted [`GooseUser`](./goose/struct.GooseUser.html)s.
-    fn weight_task_set_users(&mut self) -> Result<Vec<GooseUser>, GooseError> {
+    /// Allocate a vector of weighted [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s.
+    fn weight_task_set_users(&mut self) -> Result<Vec<SwanlingUser>, SwanlingError> {
         trace!("weight_task_set_users");
 
         let weighted_task_sets = self.allocate_task_sets();
@@ -1354,12 +1354,12 @@ impl GooseAttack {
                     weighted_users.len(),
                     task_sets_index
                 );
-                let base_url = goose::get_base_url(
+                let base_url = swanling::get_base_url(
                     self.get_configuration_host(),
                     self.task_sets[*task_sets_index].host.clone(),
                     self.defaults.host.clone(),
                 )?;
-                weighted_users.push(GooseUser::new(
+                weighted_users.push(SwanlingUser::new(
                     self.task_sets[*task_sets_index].task_sets_index,
                     base_url,
                     self.task_sets[*task_sets_index].min_wait,
@@ -1377,8 +1377,8 @@ impl GooseAttack {
         }
     }
 
-    /// Allocate a vector of weighted [`GaggleUser`](./goose/struct.GaggleUser.html).
-    fn prepare_worker_task_set_users(&mut self) -> Result<Vec<GaggleUser>, GooseError> {
+    /// Allocate a vector of weighted [`GaggleUser`](./swanling/struct.GaggleUser.html).
+    fn prepare_worker_task_set_users(&mut self) -> Result<Vec<GaggleUser>, SwanlingError> {
         trace!("prepare_worker_task_set_users");
 
         let weighted_task_sets = self.allocate_task_sets();
@@ -1389,7 +1389,7 @@ impl GooseAttack {
         let mut user_count = 0;
         loop {
             for task_sets_index in &weighted_task_sets {
-                let base_url = goose::get_base_url(
+                let base_url = swanling::get_base_url(
                     self.get_configuration_host(),
                     self.task_sets[*task_sets_index].host.clone(),
                     self.defaults.host.clone(),
@@ -1412,9 +1412,9 @@ impl GooseAttack {
         }
     }
 
-    // Configure which mode this [`GooseAttack`](./struct.GooseAttack.html)
+    // Configure which mode this [`SwanlingAttack`](./struct.SwanlingAttack.html)
     // will run in.
-    fn set_attack_mode(&mut self) -> Result<(), GooseError> {
+    fn set_attack_mode(&mut self) -> Result<(), SwanlingError> {
         // Determine if Manager is enabled by default.
         let manager_is_default = if let Some(value) = self.defaults.manager {
             value
@@ -1431,10 +1431,10 @@ impl GooseAttack {
 
         // Don't allow Manager and Worker to both be the default.
         if manager_is_default && worker_is_default {
-            return Err(GooseError::InvalidOption {
-                option: "GooseDefault::Worker".to_string(),
+            return Err(SwanlingError::InvalidOption {
+                option: "SwanlingDefault::Worker".to_string(),
                 value: "true".to_string(),
-                detail: "The GooseDefault::Worker default can not be set together with the GooseDefault::Manager default"
+                detail: "The SwanlingDefault::Worker default can not be set together with the SwanlingDefault::Manager default"
                     .to_string(),
             });
         }
@@ -1443,7 +1443,7 @@ impl GooseAttack {
         if self.configuration.manager || (!self.configuration.worker && manager_is_default) {
             self.attack_mode = AttackMode::Manager;
             if self.configuration.worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--worker".to_string(),
                     value: "true".to_string(),
                     detail: "The --worker flag can not be set together with the --manager flag"
@@ -1452,7 +1452,7 @@ impl GooseAttack {
             }
 
             if !self.configuration.debug_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--debug-file".to_string(),
                     value: self.configuration.debug_log.clone(),
                     detail:
@@ -1466,7 +1466,7 @@ impl GooseAttack {
         if self.configuration.worker || (!self.configuration.manager && worker_is_default) {
             self.attack_mode = AttackMode::Worker;
             if self.configuration.manager {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--manager".to_string(),
                     value: "true".to_string(),
                     detail: "The --manager flag can not be set together with the --worker flag."
@@ -1475,7 +1475,7 @@ impl GooseAttack {
             }
 
             if !self.configuration.host.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--host".to_string(),
                     value: self.configuration.host.clone(),
                     detail: "The --host option can not be set together with the --worker flag."
@@ -1489,7 +1489,7 @@ impl GooseAttack {
             self.attack_mode = AttackMode::StandAlone;
 
             if self.configuration.no_hash_check {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--no-hash-check".to_string(),
                     value: self.configuration.no_hash_check.to_string(),
                     detail: "The --no-hash-check flag can not be set without also setting the --manager flag.".to_string(),
@@ -1503,7 +1503,7 @@ impl GooseAttack {
     // Change from one attack_phase to another.
     fn set_attack_phase(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
         phase: AttackPhase,
     ) {
         // There's nothing to do if already in the specified phase.
@@ -1512,17 +1512,17 @@ impl GooseAttack {
         }
 
         // The drift timer starts at 0 any time the phase is changed.
-        goose_attack_run_state.drift_timer = tokio::time::Instant::now();
+        swanling_attack_run_state.drift_timer = tokio::time::Instant::now();
 
         // Optional debug output.
-        info!("entering GooseAttack phase: {:?}", &phase);
+        info!("entering SwanlingAttack phase: {:?}", &phase);
 
         // Update the current phase.
         self.attack_phase = phase;
     }
 
     // Determine how many Workers to expect.
-    fn set_expect_workers(&mut self) -> Result<(), GooseError> {
+    fn set_expect_workers(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.expect_workers";
 
@@ -1532,7 +1532,7 @@ impl GooseAttack {
         // Otherwise check if a custom default is set.
         } else if let Some(default_expect_workers) = self.defaults.expect_workers {
             if self.attack_mode == AttackMode::Manager {
-                key = "set_default(GooseDefault::ExpectWorkers)";
+                key = "set_default(SwanlingDefault::ExpectWorkers)";
 
                 self.configuration.expect_workers = Some(default_expect_workers);
             }
@@ -1541,7 +1541,7 @@ impl GooseAttack {
         if let Some(expect_workers) = self.configuration.expect_workers {
             // Disallow --expect-workers without --manager.
             if self.attack_mode != AttackMode::Manager {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: expect_workers.to_string(),
                     detail: format!(
@@ -1552,7 +1552,7 @@ impl GooseAttack {
             } else {
                 // Must expect at least 1 Worker when running as Manager.
                 if expect_workers < 1 {
-                    return Err(GooseError::InvalidOption {
+                    return Err(SwanlingError::InvalidOption {
                         option: key.to_string(),
                         value: expect_workers.to_string(),
                         detail: format!("{} must be set to at least 1.", key),
@@ -1562,7 +1562,7 @@ impl GooseAttack {
                 // Must not expect more Workers than Users. Users are required at this point so
                 // using unwrap() is safe.
                 if expect_workers as usize > self.configuration.users.unwrap() {
-                    return Err(GooseError::InvalidOption {
+                    return Err(SwanlingError::InvalidOption {
                         option: key.to_string(),
                         value: expect_workers.to_string(),
                         detail: format!(
@@ -1578,7 +1578,7 @@ impl GooseAttack {
     }
 
     // Configure the host and port the Manager listens on.
-    fn set_gaggle_host_and_port(&mut self) -> Result<(), GooseError> {
+    fn set_gaggle_host_and_port(&mut self) -> Result<(), SwanlingError> {
         // Configure manager_bind_host and manager_bind_port.
         if self.attack_mode == AttackMode::Manager {
             // Use default if run-time option not set.
@@ -1602,7 +1602,7 @@ impl GooseAttack {
             }
         } else {
             if !self.configuration.manager_bind_host.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--manager-bind-host".to_string(),
                     value: self.configuration.manager_bind_host.clone(),
                     detail: "The --manager-bind-host option can not be set together with the --worker flag.".to_string(),
@@ -1610,7 +1610,7 @@ impl GooseAttack {
             }
 
             if self.configuration.manager_bind_port != 0 {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--manager-bind-port".to_string(),
                     value: self.configuration.manager_bind_port.to_string(),
                     detail: "The --manager-bind-port option can not be set together with the --worker flag.".to_string(),
@@ -1640,7 +1640,7 @@ impl GooseAttack {
             }
         } else {
             if !self.configuration.manager_host.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--manager-host".to_string(),
                     value: self.configuration.manager_host.clone(),
                     detail:
@@ -1650,7 +1650,7 @@ impl GooseAttack {
             }
 
             if self.configuration.manager_port != 0 {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--manager-port".to_string(),
                     value: self.configuration.manager_port.to_string(),
                     detail:
@@ -1663,8 +1663,8 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Configure how many [`GooseUser`](./goose/struct.GooseUser.html)s to hatch.
-    fn set_users(&mut self) -> Result<(), GooseError> {
+    // Configure how many [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s to hatch.
+    fn set_users(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.users";
         let mut value = 0;
@@ -1680,7 +1680,7 @@ impl GooseAttack {
                 self.configuration.users = None;
             // Otherwise use default.
             } else {
-                key = "set_default(GooseDefault::Users)";
+                key = "set_default(SwanlingDefault::Users)";
                 value = default_users;
 
                 self.configuration.users = Some(default_users);
@@ -1701,7 +1701,7 @@ impl GooseAttack {
         if let Some(users) = self.configuration.users {
             // Setting --users with --worker is not allowed.
             if self.attack_mode == AttackMode::Worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} can not be set together with the --worker flag.", key),
@@ -1710,7 +1710,7 @@ impl GooseAttack {
 
             // Setting users to 0 is not allowed.
             if users == 0 {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: "0".to_string(),
                     detail: "The --users option must be set to at least 1.".to_string(),
@@ -1725,7 +1725,7 @@ impl GooseAttack {
     }
 
     // Configure maximum run time if specified, otherwise run until canceled.
-    fn set_run_time(&mut self) -> Result<(), GooseError> {
+    fn set_run_time(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.run_time";
         let mut value = 0;
@@ -1740,7 +1740,7 @@ impl GooseAttack {
             if self.attack_mode == AttackMode::Worker {
                 0
             } else {
-                key = "set_default(GooseDefault::RunTime)";
+                key = "set_default(SwanlingDefault::RunTime)";
                 value = default_run_time;
                 default_run_time
             }
@@ -1752,7 +1752,7 @@ impl GooseAttack {
 
         if self.run_time > 0 {
             if self.attack_mode == AttackMode::Worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} can not be set together with the --worker flag.", key),
@@ -1766,8 +1766,8 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Configure how quickly to hatch [`GooseUser`](./goose/struct.GooseUser.html)s.
-    fn set_hatch_rate(&mut self) -> Result<(), GooseError> {
+    // Configure how quickly to hatch [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s.
+    fn set_hatch_rate(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.hatch_rate";
         let mut value = "".to_string();
@@ -1783,7 +1783,7 @@ impl GooseAttack {
                 self.configuration.hatch_rate = None;
             // Otherwise use default.
             } else {
-                key = "set_default(GooseDefault::HatchRate)";
+                key = "set_default(SwanlingDefault::HatchRate)";
                 value = default_hatch_rate.to_string();
                 self.configuration.hatch_rate = Some(default_hatch_rate.to_string());
             }
@@ -1791,7 +1791,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // This should not be able to fail, but setting up debug in case a later
             // change introduces the potential for failure.
-            key = "Goose default";
+            key = "Swanling default";
             value = "1".to_string();
             self.configuration.hatch_rate = Some(value.to_string());
         }
@@ -1800,7 +1800,7 @@ impl GooseAttack {
         if let Some(hatch_rate) = &self.configuration.hatch_rate {
             // Setting --hatch-rate with --worker is not allowed.
             if self.attack_mode == AttackMode::Worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value,
                     detail: format!("{} can not be set together with the --worker flag.", key),
@@ -1809,7 +1809,7 @@ impl GooseAttack {
 
             // Setting --hatch-rate of 0 is not allowed.
             if hatch_rate.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value,
                     detail: format!("{} must be set to at least 1.", key),
@@ -1824,10 +1824,10 @@ impl GooseAttack {
     }
 
     // Configure the coordinated omission mitigation strategy.
-    fn set_coordinated_omission(&mut self) -> Result<(), GooseError> {
+    fn set_coordinated_omission(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.coordinated_omission";
-        let mut value = Some(GooseCoordinatedOmissionMitigation::Disabled);
+        let mut value = Some(SwanlingCoordinatedOmissionMitigation::Disabled);
 
         if self.configuration.co_mitigation.is_some() {
             key = "--co-mitigation";
@@ -1839,7 +1839,7 @@ impl GooseAttack {
             if let Some(default_co_mitigation) = self.defaults.co_mitigation.as_ref() {
                 // In Gaggles, co_mitigation is only set on Manager.
                 if self.attack_mode != AttackMode::Worker {
-                    key = "set_default(GooseDefault::CoordinatedOmissionMitigation)";
+                    key = "set_default(SwanlingDefault::CoordinatedOmissionMitigation)";
                     value = Some(default_co_mitigation.clone());
 
                     self.configuration.co_mitigation = Some(default_co_mitigation.clone());
@@ -1847,7 +1847,7 @@ impl GooseAttack {
             }
         }
 
-        // Otherwise default to GooseCoordinaatedOmissionMitigation::Average.
+        // Otherwise default to SwanlingCoordinaatedOmissionMitigation::Average.
         if self.configuration.co_mitigation.is_none() && self.attack_mode != AttackMode::Worker {
             self.configuration.co_mitigation = value.clone();
         }
@@ -1855,7 +1855,7 @@ impl GooseAttack {
         if let Some(co_mitigation) = self.configuration.co_mitigation.as_ref() {
             // Setting --co-mitigation with --worker is not allowed.
             if self.attack_mode == AttackMode::Worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: format!("{} can not be set together with the --worker flag.", key),
@@ -1864,7 +1864,7 @@ impl GooseAttack {
 
             // Setting --co-mitigation with --no-metrics is not allowed.
             if self.configuration.no_metrics {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: format!(
@@ -1874,16 +1874,16 @@ impl GooseAttack {
                 });
             }
 
-            if co_mitigation != &GooseCoordinatedOmissionMitigation::Disabled
-                && self.scheduler == GooseScheduler::Random
+            if co_mitigation != &SwanlingCoordinatedOmissionMitigation::Disabled
+                && self.scheduler == SwanlingScheduler::Random
             {
                 // Coordinated Omission Mitigation is not possible together with the random scheduler,
                 // as it's impossible to calculate an accurate request cadence.
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "{} can not be set together with GooseScheduler::Random.",
+                        "{} can not be set together with SwanlingScheduler::Random.",
                         key
                     ),
                 });
@@ -1899,7 +1899,7 @@ impl GooseAttack {
     }
 
     // Configure maximum requests per second if throttle enabled.
-    fn set_throttle_requests(&mut self) -> Result<(), GooseError> {
+    fn set_throttle_requests(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.throttle_requests";
         let mut value = 0;
@@ -1914,7 +1914,7 @@ impl GooseAttack {
             if let Some(default_throttle_requests) = self.defaults.throttle_requests {
                 // In Gaggles, throttle_requests is only set on Worker.
                 if self.attack_mode != AttackMode::Manager {
-                    key = "set_default(GooseDefault::ThrottleRequests)";
+                    key = "set_default(SwanlingDefault::ThrottleRequests)";
                     value = default_throttle_requests;
 
                     self.configuration.throttle_requests = default_throttle_requests;
@@ -1925,7 +1925,7 @@ impl GooseAttack {
         if self.configuration.throttle_requests > 0 {
             // Setting --throttle-requests with --worker is not allowed.
             if self.attack_mode == AttackMode::Manager {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} can not be set together with the --manager flag.", key),
@@ -1934,13 +1934,13 @@ impl GooseAttack {
 
             // Be sure throttle_requests is in allowed range.
             if self.configuration.throttle_requests == 0 {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} must be set to at least 1 request per second.", key),
                 });
             } else if self.configuration.throttle_requests > 1_000_000 {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!(
@@ -1960,7 +1960,7 @@ impl GooseAttack {
     }
 
     // Determine if `no_reset_statics` is enabled.
-    fn set_no_reset_metrics(&mut self) -> Result<(), GooseError> {
+    fn set_no_reset_metrics(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_reset_metrics";
         let mut value = false;
@@ -1971,7 +1971,7 @@ impl GooseAttack {
         // If not otherwise set and not Worker, check if there's a default.
         } else if self.attack_mode != AttackMode::Worker {
             if let Some(default_no_reset_metrics) = self.defaults.no_reset_metrics {
-                key = "set_default(GooseDefault::NoResetMetrics)";
+                key = "set_default(SwanlingDefault::NoResetMetrics)";
                 value = default_no_reset_metrics;
 
                 // Optionally set default.
@@ -1981,7 +1981,7 @@ impl GooseAttack {
 
         // Setting --no-reset-metrics with --worker is not allowed.
         if self.configuration.no_reset_metrics && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -1992,7 +1992,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--status-codes` flag is enabled.
-    fn set_status_codes(&mut self) -> Result<(), GooseError> {
+    fn set_status_codes(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.status_codes";
         let mut value = false;
@@ -2003,7 +2003,7 @@ impl GooseAttack {
         // If not otherwise set and not Worker, check if there's a default.
         } else if self.attack_mode != AttackMode::Worker {
             if let Some(default_status_codes) = self.defaults.status_codes {
-                key = "set_default(GooseDefault::StatusCodes)";
+                key = "set_default(SwanlingDefault::StatusCodes)";
                 value = default_status_codes;
 
                 // Optionally set default.
@@ -2013,7 +2013,7 @@ impl GooseAttack {
 
         // Setting --status-codes with --worker is not allowed.
         if self.configuration.status_codes && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2024,7 +2024,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--running-metrics` flag is enabled.
-    fn set_running_metrics(&mut self) -> Result<(), GooseError> {
+    fn set_running_metrics(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.running_metrics";
         let mut value = 0;
@@ -2036,7 +2036,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_running_metrics) = self.defaults.running_metrics {
-                key = "set_default(GooseDefault::RunningMetrics)";
+                key = "set_default(SwanlingDefault::RunningMetrics)";
                 value = default_running_metrics;
 
                 self.configuration.running_metrics = Some(default_running_metrics);
@@ -2046,7 +2046,7 @@ impl GooseAttack {
         // Setting --running-metrics with --worker is not allowed.
         if let Some(running_metrics) = self.configuration.running_metrics {
             if self.attack_mode == AttackMode::Worker {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2062,7 +2062,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--no-task-metrics` flag is enabled.
-    fn set_no_task_metrics(&mut self) -> Result<(), GooseError> {
+    fn set_no_task_metrics(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_task_metrics";
         let mut value = false;
@@ -2074,7 +2074,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_no_task_metrics) = self.defaults.no_task_metrics {
-                key = "set_default(GooseDefault::NoTaskMetrics)";
+                key = "set_default(SwanlingDefault::NoTaskMetrics)";
                 value = default_no_task_metrics;
 
                 self.configuration.no_task_metrics = default_no_task_metrics;
@@ -2083,7 +2083,7 @@ impl GooseAttack {
 
         // Setting --no-task-metrics with --worker is not allowed.
         if self.configuration.no_task_metrics && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2094,7 +2094,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--no-error-summary` flag is enabled.
-    fn set_no_error_summary(&mut self) -> Result<(), GooseError> {
+    fn set_no_error_summary(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_error_summary";
         let mut value = false;
@@ -2106,7 +2106,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_no_error_summary) = self.defaults.no_error_summary {
-                key = "set_default(GooseDefault::NoErrorSummary)";
+                key = "set_default(SwanlingDefault::NoErrorSummary)";
                 value = default_no_error_summary;
 
                 self.configuration.no_error_summary = default_no_error_summary;
@@ -2115,7 +2115,7 @@ impl GooseAttack {
 
         // Setting --no-error-summary with --worker is not allowed.
         if self.configuration.no_error_summary && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2126,7 +2126,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--no-metrics` flag is enabled.
-    fn set_no_metrics(&mut self) -> Result<(), GooseError> {
+    fn set_no_metrics(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_metrics";
         let mut value = false;
@@ -2138,7 +2138,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_no_metrics) = self.defaults.no_metrics {
-                key = "set_default(GooseDefault::NoMetrics)";
+                key = "set_default(SwanlingDefault::NoMetrics)";
                 value = default_no_metrics;
 
                 self.configuration.no_metrics = default_no_metrics;
@@ -2147,7 +2147,7 @@ impl GooseAttack {
 
         // Setting --no-metrics with --worker is not allowed.
         if self.configuration.no_metrics && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2157,7 +2157,7 @@ impl GooseAttack {
         // Don't allow overhead of collecting metrics unless we're printing them.
         if self.configuration.no_metrics {
             if self.configuration.status_codes {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!(
@@ -2169,7 +2169,7 @@ impl GooseAttack {
 
             // Don't allow overhead of collecting metrics unless we're printing them.
             if self.configuration.running_metrics.is_some() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!(
@@ -2181,7 +2181,7 @@ impl GooseAttack {
 
             // There is nothing to log if metrics are disabled.
             if !self.configuration.request_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!(
@@ -2196,7 +2196,7 @@ impl GooseAttack {
     }
 
     // Determine if the `--sticky-follow` flag is enabled.
-    fn set_sticky_follow(&mut self) -> Result<(), GooseError> {
+    fn set_sticky_follow(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.sticky_follow";
         let mut value = false;
@@ -2208,7 +2208,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_sticky_follow) = self.defaults.sticky_follow {
-                key = "set_default(GooseDefault::StickyFollow)";
+                key = "set_default(SwanlingDefault::StickyFollow)";
                 value = default_sticky_follow;
 
                 self.configuration.sticky_follow = default_sticky_follow;
@@ -2216,7 +2216,7 @@ impl GooseAttack {
         }
 
         if self.configuration.sticky_follow && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2228,7 +2228,7 @@ impl GooseAttack {
 
     #[cfg(feature = "gaggle")]
     // Determine if `--no-hash-check` flag is enabled.
-    fn set_no_hash_check(&mut self) -> Result<(), GooseError> {
+    fn set_no_hash_check(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_hash_check";
         let mut value = false;
@@ -2240,7 +2240,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Worker {
             // Optionally set default.
             if let Some(default_no_hash_check) = self.defaults.no_hash_check {
-                key = "set_default(GooseDefault::NoHashCheck)";
+                key = "set_default(SwanlingDefault::NoHashCheck)";
                 value = default_no_hash_check;
 
                 self.configuration.no_hash_check = default_no_hash_check;
@@ -2248,7 +2248,7 @@ impl GooseAttack {
         }
 
         if self.configuration.no_hash_check && self.attack_mode == AttackMode::Worker {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --worker flag.", key),
@@ -2271,7 +2271,7 @@ impl GooseAttack {
             return Some(self.configuration.report_file.to_string());
         }
 
-        // If GooseDefault::ReportFile is set, return it.
+        // If SwanlingDefault::ReportFile is set, return it.
         if let Some(default_report_file) = &self.defaults.report_file {
             return Some(default_report_file.to_string());
         }
@@ -2281,10 +2281,10 @@ impl GooseAttack {
     }
 
     // Configure requests log format.
-    fn set_request_format(&mut self) -> Result<(), GooseError> {
+    fn set_request_format(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.request_format";
-        let mut value = Some(GooseLogFormat::Json);
+        let mut value = Some(SwanlingLogFormat::Json);
 
         if self.configuration.request_format.is_some() {
             key = "--requests-format";
@@ -2292,13 +2292,13 @@ impl GooseAttack {
         } else if let Some(default_request_format) = self.defaults.request_format.as_ref() {
             // In Gaggles, request_format is only set on Worker.
             if self.attack_mode != AttackMode::Manager {
-                key = "set_default(GooseDefault::RequestFormat)";
+                key = "set_default(SwanlingDefault::RequestFormat)";
                 value = Some(default_request_format.clone());
                 self.configuration.request_format = Some(default_request_format.clone());
             }
         }
 
-        // Otherwise default to GooseLogFormat::Json.
+        // Otherwise default to SwanlingLogFormat::Json.
         if !self.configuration.request_log.is_empty()
             && self.configuration.request_format.is_none()
             && self.attack_mode != AttackMode::Manager
@@ -2309,7 +2309,7 @@ impl GooseAttack {
         if self.configuration.request_format.is_some() {
             // Log format isn't relevant if metrics aren't enabled.
             if self.configuration.no_metrics {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--no-metrics".to_string(),
                     value: "true".to_string(),
                     detail: "The --no-metrics flag can not be set together with the --requests-format option.".to_string(),
@@ -2317,7 +2317,7 @@ impl GooseAttack {
             }
             // Log format isn't relevant if log not enabled.
             else if self.configuration.request_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: "The --requests-file option must be set together with the --requests-format option.".to_string(),
@@ -2329,10 +2329,10 @@ impl GooseAttack {
     }
 
     // Configure tasks log format.
-    fn set_task_format(&mut self) -> Result<(), GooseError> {
+    fn set_task_format(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.task_format";
-        let mut value = Some(GooseLogFormat::Json);
+        let mut value = Some(SwanlingLogFormat::Json);
 
         if self.configuration.task_format.is_some() {
             key = "--tasks-format";
@@ -2340,13 +2340,13 @@ impl GooseAttack {
         } else if let Some(default_task_format) = self.defaults.task_format.as_ref() {
             // In Gaggles, task_format is only set on Worker.
             if self.attack_mode != AttackMode::Manager {
-                key = "set_default(GooseDefault::TaskFormat)";
+                key = "set_default(SwanlingDefault::TaskFormat)";
                 value = Some(default_task_format.clone());
                 self.configuration.task_format = Some(default_task_format.clone());
             }
         }
 
-        // Otherwise default to GooseLogFormat::Json.
+        // Otherwise default to SwanlingLogFormat::Json.
         if !self.configuration.task_log.is_empty()
             && self.configuration.task_format.is_none()
             && self.attack_mode != AttackMode::Manager
@@ -2357,7 +2357,7 @@ impl GooseAttack {
         if self.configuration.task_format.is_some() {
             // Log format isn't relevant if metrics aren't enabled.
             if self.configuration.no_metrics {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--no-metrics".to_string(),
                     value: "true".to_string(),
                     detail: "The --no-metrics flag can not be set together with the --tasks-format option.".to_string(),
@@ -2365,7 +2365,7 @@ impl GooseAttack {
             }
             // Log format isn't relevant if log not enabled.
             else if self.configuration.task_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: "The --tasks-file option must be set together with the --tasks-format option.".to_string(),
@@ -2377,10 +2377,10 @@ impl GooseAttack {
     }
 
     // Configure tasks log format.
-    fn set_error_format(&mut self) -> Result<(), GooseError> {
+    fn set_error_format(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.error_format";
-        let mut value = Some(GooseLogFormat::Json);
+        let mut value = Some(SwanlingLogFormat::Json);
 
         if self.configuration.error_format.is_some() {
             key = "--error-format";
@@ -2388,13 +2388,13 @@ impl GooseAttack {
         } else if let Some(default_error_format) = self.defaults.error_format.as_ref() {
             // In Gaggles, error_format is only set on Worker.
             if self.attack_mode != AttackMode::Manager {
-                key = "set_default(GooseDefault::ErrorFormat)";
+                key = "set_default(SwanlingDefault::ErrorFormat)";
                 value = Some(default_error_format.clone());
                 self.configuration.error_format = Some(default_error_format.clone());
             }
         }
 
-        // Otherwise default to GooseLogFormat::Json.
+        // Otherwise default to SwanlingLogFormat::Json.
         if !self.configuration.error_log.is_empty()
             && self.configuration.error_format.is_none()
             && self.attack_mode != AttackMode::Manager
@@ -2405,7 +2405,7 @@ impl GooseAttack {
         if self.configuration.error_format.is_some() {
             // Log format isn't relevant if metrics aren't enabled.
             if self.configuration.no_metrics {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--no-metrics".to_string(),
                     value: "true".to_string(),
                     detail: "The --no-metrics flag can not be set together with the --error-format option.".to_string(),
@@ -2413,7 +2413,7 @@ impl GooseAttack {
             }
             // Log format isn't relevant if log not enabled.
             else if self.configuration.error_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: "The --error-file option must be set together with the --error-format option.".to_string(),
@@ -2425,10 +2425,10 @@ impl GooseAttack {
     }
 
     // Configure debug log format.
-    fn set_debug_format(&mut self) -> Result<(), GooseError> {
+    fn set_debug_format(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.debug_format";
-        let mut value = Some(GooseLogFormat::Json);
+        let mut value = Some(SwanlingLogFormat::Json);
 
         if self.configuration.debug_format.is_some() {
             key = "--debug-format";
@@ -2436,13 +2436,13 @@ impl GooseAttack {
         } else if let Some(default_debug_format) = self.defaults.debug_format.as_ref() {
             // In Gaggles, debug_format is only set on Worker.
             if self.attack_mode != AttackMode::Manager {
-                key = "set_default(GooseDefault::DebugFormat)";
+                key = "set_default(SwanlingDefault::DebugFormat)";
                 value = Some(default_debug_format.clone());
                 self.configuration.debug_format = Some(default_debug_format.clone());
             }
         }
 
-        // Otherwise default to GooseLogFormat::Json.
+        // Otherwise default to SwanlingLogFormat::Json.
         if !self.configuration.debug_log.is_empty()
             && self.configuration.debug_format.is_none()
             && self.attack_mode != AttackMode::Manager
@@ -2453,7 +2453,7 @@ impl GooseAttack {
         if self.configuration.debug_format.is_some() {
             // Log format isn't relevant if log not enabled.
             if self.configuration.debug_log.is_empty() {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: format!("{:?}", value),
                     detail: "The --debug-file option must be set together with the --debug-format option.".to_string(),
@@ -2491,7 +2491,7 @@ impl GooseAttack {
     }
 
     // Configure whether or not to autostart the load test.
-    fn set_no_autostart(&mut self) -> Result<(), GooseError> {
+    fn set_no_autostart(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_autostart";
         let mut value = false;
@@ -2502,7 +2502,7 @@ impl GooseAttack {
             value = true;
         // Otherwise set default if configured.
         } else if let Some(default_no_autostart) = self.defaults.no_autostart {
-            key = "set_default(GooseDefault::NoAutoStart)";
+            key = "set_default(SwanlingDefault::NoAutoStart)";
             value = default_no_autostart;
 
             self.configuration.no_autostart = default_no_autostart;
@@ -2511,7 +2511,7 @@ impl GooseAttack {
         if self.configuration.no_autostart {
             // Can't disable autostart in Regatta mode.
             if [AttackMode::Manager, AttackMode::Worker].contains(&self.attack_mode) {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!(
@@ -2523,7 +2523,7 @@ impl GooseAttack {
 
             // Can't disable autostart if there's no Controller enabled.
             if self.configuration.no_telnet && self.configuration.no_websocket {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: key.to_string(),
                     value: value.to_string(),
                     detail: format!("{} can not be set together with both the --no-telnet and --no-websocket flags.", key),
@@ -2535,7 +2535,7 @@ impl GooseAttack {
     }
 
     // Configure whether to log response body.
-    fn set_no_debug_body(&mut self) -> Result<(), GooseError> {
+    fn set_no_debug_body(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
         let mut key = "configuration.no_debug_body";
         let mut value = false;
@@ -2547,7 +2547,7 @@ impl GooseAttack {
         } else if self.attack_mode != AttackMode::Manager {
             // Optionally set default.
             if let Some(default_no_debug_body) = self.defaults.no_debug_body {
-                key = "set_default(GooseDefault::NoDebugBody)";
+                key = "set_default(SwanlingDefault::NoDebugBody)";
                 value = default_no_debug_body;
 
                 self.configuration.no_debug_body = default_no_debug_body;
@@ -2555,7 +2555,7 @@ impl GooseAttack {
         }
 
         if self.configuration.no_debug_body && self.attack_mode == AttackMode::Manager {
-            return Err(GooseError::InvalidOption {
+            return Err(SwanlingError::InvalidOption {
                 option: key.to_string(),
                 value: value.to_string(),
                 detail: format!("{} can not be set together with the --manager flag.", key),
@@ -2565,40 +2565,40 @@ impl GooseAttack {
         Ok(())
     }
 
-    /// Execute the [`GooseAttack`](./struct.GooseAttack.html) load test.
+    /// Execute the [`SwanlingAttack`](./struct.SwanlingAttack.html) load test.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     let _goose_metrics = GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     let _swanling_metrics = SwanlingAttack::initialize()?
     ///         .register_taskset(taskset!("ExampleTasks")
     ///             .register_task(task!(example_task).set_weight(2)?)
     ///             .register_task(task!(another_example_task).set_weight(3)?)
-    ///             // Goose must run against a host, point to localhost so test starts.
+    ///             // Swanling must run against a host, point to localhost so test starts.
     ///             .set_host("http://localhost")
     ///         )
     ///         // Exit after one second so test doesn't run forever.
-    ///         .set_default(GooseDefault::RunTime, 1)?
+    ///         .set_default(SwanlingDefault::RunTime, 1)?
     ///         .execute()?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn example_task(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/foo").await?;
+    /// async fn example_task(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/foo").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn another_example_task(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/bar").await?;
+    /// async fn another_example_task(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/bar").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn execute(mut self) -> Result<GooseMetrics, GooseError> {
+    pub fn execute(mut self) -> Result<SwanlingMetrics, SwanlingError> {
         // If version flag is set, display package name and version and exit.
         if self.configuration.version {
             println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
@@ -2607,7 +2607,7 @@ impl GooseAttack {
 
         // At least one task set is required.
         if self.task_sets.is_empty() {
-            return Err(GooseError::NoTaskSets {
+            return Err(SwanlingError::NoTaskSets {
                 detail: "No task sets are defined.".to_string(),
             });
         }
@@ -2722,7 +2722,7 @@ impl GooseAttack {
         self.metrics.hash = s.finish();
         debug!("hash: {}", self.metrics.hash);
 
-        // Start goose in manager mode.
+        // Start swanling in manager mode.
         if self.attack_mode == AttackMode::Manager {
             #[cfg(feature = "gaggle")]
             {
@@ -2732,12 +2732,12 @@ impl GooseAttack {
 
             #[cfg(not(feature = "gaggle"))]
             {
-                return Err(GooseError::FeatureNotEnabled {
+                return Err(SwanlingError::FeatureNotEnabled {
                     feature: "gaggle".to_string(), detail: "Load test must be recompiled with `--features gaggle` to start in manager mode.".to_string()
                 });
             }
         }
-        // Start goose in worker mode.
+        // Start swanling in worker mode.
         else if self.attack_mode == AttackMode::Worker {
             #[cfg(feature = "gaggle")]
             {
@@ -2747,13 +2747,13 @@ impl GooseAttack {
 
             #[cfg(not(feature = "gaggle"))]
             {
-                return Err(GooseError::FeatureNotEnabled {
+                return Err(SwanlingError::FeatureNotEnabled {
                     feature: "gaggle".to_string(),
                     detail: "Load test must be recompiled with `--features gaggle` to start in worker mode.".to_string(),
                 });
             }
         }
-        // Start goose in single-process mode.
+        // Start swanling in single-process mode.
         else {
             let rt = Runtime::new().unwrap();
             self = rt.block_on(self.start_attack(None))?;
@@ -2762,8 +2762,8 @@ impl GooseAttack {
         Ok(self.metrics)
     }
 
-    // Returns OK(()) if there's a valid host, GooseError with details if not.
-    fn validate_host(&mut self) -> Result<(), GooseError> {
+    // Returns OK(()) if there's a valid host, SwanlingError with details if not.
+    fn validate_host(&mut self) -> Result<(), SwanlingError> {
         if self.configuration.host.is_empty() {
             for task_set in &self.task_sets {
                 match &task_set.host {
@@ -2780,10 +2780,10 @@ impl GooseAttack {
                         }
                         None => {
                             if self.attack_mode != AttackMode::Worker {
-                                return Err(GooseError::InvalidOption {
+                                return Err(SwanlingError::InvalidOption {
                                     option: "--host".to_string(),
                                     value: "".to_string(),
-                                    detail: format!("A host must be defined via the --host option, the GooseAttack.set_default() function, or the GooseTaskSet.set_host() function (no host defined for {}).", task_set.name)
+                                    detail: format!("A host must be defined via the --host option, the SwanlingAttack.set_default() function, or the SwanlingTaskSet.set_host() function (no host defined for {}).", task_set.name)
                                 });
                             }
                         }
@@ -2794,9 +2794,9 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Create and schedule GooseUsers. This requires that the host that will be load tested
+    // Create and schedule SwanlingUsers. This requires that the host that will be load tested
     // has been configured.
-    fn prepare_load_test(&mut self) -> Result<(), GooseError> {
+    fn prepare_load_test(&mut self) -> Result<(), SwanlingError> {
         // If not on a Worker, be sure a valid host has been defined before building configuration.
         if self.attack_mode != AttackMode::Worker {
             self.validate_host()?;
@@ -2846,12 +2846,12 @@ impl GooseAttack {
     }
 
     // Helper to spawn a throttle thread if configured. The throttle thread opens
-    // a bounded channel to control how quickly [`GooseUser`](./goose/struct.GooseUser.html)
+    // a bounded channel to control how quickly [`SwanlingUser`](./swanling/struct.SwanlingUser.html)
     // threads can make requests.
     async fn setup_throttle(
         &self,
     ) -> (
-        // A channel used by [`GooseUser`](./goose/struct.GooseUser.html)s to throttle requests.
+        // A channel used by [`SwanlingUser`](./swanling/struct.SwanlingUser.html)s to throttle requests.
         Option<flume::Sender<bool>>,
         // A channel used by parent to tell throttle the load test is complete.
         Option<flume::Sender<bool>>,
@@ -2862,7 +2862,7 @@ impl GooseAttack {
         }
 
         // Create a bounded channel allowing single-sender multi-receiver to throttle
-        // [`GooseUser`](./goose/struct.GooseUser.html) threads.
+        // [`SwanlingUser`](./swanling/struct.SwanlingUser.html) threads.
         let (all_threads_throttle, throttle_receiver): (
             flume::Sender<bool>,
             flume::Receiver<bool>,
@@ -2898,7 +2898,7 @@ impl GooseAttack {
     // threads share a control channel, allowing it to send requests to the parent process. When
     // a response is required, the Controller will also send a one-shot channel allowing a direct
     // reply.
-    async fn setup_controllers(&mut self) -> Option<flume::Receiver<GooseControllerRequest>> {
+    async fn setup_controllers(&mut self) -> Option<flume::Receiver<SwanlingControllerRequest>> {
         // If the telnet controller is disabled, return immediately.
         if self.configuration.no_telnet && self.configuration.no_websocket {
             return None;
@@ -2907,8 +2907,8 @@ impl GooseAttack {
         // Create an unbounded channel for controller threads to send requests to the parent
         // process.
         let (all_threads_controller_request_tx, controller_request_rx): (
-            flume::Sender<GooseControllerRequest>,
-            flume::Receiver<GooseControllerRequest>,
+            flume::Sender<SwanlingControllerRequest>,
+            flume::Receiver<SwanlingControllerRequest>,
         ) = flume::unbounded();
 
         // Configured telnet Controller if not disabled.
@@ -2937,7 +2937,7 @@ impl GooseAttack {
             let _ = Some(tokio::spawn(controller::controller_main(
                 self.configuration.clone(),
                 all_threads_controller_request_tx.clone(),
-                GooseControllerProtocol::Telnet,
+                SwanlingControllerProtocol::Telnet,
             )));
         }
 
@@ -2968,7 +2968,7 @@ impl GooseAttack {
             let _ = Some(tokio::spawn(controller::controller_main(
                 self.configuration.clone(),
                 all_threads_controller_request_tx,
-                GooseControllerProtocol::WebSocket,
+                SwanlingControllerProtocol::WebSocket,
             )));
         }
 
@@ -2977,7 +2977,7 @@ impl GooseAttack {
     }
 
     // Prepare an asynchronous file writer for `report_file` (if enabled).
-    async fn prepare_report_file(&mut self) -> Result<Option<File>, GooseError> {
+    async fn prepare_report_file(&mut self) -> Result<Option<File>, SwanlingError> {
         if let Some(report_file_path) = self.get_report_file_path() {
             Ok(Some(File::create(&report_file_path).await?))
         } else {
@@ -2986,7 +2986,7 @@ impl GooseAttack {
     }
 
     // Invoke `test_start` tasks if existing.
-    async fn run_test_start(&self) -> Result<(), GooseError> {
+    async fn run_test_start(&self) -> Result<(), SwanlingError> {
         // Initialize per-user states.
         if self.attack_mode != AttackMode::Worker {
             // First run global test_start_task, if defined.
@@ -2994,12 +2994,12 @@ impl GooseAttack {
                 Some(t) => {
                     info!("running test_start_task");
                     // Create a one-time-use User to run the test_start_task.
-                    let base_url = goose::get_base_url(
+                    let base_url = swanling::get_base_url(
                         self.get_configuration_host(),
                         None,
                         self.defaults.host.clone(),
                     )?;
-                    let user = GooseUser::single(base_url, &self.configuration)?;
+                    let user = SwanlingUser::single(base_url, &self.configuration)?;
                     let function = &t.function;
                     let _ = function(&user).await;
                 }
@@ -3012,7 +3012,7 @@ impl GooseAttack {
     }
 
     // Invoke `test_stop` tasks if existing.
-    async fn run_test_stop(&self) -> Result<(), GooseError> {
+    async fn run_test_stop(&self) -> Result<(), SwanlingError> {
         // Initialize per-user states.
         if self.attack_mode != AttackMode::Worker {
             // First run global test_stop_task, if defined.
@@ -3020,12 +3020,12 @@ impl GooseAttack {
                 Some(t) => {
                     info!("running test_stop_task");
                     // Create a one-time-use User to run the test_stop_task.
-                    let base_url = goose::get_base_url(
+                    let base_url = swanling::get_base_url(
                         self.get_configuration_host(),
                         None,
                         self.defaults.host.clone(),
                     )?;
-                    let user = GooseUser::single(base_url, &self.configuration)?;
+                    let user = SwanlingUser::single(base_url, &self.configuration)?;
                     let function = &t.function;
                     let _ = function(&user).await;
                 }
@@ -3037,19 +3037,19 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Create a GooseAttackRunState object and do all initialization required
-    // to start a [`GooseAttack`](./struct.GooseAttack.html).
+    // Create a SwanlingAttackRunState object and do all initialization required
+    // to start a [`SwanlingAttack`](./struct.SwanlingAttack.html).
     async fn initialize_attack(
         &mut self,
         socket: Option<Socket>,
-    ) -> Result<GooseAttackRunState, GooseError> {
+    ) -> Result<SwanlingAttackRunState, SwanlingError> {
         trace!("initialize_attack");
 
-        // Create a single channel used to send metrics from GooseUser threads
+        // Create a single channel used to send metrics from SwanlingUser threads
         // to parent thread.
         let (all_threads_metrics_tx, metrics_rx): (
-            flume::Sender<GooseMetric>,
-            flume::Receiver<GooseMetric>,
+            flume::Sender<SwanlingMetric>,
+            flume::Receiver<SwanlingMetric>,
         ) = flume::unbounded();
 
         // Optionally spawn a telnet and/or Websocket Controller thread.
@@ -3059,7 +3059,7 @@ impl GooseAttack {
         // the run state.
         let std_now = std::time::Instant::now();
 
-        let goose_attack_run_state = GooseAttackRunState {
+        let swanling_attack_run_state = SwanlingAttackRunState {
             spawn_user_timer: std_now,
             spawn_user_in_ms: 0,
             spawn_user_counter: 0,
@@ -3085,24 +3085,24 @@ impl GooseAttack {
         };
 
         // Access socket to avoid errors.
-        trace!("socket: {:?}", &goose_attack_run_state.socket);
+        trace!("socket: {:?}", &swanling_attack_run_state.socket);
 
         // Catch ctrl-c to allow clean shutdown to display metrics.
-        util::setup_ctrlc_handler(&goose_attack_run_state.canceled);
+        util::setup_ctrlc_handler(&swanling_attack_run_state.canceled);
 
-        Ok(goose_attack_run_state)
+        Ok(swanling_attack_run_state)
     }
 
-    // Spawn [`GooseUser`](./goose/struct.GooseUser.html) threads to generate a
-    // [`GooseAttack`](./struct.GooseAttack.html).
+    // Spawn [`SwanlingUser`](./swanling/struct.SwanlingUser.html) threads to generate a
+    // [`SwanlingAttack`](./struct.SwanlingAttack.html).
     async fn spawn_attack(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         // If the run_timer has expired, stop spawning user threads and start stopping them
         // instead. Unwrap is safe here because load test had to start to get here.
         if util::timer_expired(self.started.unwrap(), self.run_time) {
-            self.set_attack_phase(goose_attack_run_state, AttackPhase::Stopping);
+            self.set_attack_phase(swanling_attack_run_state, AttackPhase::Stopping);
             return Ok(());
         }
 
@@ -3110,31 +3110,31 @@ impl GooseAttack {
         // sleep too long.
         let hatch_rate = util::get_hatch_rate(self.configuration.hatch_rate.clone());
 
-        // Determine if it's time to spawn a GooseUser.
-        if goose_attack_run_state.spawn_user_in_ms == 0
+        // Determine if it's time to spawn a SwanlingUser.
+        if swanling_attack_run_state.spawn_user_in_ms == 0
             || util::ms_timer_expired(
-                goose_attack_run_state.spawn_user_timer,
-                goose_attack_run_state.spawn_user_in_ms,
+                swanling_attack_run_state.spawn_user_timer,
+                swanling_attack_run_state.spawn_user_in_ms,
             )
         {
             // Reset the spawn timer.
-            goose_attack_run_state.spawn_user_timer = std::time::Instant::now();
+            swanling_attack_run_state.spawn_user_timer = std::time::Instant::now();
 
-            // To determine how long before we spawn the next GooseUser, start with 1,000.0
+            // To determine how long before we spawn the next SwanlingUser, start with 1,000.0
             // milliseconds and divide by the hatch_rate.
-            goose_attack_run_state.spawn_user_in_ms = (1_000.0 / hatch_rate) as usize;
+            swanling_attack_run_state.spawn_user_in_ms = (1_000.0 / hatch_rate) as usize;
 
             // If running on a Worker, multiple by the number of workers as each is spawning
-            // GooseUsers at this rate.
+            // SwanlingUsers at this rate.
             if self.attack_mode == AttackMode::Worker {
-                goose_attack_run_state.spawn_user_in_ms *=
+                swanling_attack_run_state.spawn_user_in_ms *=
                     self.configuration.expect_workers.unwrap() as usize;
             }
 
-            // Spawn next scheduled GooseUser.
+            // Spawn next scheduled SwanlingUser.
             let mut thread_user =
-                self.weighted_users[goose_attack_run_state.spawn_user_counter].clone();
-            goose_attack_run_state.spawn_user_counter += 1;
+                self.weighted_users[swanling_attack_run_state.spawn_user_counter].clone();
+            swanling_attack_run_state.spawn_user_counter += 1;
 
             // Copy weighted tasks and weighted on start tasks into the user thread.
             thread_user.weighted_tasks = self.task_sets[thread_user.task_sets_index]
@@ -3151,24 +3151,24 @@ impl GooseAttack {
 
             // Create a per-thread channel allowing parent thread to control child threads.
             let (parent_sender, thread_receiver): (
-                flume::Sender<GooseUserCommand>,
-                flume::Receiver<GooseUserCommand>,
+                flume::Sender<SwanlingUserCommand>,
+                flume::Receiver<SwanlingUserCommand>,
             ) = flume::unbounded();
-            goose_attack_run_state.user_channels.push(parent_sender);
+            swanling_attack_run_state.user_channels.push(parent_sender);
 
             // Clone the logger_tx if enabled, otherwise is None.
-            thread_user.logger = goose_attack_run_state.all_threads_logger_tx.clone();
+            thread_user.logger = swanling_attack_run_state.all_threads_logger_tx.clone();
 
-            // Copy the GooseUser-throttle receiver channel, used by all threads.
+            // Copy the SwanlingUser-throttle receiver channel, used by all threads.
             thread_user.throttle = if self.configuration.throttle_requests > 0 {
-                Some(goose_attack_run_state.throttle_threads_tx.clone().unwrap())
+                Some(swanling_attack_run_state.throttle_threads_tx.clone().unwrap())
             } else {
                 None
             };
 
-            // Copy the GooseUser-to-parent sender channel, used by all threads.
+            // Copy the SwanlingUser-to-parent sender channel, used by all threads.
             thread_user.channel_to_parent =
-                Some(goose_attack_run_state.all_threads_metrics_tx.clone());
+                Some(swanling_attack_run_state.all_threads_metrics_tx.clone());
 
             // Copy the appropriate task_set into the thread.
             let thread_task_set = self.task_sets[thread_user.task_sets_index].clone();
@@ -3179,7 +3179,7 @@ impl GooseAttack {
 
             let is_worker = self.attack_mode == AttackMode::Worker;
 
-            // If running on Worker, use Worker configuration in GooseUser.
+            // If running on Worker, use Worker configuration in SwanlingUser.
             if is_worker {
                 thread_user.config = self.configuration.clone();
             }
@@ -3193,17 +3193,17 @@ impl GooseAttack {
                 is_worker,
             ));
 
-            goose_attack_run_state.users.push(user);
+            swanling_attack_run_state.users.push(user);
             self.metrics.users += 1;
 
             if let Some(running_metrics) = self.configuration.running_metrics {
                 if self.attack_mode != AttackMode::Worker
                     && util::timer_expired(
-                        goose_attack_run_state.running_metrics_timer,
+                        swanling_attack_run_state.running_metrics_timer,
                         running_metrics,
                     )
                 {
-                    goose_attack_run_state.running_metrics_timer = time::Instant::now();
+                    swanling_attack_run_state.running_metrics_timer = time::Instant::now();
                     self.metrics.print_running();
                 }
             }
@@ -3214,17 +3214,17 @@ impl GooseAttack {
 
             // Otherwise, sleep until the next time something needs to happen.
             let sleep_duration = if running_metrics > 0
-                && running_metrics * 1_000 < goose_attack_run_state.spawn_user_in_ms
+                && running_metrics * 1_000 < swanling_attack_run_state.spawn_user_in_ms
             {
                 let sleep_delay = self.configuration.running_metrics.unwrap() * 1_000;
-                goose_attack_run_state.spawn_user_in_ms -= sleep_delay;
+                swanling_attack_run_state.spawn_user_in_ms -= sleep_delay;
                 tokio::time::Duration::from_millis(sleep_delay as u64)
             } else {
-                tokio::time::Duration::from_millis(goose_attack_run_state.spawn_user_in_ms as u64)
+                tokio::time::Duration::from_millis(swanling_attack_run_state.spawn_user_in_ms as u64)
             };
             debug!("sleeping {:?}...", sleep_duration);
-            goose_attack_run_state.drift_timer =
-                util::sleep_minus_drift(sleep_duration, goose_attack_run_state.drift_timer).await;
+            swanling_attack_run_state.drift_timer =
+                util::sleep_minus_drift(sleep_duration, swanling_attack_run_state.drift_timer).await;
         }
 
         // If enough users have been spawned, move onto the next attack phase.
@@ -3242,28 +3242,28 @@ impl GooseAttack {
                 info!("launched {} users...", self.metrics.users);
             }
 
-            self.reset_metrics(goose_attack_run_state).await?;
-            self.set_attack_phase(goose_attack_run_state, AttackPhase::Running);
+            self.reset_metrics(swanling_attack_run_state).await?;
+            self.set_attack_phase(swanling_attack_run_state, AttackPhase::Running);
         }
 
         Ok(())
     }
 
-    // Let the [`GooseAttack`](./struct.GooseAttack.html) run until the timer expires
+    // Let the [`SwanlingAttack`](./struct.SwanlingAttack.html) run until the timer expires
     // (or the test is canceled), and then trigger a shut down.
     async fn monitor_attack(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         // Exit if run_time timer expires.
         if util::timer_expired(self.started.unwrap(), self.run_time) {
-            self.set_attack_phase(goose_attack_run_state, AttackPhase::Stopping);
+            self.set_attack_phase(swanling_attack_run_state, AttackPhase::Stopping);
         } else {
             // Subtract the time spent doing other things, running the main parent loop twice
             // per second.
-            goose_attack_run_state.drift_timer = util::sleep_minus_drift(
+            swanling_attack_run_state.drift_timer = util::sleep_minus_drift(
                 time::Duration::from_millis(500),
-                goose_attack_run_state.drift_timer,
+                swanling_attack_run_state.drift_timer,
             )
             .await;
         }
@@ -3273,8 +3273,8 @@ impl GooseAttack {
 
     async fn stop_running_users(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         if self.attack_mode == AttackMode::Worker {
             info!(
                 "[{}] stopping after {} seconds...",
@@ -3286,14 +3286,14 @@ impl GooseAttack {
             // when the Manager goes away.
             #[cfg(feature = "gaggle")]
             {
-                let manager = goose_attack_run_state.socket.clone().unwrap();
+                let manager = swanling_attack_run_state.socket.clone().unwrap();
                 register_shutdown_pipe_handler(&manager);
             }
         } else {
             info!("stopping after {} seconds...", self.metrics.duration);
         }
-        for (index, send_to_user) in goose_attack_run_state.user_channels.iter().enumerate() {
-            match send_to_user.send(GooseUserCommand::Exit) {
+        for (index, send_to_user) in swanling_attack_run_state.user_channels.iter().enumerate() {
+            match send_to_user.send(SwanlingUserCommand::Exit) {
                 Ok(_) => {
                     debug!("telling user {} to exit", index);
                 }
@@ -3309,19 +3309,19 @@ impl GooseAttack {
         }
 
         // If throttle is enabled, tell throttle thread the load test is over.
-        if let Some(throttle_tx) = goose_attack_run_state.parent_to_throttle_tx.clone() {
+        if let Some(throttle_tx) = swanling_attack_run_state.parent_to_throttle_tx.clone() {
             let _ = throttle_tx.send(false);
         }
 
-        // Take the users vector out of the GooseAttackRunState object so it can be
+        // Take the users vector out of the SwanlingAttackRunState object so it can be
         // consumed by futures::future::join_all().
-        let users = std::mem::take(&mut goose_attack_run_state.users);
+        let users = std::mem::take(&mut swanling_attack_run_state.users);
         futures::future::join_all(users).await;
         debug!("all users exited");
 
         // If the logger thread is enabled, tell it to flush and exit.
-        if goose_attack_run_state.logger_handle.is_some() {
-            if let Err(e) = goose_attack_run_state
+        if swanling_attack_run_state.logger_handle.is_some() {
+            if let Err(e) = swanling_attack_run_state
                 .all_threads_logger_tx
                 .clone()
                 .unwrap()
@@ -3329,17 +3329,17 @@ impl GooseAttack {
             {
                 warn!("unexpected error telling logger thread to exit: {}", e);
             };
-            // Take logger out of the GooseAttackRunState object so it can be
+            // Take logger out of the SwanlingAttackRunState object so it can be
             // consumed by tokio::join!().
-            let logger = std::mem::take(&mut goose_attack_run_state.logger_handle);
+            let logger = std::mem::take(&mut swanling_attack_run_state.logger_handle);
             let _ = tokio::join!(logger.unwrap());
         }
 
         // If we're printing metrics, collect the final metrics received from users.
         if !self.configuration.no_metrics {
-            // Set the second parameter to true, ensuring that Goose waits until all metrics
+            // Set the second parameter to true, ensuring that Swanling waits until all metrics
             // are received.
-            let _received_message = self.receive_metrics(goose_attack_run_state, true).await?;
+            let _received_message = self.receive_metrics(swanling_attack_run_state, true).await?;
         }
 
         #[cfg(feature = "gaggle")]
@@ -3347,7 +3347,7 @@ impl GooseAttack {
             // As worker, push metrics up to manager.
             if self.attack_mode == AttackMode::Worker {
                 worker::push_metrics_to_manager(
-                    &goose_attack_run_state.socket.clone().unwrap(),
+                    &swanling_attack_run_state.socket.clone().unwrap(),
                     vec![
                         GaggleMetrics::Requests(self.metrics.requests.clone()),
                         GaggleMetrics::Errors(self.metrics.errors.clone()),
@@ -3362,8 +3362,8 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Cleanly shut down the [`GooseAttack`](./struct.GooseAttack.html).
-    async fn stop_attack(&mut self) -> Result<(), GooseError> {
+    // Cleanly shut down the [`SwanlingAttack`](./struct.SwanlingAttack.html).
+    async fn stop_attack(&mut self) -> Result<(), SwanlingError> {
         // Run any configured test_stop() functions.
         self.run_test_stop().await?;
 
@@ -3373,17 +3373,17 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Reset the GooseAttackRunState before starting a load test. This is to allow a Controller
+    // Reset the SwanlingAttackRunState before starting a load test. This is to allow a Controller
     // to stop and start the load test multiple times, for example from a UI.
     async fn reset_run_state(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         // Run any configured test_start() functions.
         self.run_test_start().await.unwrap();
 
         // Prepare to collect metrics, if enabled.
-        self.metrics = GooseMetrics::default();
+        self.metrics = SwanlingMetrics::default();
         if !self.configuration.no_metrics {
             self.metrics
                 .initialize_task_metrics(&self.task_sets, &self.configuration);
@@ -3394,35 +3394,35 @@ impl GooseAttack {
 
         // Reset the run state.
         let std_now = std::time::Instant::now();
-        goose_attack_run_state.spawn_user_timer = std_now;
-        goose_attack_run_state.spawn_user_in_ms = 0;
-        goose_attack_run_state.spawn_user_counter = 0;
-        goose_attack_run_state.drift_timer = tokio::time::Instant::now();
-        goose_attack_run_state.metrics_header_displayed = false;
-        goose_attack_run_state.idle_status_displayed = false;
-        goose_attack_run_state.users = Vec::new();
-        goose_attack_run_state.user_channels = Vec::new();
-        goose_attack_run_state.running_metrics_timer = std_now;
-        goose_attack_run_state.display_running_metrics = false;
-        goose_attack_run_state.shutdown_after_stop = !self.configuration.no_autostart;
-        goose_attack_run_state.all_users_spawned = false;
+        swanling_attack_run_state.spawn_user_timer = std_now;
+        swanling_attack_run_state.spawn_user_in_ms = 0;
+        swanling_attack_run_state.spawn_user_counter = 0;
+        swanling_attack_run_state.drift_timer = tokio::time::Instant::now();
+        swanling_attack_run_state.metrics_header_displayed = false;
+        swanling_attack_run_state.idle_status_displayed = false;
+        swanling_attack_run_state.users = Vec::new();
+        swanling_attack_run_state.user_channels = Vec::new();
+        swanling_attack_run_state.running_metrics_timer = std_now;
+        swanling_attack_run_state.display_running_metrics = false;
+        swanling_attack_run_state.shutdown_after_stop = !self.configuration.no_autostart;
+        swanling_attack_run_state.all_users_spawned = false;
 
         // If enabled, spawn a logger thread.
         let (logger_handle, all_threads_logger_tx) =
             self.configuration.setup_loggers(&self.defaults).await?;
-        goose_attack_run_state.logger_handle = logger_handle;
-        goose_attack_run_state.all_threads_logger_tx = all_threads_logger_tx;
+        swanling_attack_run_state.logger_handle = logger_handle;
+        swanling_attack_run_state.all_threads_logger_tx = all_threads_logger_tx;
 
         // If enabled, spawn a throttle thread.
         let (throttle_threads_tx, parent_to_throttle_tx) = self.setup_throttle().await;
-        goose_attack_run_state.throttle_threads_tx = throttle_threads_tx;
-        goose_attack_run_state.parent_to_throttle_tx = parent_to_throttle_tx;
+        swanling_attack_run_state.throttle_threads_tx = throttle_threads_tx;
+        swanling_attack_run_state.parent_to_throttle_tx = parent_to_throttle_tx;
 
         // If enabled, create an report file and confirm access.
-        goose_attack_run_state.report_file = match self.prepare_report_file().await {
+        swanling_attack_run_state.report_file = match self.prepare_report_file().await {
             Ok(f) => f,
             Err(e) => {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--report-file".to_string(),
                     value: self.get_report_file_path().unwrap(),
                     detail: format!("Failed to create report file: {}", e),
@@ -3430,7 +3430,7 @@ impl GooseAttack {
             }
         };
 
-        // Record when the GooseAttack officially started.
+        // Record when the SwanlingAttack officially started.
         self.started = Some(time::Instant::now());
 
         // Also record a formattable timestamp, for human readable reports.
@@ -3440,98 +3440,98 @@ impl GooseAttack {
     }
 
     // Called internally in local-mode and gaggle-mode.
-    async fn start_attack(mut self, socket: Option<Socket>) -> Result<GooseAttack, GooseError> {
+    async fn start_attack(mut self, socket: Option<Socket>) -> Result<SwanlingAttack, SwanlingError> {
         trace!("start_attack: socket({:?})", socket);
 
-        // The GooseAttackRunState is used while spawning and running the
-        // GooseUser threads that generate the load test.
-        let mut goose_attack_run_state = self
+        // The SwanlingAttackRunState is used while spawning and running the
+        // SwanlingUser threads that generate the load test.
+        let mut swanling_attack_run_state = self
             .initialize_attack(socket)
             .await
-            .expect("failed to initialize GooseAttackRunState");
+            .expect("failed to initialize SwanlingAttackRunState");
 
-        // The Goose parent process GooseAttack loop runs until Goose shuts down. Goose enters
+        // The Swanling parent process SwanlingAttack loop runs until Swanling shuts down. Swanling enters
         // the loop in AttackPhase::Idle, and exits in AttackPhase::Shutdown.
         loop {
             match self.attack_phase {
-                // In the Idle phase the Goose configuration can be changed by a Controller,
+                // In the Idle phase the Swanling configuration can be changed by a Controller,
                 // and otherwise nothing happens but sleeping an checking for messages.
                 AttackPhase::Idle => {
                     if self.configuration.no_autostart {
                         // Sleep then check for further instructions.
-                        if goose_attack_run_state.idle_status_displayed {
+                        if swanling_attack_run_state.idle_status_displayed {
                             let sleep_duration = tokio::time::Duration::from_millis(250);
                             debug!("sleeping {:?}...", sleep_duration);
-                            goose_attack_run_state.drift_timer = util::sleep_minus_drift(
+                            swanling_attack_run_state.drift_timer = util::sleep_minus_drift(
                                 sleep_duration,
-                                goose_attack_run_state.drift_timer,
+                                swanling_attack_run_state.drift_timer,
                             )
                             .await;
                         // Only display informational message about being idle one time.
                         } else {
-                            info!("Goose is currently idle.");
-                            goose_attack_run_state.idle_status_displayed = true;
+                            info!("Swanling is currently idle.");
+                            swanling_attack_run_state.idle_status_displayed = true;
                         }
                     } else {
                         // Prepare to start the load test, resetting timers and counters.
-                        self.reset_run_state(&mut goose_attack_run_state).await?;
-                        self.set_attack_phase(&mut goose_attack_run_state, AttackPhase::Starting);
+                        self.reset_run_state(&mut swanling_attack_run_state).await?;
+                        self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Starting);
                     }
                 }
-                // In the Start phase, Goose launches GooseUser threads and starts a GooseAttack.
+                // In the Start phase, Swanling launches SwanlingUser threads and starts a SwanlingAttack.
                 AttackPhase::Starting => {
                     self.update_duration();
-                    self.spawn_attack(&mut goose_attack_run_state)
+                    self.spawn_attack(&mut swanling_attack_run_state)
                         .await
-                        .expect("failed to start GooseAttack");
+                        .expect("failed to start SwanlingAttack");
                 }
-                // In the Running phase, Goose maintains the configured GooseAttack.
+                // In the Running phase, Swanling maintains the configured SwanlingAttack.
                 AttackPhase::Running => {
                     self.update_duration();
-                    self.monitor_attack(&mut goose_attack_run_state).await?;
+                    self.monitor_attack(&mut swanling_attack_run_state).await?;
                 }
-                // In the Stopping phase, Goose stops all GooseUser threads and optionally reports
+                // In the Stopping phase, Swanling stops all SwanlingUser threads and optionally reports
                 // any collected metrics.
                 AttackPhase::Stopping => {
                     // If displaying metrics, update internal state reflecting how long load test
                     // has been running.
                     self.update_duration();
-                    // Tell all running GooseUsers to stop.
-                    self.stop_running_users(&mut goose_attack_run_state).await?;
-                    // Stop any running GooseUser threads.
+                    // Tell all running SwanlingUsers to stop.
+                    self.stop_running_users(&mut swanling_attack_run_state).await?;
+                    // Stop any running SwanlingUser threads.
                     self.stop_attack().await?;
-                    // Collect all metrics sent by GooseUser threads.
-                    self.sync_metrics(&mut goose_attack_run_state, true).await?;
+                    // Collect all metrics sent by SwanlingUser threads.
+                    self.sync_metrics(&mut swanling_attack_run_state, true).await?;
                     // Write an html report, if enabled.
-                    self.write_html_report(&mut goose_attack_run_state).await?;
-                    // Shutdown Goose or go into an idle waiting state.
-                    if goose_attack_run_state.shutdown_after_stop {
-                        self.set_attack_phase(&mut goose_attack_run_state, AttackPhase::Shutdown);
+                    self.write_html_report(&mut swanling_attack_run_state).await?;
+                    // Shutdown Swanling or go into an idle waiting state.
+                    if swanling_attack_run_state.shutdown_after_stop {
+                        self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Shutdown);
                     } else {
                         // Print metrics, if enabled.
                         if !self.configuration.no_metrics {
                             println!("{}", self.metrics);
                         }
-                        self.set_attack_phase(&mut goose_attack_run_state, AttackPhase::Idle);
+                        self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Idle);
                     }
                 }
-                // By reaching the Shutdown phase, break out of the GooseAttack loop.
+                // By reaching the Shutdown phase, break out of the SwanlingAttack loop.
                 AttackPhase::Shutdown => break,
             }
             // Regularly synchronize metrics.
-            self.sync_metrics(&mut goose_attack_run_state, false)
+            self.sync_metrics(&mut swanling_attack_run_state, false)
                 .await?;
 
             // Check if a Controller has made a request.
-            self.handle_controller_requests(&mut goose_attack_run_state)
+            self.handle_controller_requests(&mut swanling_attack_run_state)
                 .await?;
 
             // Gracefully exit loop if ctrl-c is caught.
             if self.attack_phase != AttackPhase::Shutdown
-                && goose_attack_run_state.canceled.load(Ordering::SeqCst)
+                && swanling_attack_run_state.canceled.load(Ordering::SeqCst)
             {
                 // Shutdown after stopping as the load test was canceled.
-                goose_attack_run_state.shutdown_after_stop = true;
+                swanling_attack_run_state.shutdown_after_stop = true;
 
                 // No metrics to display when sitting idle, so disable.
                 if self.attack_phase == AttackPhase::Idle {
@@ -3539,7 +3539,7 @@ impl GooseAttack {
                 }
 
                 // Cleanly stop the load test.
-                self.set_attack_phase(&mut goose_attack_run_state, AttackPhase::Stopping);
+                self.set_attack_phase(&mut swanling_attack_run_state, AttackPhase::Stopping);
             }
         }
 
@@ -3550,9 +3550,9 @@ impl GooseAttack {
 /// All run-time options can optionally be configured with custom defaults.
 ///
 /// For example, you can optionally configure a default host for the load test. This is
-/// used if no per-[`GooseTaskSet`](./goose/struct.GooseTaskSet.html) host is defined,
+/// used if no per-[`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html) host is defined,
 /// no `--host` CLI option is configured, and if the
-/// [`GooseTask`](./goose/struct.GooseTask.html) itself doesn't hard-code the host in
+/// [`SwanlingTask`](./swanling/struct.SwanlingTask.html) itself doesn't hard-code the host in
 /// the base url of its request. In that case, this host is added to all requests.
 ///
 /// For example, a load test could be configured to default to running against a local
@@ -3561,11 +3561,11 @@ impl GooseAttack {
 ///
 /// # Example
 /// ```rust
-/// use goose::prelude::*;
+/// use swanling::prelude::*;
 ///
-/// fn main() -> Result<(), GooseError> {
-///     GooseAttack::initialize()?
-///         .set_default(GooseDefault::Host, "local.dev")?;
+/// fn main() -> Result<(), SwanlingError> {
+///     SwanlingAttack::initialize()?
+///         .set_default(SwanlingDefault::Host, "local.dev")?;
 ///
 ///     Ok(())
 /// }
@@ -3573,152 +3573,152 @@ impl GooseAttack {
 ///
 /// The following run-time options can be configured with a custom default using a
 /// borrowed string slice (`&str`):
-///  - [GooseDefault::Host](../goose/enum.GooseDefault.html#variant.Host)
-///  - [GooseDefault::GooseLog](../goose/enum.GooseDefault.html#variant.GooseLog)
-///  - [GooseDefault::RequestFormat](../goose/enum.GooseDefault.html#variant.RequestFormat)
-///  - [GooseDefault::TaskLog](../goose/enum.GooseDefault.html#variant.TaskLog)
-///  - [GooseDefault::ErrorLog](../goose/enum.GooseDefault.html#variant.ErrorLog)
-///  - [GooseDefault::DebugLog](../goose/enum.GooseDefault.html#variant.DebugLog)
-///  - [GooseDefault::TelnetHost](../goose/enum.GooseDefault.html#variant.TelnetHost)
-///  - [GooseDefault::WebSocketHost](../goose/enum.GooseDefault.html#variant.WebSocketHost)
-///  - [GooseDefault::ManagerBindHost](../goose/enum.GooseDefault.html#variant.ManagerBindHost)
-///  - [GooseDefault::ManagerHost](../goose/enum.GooseDefault.html#variant.ManagerHost)
+///  - [SwanlingDefault::Host](../swanling/enum.SwanlingDefault.html#variant.Host)
+///  - [SwanlingDefault::SwanlingLog](../swanling/enum.SwanlingDefault.html#variant.SwanlingLog)
+///  - [SwanlingDefault::RequestFormat](../swanling/enum.SwanlingDefault.html#variant.RequestFormat)
+///  - [SwanlingDefault::TaskLog](../swanling/enum.SwanlingDefault.html#variant.TaskLog)
+///  - [SwanlingDefault::ErrorLog](../swanling/enum.SwanlingDefault.html#variant.ErrorLog)
+///  - [SwanlingDefault::DebugLog](../swanling/enum.SwanlingDefault.html#variant.DebugLog)
+///  - [SwanlingDefault::TelnetHost](../swanling/enum.SwanlingDefault.html#variant.TelnetHost)
+///  - [SwanlingDefault::WebSocketHost](../swanling/enum.SwanlingDefault.html#variant.WebSocketHost)
+///  - [SwanlingDefault::ManagerBindHost](../swanling/enum.SwanlingDefault.html#variant.ManagerBindHost)
+///  - [SwanlingDefault::ManagerHost](../swanling/enum.SwanlingDefault.html#variant.ManagerHost)
 ///
 /// The following run-time options can be configured with a custom default using a
 /// `usize` integer:
-///  - [GooseDefault::Users](../goose/enum.GooseDefault.html#variant.Users)
-///  - [GooseDefault::HatchRate](../goose/enum.GooseDefault.html#variant.HatchRate)
-///  - [GooseDefault::RunTime](../goose/enum.GooseDefault.html#variant.RunTime)
-///  - [GooseDefault::RunningMetrics](../goose/enum.GooseDefault.html#variant.RunningMetrics)
-///  - [GooseDefault::LogLevel](../goose/enum.GooseDefault.html#variant.LogLevel)
-///  - [GooseDefault::Verbose](../goose/enum.GooseDefault.html#variant.Verbose)
-///  - [GooseDefault::ThrottleRequests](../goose/enum.GooseDefault.html#variant.ThrottleRequests)
-///  - [GooseDefault::ExpectWorkers](../goose/enum.GooseDefault.html#variant.ExpectWorkers)
-///  - [GooseDefault::TelnetPort](../goose/enum.GooseDefault.html#variant.TelnetPort)
-///  - [GooseDefault::WebSocketPort](../goose/enum.GooseDefault.html#variant.WebSocketPort)
-///  - [GooseDefault::ManagerBindPort](../goose/enum.GooseDefault.html#variant.ManagerBindPort)
-///  - [GooseDefault::ManagerPort](../goose/enum.GooseDefault.html#variant.ManagerPort)
+///  - [SwanlingDefault::Users](../swanling/enum.SwanlingDefault.html#variant.Users)
+///  - [SwanlingDefault::HatchRate](../swanling/enum.SwanlingDefault.html#variant.HatchRate)
+///  - [SwanlingDefault::RunTime](../swanling/enum.SwanlingDefault.html#variant.RunTime)
+///  - [SwanlingDefault::RunningMetrics](../swanling/enum.SwanlingDefault.html#variant.RunningMetrics)
+///  - [SwanlingDefault::LogLevel](../swanling/enum.SwanlingDefault.html#variant.LogLevel)
+///  - [SwanlingDefault::Verbose](../swanling/enum.SwanlingDefault.html#variant.Verbose)
+///  - [SwanlingDefault::ThrottleRequests](../swanling/enum.SwanlingDefault.html#variant.ThrottleRequests)
+///  - [SwanlingDefault::ExpectWorkers](../swanling/enum.SwanlingDefault.html#variant.ExpectWorkers)
+///  - [SwanlingDefault::TelnetPort](../swanling/enum.SwanlingDefault.html#variant.TelnetPort)
+///  - [SwanlingDefault::WebSocketPort](../swanling/enum.SwanlingDefault.html#variant.WebSocketPort)
+///  - [SwanlingDefault::ManagerBindPort](../swanling/enum.SwanlingDefault.html#variant.ManagerBindPort)
+///  - [SwanlingDefault::ManagerPort](../swanling/enum.SwanlingDefault.html#variant.ManagerPort)
 ///
 /// The following run-time flags can be configured with a custom default using a
 /// `bool` (and otherwise default to `false`).
-///  - [GooseDefault::NoResetMetrics](../goose/enum.GooseDefault.html#variant.NoResetMetrics)
-///  - [GooseDefault::NoMetrics](../goose/enum.GooseDefault.html#variant.NoMetrics)
-///  - [GooseDefault::NoTaskMetrics](../goose/enum.GooseDefault.html#variant.NoTaskMetrics)
-///  - [GooseDefault::NoErrorSummary](../goose/enum.GooseDefault.html#variant.NoErrorSummary)
-///  - [GooseDefault::NoDebugBody](../goose/enum.GooseDefault.html#variant.NoDebugBody)
-///  - [GooseDefault::NoTelnet](../goose/enum.GooseDefault.html#variant.NoTelnet)
-///  - [GooseDefault::NoWebSocket](../goose/enum.GooseDefault.html#variant.NoWebSocket)
-///  - [GooseDefault::NoAutoStart](../goose/enum.GooseDefault.html#variant.NoAutoStart)
-///  - [GooseDefault::StatusCodes](../goose/enum.GooseDefault.html#variant.StatusCodes)
-///  - [GooseDefault::StickyFollow](../goose/enum.GooseDefault.html#variant.StickyFollow)
-///  - [GooseDefault::Manager](../goose/enum.GooseDefault.html#variant.Manager)
-///  - [GooseDefault::NoHashCheck](../goose/enum.GooseDefault.html#variant.NoHashCheck)
-///  - [GooseDefault::Worker](../goose/enum.GooseDefault.html#variant.Worker)
+///  - [SwanlingDefault::NoResetMetrics](../swanling/enum.SwanlingDefault.html#variant.NoResetMetrics)
+///  - [SwanlingDefault::NoMetrics](../swanling/enum.SwanlingDefault.html#variant.NoMetrics)
+///  - [SwanlingDefault::NoTaskMetrics](../swanling/enum.SwanlingDefault.html#variant.NoTaskMetrics)
+///  - [SwanlingDefault::NoErrorSummary](../swanling/enum.SwanlingDefault.html#variant.NoErrorSummary)
+///  - [SwanlingDefault::NoDebugBody](../swanling/enum.SwanlingDefault.html#variant.NoDebugBody)
+///  - [SwanlingDefault::NoTelnet](../swanling/enum.SwanlingDefault.html#variant.NoTelnet)
+///  - [SwanlingDefault::NoWebSocket](../swanling/enum.SwanlingDefault.html#variant.NoWebSocket)
+///  - [SwanlingDefault::NoAutoStart](../swanling/enum.SwanlingDefault.html#variant.NoAutoStart)
+///  - [SwanlingDefault::StatusCodes](../swanling/enum.SwanlingDefault.html#variant.StatusCodes)
+///  - [SwanlingDefault::StickyFollow](../swanling/enum.SwanlingDefault.html#variant.StickyFollow)
+///  - [SwanlingDefault::Manager](../swanling/enum.SwanlingDefault.html#variant.Manager)
+///  - [SwanlingDefault::NoHashCheck](../swanling/enum.SwanlingDefault.html#variant.NoHashCheck)
+///  - [SwanlingDefault::Worker](../swanling/enum.SwanlingDefault.html#variant.Worker)
 ///
 /// The following run-time flags can be configured with a custom default using a
-/// `GooseLogFormat`.
-///  - [GooseDefault::RequestLog](../goose/enum.GooseDefault.html#variant.RequestLog)
-///  - [GooseDefault::TaskLog](../goose/enum.GooseDefault.html#variant.TaskLog)
-///  - [GooseDefault::DebugFormat](../goose/enum.GooseDefault.html#variant.DebugFormat)
+/// `SwanlingLogFormat`.
+///  - [SwanlingDefault::RequestLog](../swanling/enum.SwanlingDefault.html#variant.RequestLog)
+///  - [SwanlingDefault::TaskLog](../swanling/enum.SwanlingDefault.html#variant.TaskLog)
+///  - [SwanlingDefault::DebugFormat](../swanling/enum.SwanlingDefault.html#variant.DebugFormat)
 /// # Another Example
 /// ```rust
-/// use goose::prelude::*;
+/// use swanling::prelude::*;
 ///
-/// fn main() -> Result<(), GooseError> {
-///     GooseAttack::initialize()?
+/// fn main() -> Result<(), SwanlingError> {
+///     SwanlingAttack::initialize()?
 ///         // Do not reset the metrics after the load test finishes starting.
-///         .set_default(GooseDefault::NoResetMetrics, true)?
+///         .set_default(SwanlingDefault::NoResetMetrics, true)?
 ///         // Display info level logs while the test runs.
-///         .set_default(GooseDefault::Verbose, 1)?
-///         // Log all requests made during the test to `./goose-request.log`.
-///         .set_default(GooseDefault::RequestLog, "goose-request.log")?;
+///         .set_default(SwanlingDefault::Verbose, 1)?
+///         // Log all requests made during the test to `./swanling-request.log`.
+///         .set_default(SwanlingDefault::RequestLog, "swanling-request.log")?;
 ///
 ///     Ok(())
 /// }
 /// ```
-pub trait GooseDefaultType<T> {
-    fn set_default(self, key: GooseDefault, value: T) -> Result<Box<Self>, GooseError>;
+pub trait SwanlingDefaultType<T> {
+    fn set_default(self, key: SwanlingDefault, value: T) -> Result<Box<Self>, SwanlingError>;
 }
-impl GooseDefaultType<&str> for GooseAttack {
-    fn set_default(mut self, key: GooseDefault, value: &str) -> Result<Box<Self>, GooseError> {
+impl SwanlingDefaultType<&str> for SwanlingAttack {
+    fn set_default(mut self, key: SwanlingDefault, value: &str) -> Result<Box<Self>, SwanlingError> {
         match key {
             // Set valid defaults.
-            GooseDefault::HatchRate => self.defaults.hatch_rate = Some(value.to_string()),
-            GooseDefault::Host => self.defaults.host = Some(value.to_string()),
-            GooseDefault::GooseLog => self.defaults.goose_log = Some(value.to_string()),
-            GooseDefault::ReportFile => self.defaults.report_file = Some(value.to_string()),
-            GooseDefault::RequestLog => self.defaults.request_log = Some(value.to_string()),
-            GooseDefault::TaskLog => self.defaults.task_log = Some(value.to_string()),
-            GooseDefault::ErrorLog => self.defaults.error_log = Some(value.to_string()),
-            GooseDefault::DebugLog => self.defaults.debug_log = Some(value.to_string()),
-            GooseDefault::TelnetHost => self.defaults.telnet_host = Some(value.to_string()),
-            GooseDefault::WebSocketHost => self.defaults.websocket_host = Some(value.to_string()),
-            GooseDefault::ManagerBindHost => {
+            SwanlingDefault::HatchRate => self.defaults.hatch_rate = Some(value.to_string()),
+            SwanlingDefault::Host => self.defaults.host = Some(value.to_string()),
+            SwanlingDefault::SwanlingLog => self.defaults.swanling_log = Some(value.to_string()),
+            SwanlingDefault::ReportFile => self.defaults.report_file = Some(value.to_string()),
+            SwanlingDefault::RequestLog => self.defaults.request_log = Some(value.to_string()),
+            SwanlingDefault::TaskLog => self.defaults.task_log = Some(value.to_string()),
+            SwanlingDefault::ErrorLog => self.defaults.error_log = Some(value.to_string()),
+            SwanlingDefault::DebugLog => self.defaults.debug_log = Some(value.to_string()),
+            SwanlingDefault::TelnetHost => self.defaults.telnet_host = Some(value.to_string()),
+            SwanlingDefault::WebSocketHost => self.defaults.websocket_host = Some(value.to_string()),
+            SwanlingDefault::ManagerBindHost => {
                 self.defaults.manager_bind_host = Some(value.to_string())
             }
-            GooseDefault::ManagerHost => self.defaults.manager_host = Some(value.to_string()),
+            SwanlingDefault::ManagerHost => self.defaults.manager_host = Some(value.to_string()),
             // Otherwise display a helpful and explicit error.
-            GooseDefault::Users
-            | GooseDefault::RunTime
-            | GooseDefault::LogLevel
-            | GooseDefault::Verbose
-            | GooseDefault::ThrottleRequests
-            | GooseDefault::ExpectWorkers
-            | GooseDefault::TelnetPort
-            | GooseDefault::WebSocketPort
-            | GooseDefault::ManagerBindPort
-            | GooseDefault::ManagerPort => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Users
+            | SwanlingDefault::RunTime
+            | SwanlingDefault::LogLevel
+            | SwanlingDefault::Verbose
+            | SwanlingDefault::ThrottleRequests
+            | SwanlingDefault::ExpectWorkers
+            | SwanlingDefault::TelnetPort
+            | SwanlingDefault::WebSocketPort
+            | SwanlingDefault::ManagerBindPort
+            | SwanlingDefault::ManagerPort => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected usize value, received &str",
+                        "set_default(SwanlingDefault::{:?}, {}) expected usize value, received &str",
                         key, value
                     ),
                 });
             }
-            GooseDefault::RunningMetrics
-            | GooseDefault::NoResetMetrics
-            | GooseDefault::NoMetrics
-            | GooseDefault::NoTaskMetrics
-            | GooseDefault::NoErrorSummary
-            | GooseDefault::NoDebugBody
-            | GooseDefault::NoTelnet
-            | GooseDefault::NoWebSocket
-            | GooseDefault::NoAutoStart
-            | GooseDefault::StatusCodes
-            | GooseDefault::StickyFollow
-            | GooseDefault::Manager
-            | GooseDefault::NoHashCheck
-            | GooseDefault::Worker => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::RunningMetrics
+            | SwanlingDefault::NoResetMetrics
+            | SwanlingDefault::NoMetrics
+            | SwanlingDefault::NoTaskMetrics
+            | SwanlingDefault::NoErrorSummary
+            | SwanlingDefault::NoDebugBody
+            | SwanlingDefault::NoTelnet
+            | SwanlingDefault::NoWebSocket
+            | SwanlingDefault::NoAutoStart
+            | SwanlingDefault::StatusCodes
+            | SwanlingDefault::StickyFollow
+            | SwanlingDefault::Manager
+            | SwanlingDefault::NoHashCheck
+            | SwanlingDefault::Worker => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected bool value, received &str",
+                        "set_default(SwanlingDefault::{:?}, {}) expected bool value, received &str",
                         key, value
                     ),
                 });
             }
-            GooseDefault::DebugFormat
-            | GooseDefault::ErrorFormat
-            | GooseDefault::TaskFormat
-            | GooseDefault::RequestFormat => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::DebugFormat
+            | SwanlingDefault::ErrorFormat
+            | SwanlingDefault::TaskFormat
+            | SwanlingDefault::RequestFormat => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseLogFormat value, received &str",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingLogFormat value, received &str",
                         key, value
                     ),
                 });
             }
-            GooseDefault::CoordinatedOmissionMitigation => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::CoordinatedOmissionMitigation => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseCoordinatedOmissionMitigation value, received &str",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingCoordinatedOmissionMitigation value, received &str",
                         key, value
                     ),
                 });
@@ -3727,83 +3727,83 @@ impl GooseDefaultType<&str> for GooseAttack {
         Ok(Box::new(self))
     }
 }
-impl GooseDefaultType<usize> for GooseAttack {
-    fn set_default(mut self, key: GooseDefault, value: usize) -> Result<Box<Self>, GooseError> {
+impl SwanlingDefaultType<usize> for SwanlingAttack {
+    fn set_default(mut self, key: SwanlingDefault, value: usize) -> Result<Box<Self>, SwanlingError> {
         match key {
-            GooseDefault::Users => self.defaults.users = Some(value),
-            GooseDefault::RunTime => self.defaults.run_time = Some(value),
-            GooseDefault::RunningMetrics => self.defaults.running_metrics = Some(value),
-            GooseDefault::LogLevel => self.defaults.log_level = Some(value as u8),
-            GooseDefault::Verbose => self.defaults.verbose = Some(value as u8),
-            GooseDefault::ThrottleRequests => self.defaults.throttle_requests = Some(value),
-            GooseDefault::ExpectWorkers => self.defaults.expect_workers = Some(value as u16),
-            GooseDefault::TelnetPort => self.defaults.telnet_port = Some(value as u16),
-            GooseDefault::WebSocketPort => self.defaults.websocket_port = Some(value as u16),
-            GooseDefault::ManagerBindPort => self.defaults.manager_bind_port = Some(value as u16),
-            GooseDefault::ManagerPort => self.defaults.manager_port = Some(value as u16),
+            SwanlingDefault::Users => self.defaults.users = Some(value),
+            SwanlingDefault::RunTime => self.defaults.run_time = Some(value),
+            SwanlingDefault::RunningMetrics => self.defaults.running_metrics = Some(value),
+            SwanlingDefault::LogLevel => self.defaults.log_level = Some(value as u8),
+            SwanlingDefault::Verbose => self.defaults.verbose = Some(value as u8),
+            SwanlingDefault::ThrottleRequests => self.defaults.throttle_requests = Some(value),
+            SwanlingDefault::ExpectWorkers => self.defaults.expect_workers = Some(value as u16),
+            SwanlingDefault::TelnetPort => self.defaults.telnet_port = Some(value as u16),
+            SwanlingDefault::WebSocketPort => self.defaults.websocket_port = Some(value as u16),
+            SwanlingDefault::ManagerBindPort => self.defaults.manager_bind_port = Some(value as u16),
+            SwanlingDefault::ManagerPort => self.defaults.manager_port = Some(value as u16),
             // Otherwise display a helpful and explicit error.
-            GooseDefault::Host
-            | GooseDefault::HatchRate
-            | GooseDefault::GooseLog
-            | GooseDefault::ReportFile
-            | GooseDefault::RequestLog
-            | GooseDefault::TaskLog
-            | GooseDefault::ErrorLog
-            | GooseDefault::DebugLog
-            | GooseDefault::TelnetHost
-            | GooseDefault::WebSocketHost
-            | GooseDefault::ManagerBindHost
-            | GooseDefault::ManagerHost => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Host
+            | SwanlingDefault::HatchRate
+            | SwanlingDefault::SwanlingLog
+            | SwanlingDefault::ReportFile
+            | SwanlingDefault::RequestLog
+            | SwanlingDefault::TaskLog
+            | SwanlingDefault::ErrorLog
+            | SwanlingDefault::DebugLog
+            | SwanlingDefault::TelnetHost
+            | SwanlingDefault::WebSocketHost
+            | SwanlingDefault::ManagerBindHost
+            | SwanlingDefault::ManagerHost => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected &str value, received usize",
+                        "set_default(SwanlingDefault::{:?}, {}) expected &str value, received usize",
                         key, value
                     ),
                 })
             }
-            GooseDefault::NoResetMetrics
-            | GooseDefault::NoMetrics
-            | GooseDefault::NoTaskMetrics
-            | GooseDefault::NoErrorSummary
-            | GooseDefault::NoDebugBody
-            | GooseDefault::NoTelnet
-            | GooseDefault::NoWebSocket
-            | GooseDefault::NoAutoStart
-            | GooseDefault::StatusCodes
-            | GooseDefault::StickyFollow
-            | GooseDefault::Manager
-            | GooseDefault::NoHashCheck
-            | GooseDefault::Worker => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::NoResetMetrics
+            | SwanlingDefault::NoMetrics
+            | SwanlingDefault::NoTaskMetrics
+            | SwanlingDefault::NoErrorSummary
+            | SwanlingDefault::NoDebugBody
+            | SwanlingDefault::NoTelnet
+            | SwanlingDefault::NoWebSocket
+            | SwanlingDefault::NoAutoStart
+            | SwanlingDefault::StatusCodes
+            | SwanlingDefault::StickyFollow
+            | SwanlingDefault::Manager
+            | SwanlingDefault::NoHashCheck
+            | SwanlingDefault::Worker => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected bool value, received usize",
+                        "set_default(SwanlingDefault::{:?}, {}) expected bool value, received usize",
                         key, value
                     ),
                 })
             }
-            GooseDefault::RequestFormat
-            | GooseDefault::DebugFormat
-            | GooseDefault::ErrorFormat
-            | GooseDefault::TaskFormat => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::RequestFormat
+            | SwanlingDefault::DebugFormat
+            | SwanlingDefault::ErrorFormat
+            | SwanlingDefault::TaskFormat => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseLogFormat value, received usize",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingLogFormat value, received usize",
                         key, value
                     ),
                 });
             }
-            GooseDefault::CoordinatedOmissionMitigation => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::CoordinatedOmissionMitigation => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseCoordinatedOmissionMitigation value, received usize",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingCoordinatedOmissionMitigation value, received usize",
                         key, value
                     ),
                 });
@@ -3812,83 +3812,83 @@ impl GooseDefaultType<usize> for GooseAttack {
         Ok(Box::new(self))
     }
 }
-impl GooseDefaultType<bool> for GooseAttack {
-    fn set_default(mut self, key: GooseDefault, value: bool) -> Result<Box<Self>, GooseError> {
+impl SwanlingDefaultType<bool> for SwanlingAttack {
+    fn set_default(mut self, key: SwanlingDefault, value: bool) -> Result<Box<Self>, SwanlingError> {
         match key {
-            GooseDefault::NoResetMetrics => self.defaults.no_reset_metrics = Some(value),
-            GooseDefault::NoMetrics => self.defaults.no_metrics = Some(value),
-            GooseDefault::NoTaskMetrics => self.defaults.no_task_metrics = Some(value),
-            GooseDefault::NoErrorSummary => self.defaults.no_error_summary = Some(value),
-            GooseDefault::NoDebugBody => self.defaults.no_debug_body = Some(value),
-            GooseDefault::NoTelnet => self.defaults.no_telnet = Some(value),
-            GooseDefault::NoWebSocket => self.defaults.no_websocket = Some(value),
-            GooseDefault::NoAutoStart => self.defaults.no_autostart = Some(value),
-            GooseDefault::StatusCodes => self.defaults.status_codes = Some(value),
-            GooseDefault::StickyFollow => self.defaults.sticky_follow = Some(value),
-            GooseDefault::Manager => self.defaults.manager = Some(value),
-            GooseDefault::NoHashCheck => self.defaults.no_hash_check = Some(value),
-            GooseDefault::Worker => self.defaults.worker = Some(value),
+            SwanlingDefault::NoResetMetrics => self.defaults.no_reset_metrics = Some(value),
+            SwanlingDefault::NoMetrics => self.defaults.no_metrics = Some(value),
+            SwanlingDefault::NoTaskMetrics => self.defaults.no_task_metrics = Some(value),
+            SwanlingDefault::NoErrorSummary => self.defaults.no_error_summary = Some(value),
+            SwanlingDefault::NoDebugBody => self.defaults.no_debug_body = Some(value),
+            SwanlingDefault::NoTelnet => self.defaults.no_telnet = Some(value),
+            SwanlingDefault::NoWebSocket => self.defaults.no_websocket = Some(value),
+            SwanlingDefault::NoAutoStart => self.defaults.no_autostart = Some(value),
+            SwanlingDefault::StatusCodes => self.defaults.status_codes = Some(value),
+            SwanlingDefault::StickyFollow => self.defaults.sticky_follow = Some(value),
+            SwanlingDefault::Manager => self.defaults.manager = Some(value),
+            SwanlingDefault::NoHashCheck => self.defaults.no_hash_check = Some(value),
+            SwanlingDefault::Worker => self.defaults.worker = Some(value),
             // Otherwise display a helpful and explicit error.
-            GooseDefault::Host
-            | GooseDefault::GooseLog
-            | GooseDefault::ReportFile
-            | GooseDefault::RequestLog
-            | GooseDefault::TaskLog
-            | GooseDefault::RunningMetrics
-            | GooseDefault::ErrorLog
-            | GooseDefault::DebugLog
-            | GooseDefault::TelnetHost
-            | GooseDefault::WebSocketHost
-            | GooseDefault::ManagerBindHost
-            | GooseDefault::ManagerHost => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Host
+            | SwanlingDefault::SwanlingLog
+            | SwanlingDefault::ReportFile
+            | SwanlingDefault::RequestLog
+            | SwanlingDefault::TaskLog
+            | SwanlingDefault::RunningMetrics
+            | SwanlingDefault::ErrorLog
+            | SwanlingDefault::DebugLog
+            | SwanlingDefault::TelnetHost
+            | SwanlingDefault::WebSocketHost
+            | SwanlingDefault::ManagerBindHost
+            | SwanlingDefault::ManagerHost => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected &str value, received bool",
+                        "set_default(SwanlingDefault::{:?}, {}) expected &str value, received bool",
                         key, value
                     ),
                 })
             }
-            GooseDefault::Users
-            | GooseDefault::HatchRate
-            | GooseDefault::RunTime
-            | GooseDefault::LogLevel
-            | GooseDefault::Verbose
-            | GooseDefault::ThrottleRequests
-            | GooseDefault::ExpectWorkers
-            | GooseDefault::TelnetPort
-            | GooseDefault::WebSocketPort
-            | GooseDefault::ManagerBindPort
-            | GooseDefault::ManagerPort => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Users
+            | SwanlingDefault::HatchRate
+            | SwanlingDefault::RunTime
+            | SwanlingDefault::LogLevel
+            | SwanlingDefault::Verbose
+            | SwanlingDefault::ThrottleRequests
+            | SwanlingDefault::ExpectWorkers
+            | SwanlingDefault::TelnetPort
+            | SwanlingDefault::WebSocketPort
+            | SwanlingDefault::ManagerBindPort
+            | SwanlingDefault::ManagerPort => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected usize value, received bool",
+                        "set_default(SwanlingDefault::{:?}, {}) expected usize value, received bool",
                         key, value
                     ),
                 })
             }
-            GooseDefault::RequestFormat
-            | GooseDefault::DebugFormat
-            | GooseDefault::ErrorFormat
-            | GooseDefault::TaskFormat => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::RequestFormat
+            | SwanlingDefault::DebugFormat
+            | SwanlingDefault::ErrorFormat
+            | SwanlingDefault::TaskFormat => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseLogFormat value, received bool",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingLogFormat value, received bool",
                         key, value
                     ),
                 });
             }
-            GooseDefault::CoordinatedOmissionMitigation => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::CoordinatedOmissionMitigation => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: value.to_string(),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {}) expected GooseCoordinatedOmissionMitigation value, received bool",
+                        "set_default(SwanlingDefault::{:?}, {}) expected SwanlingCoordinatedOmissionMitigation value, received bool",
                         key, value
                     ),
                 });
@@ -3897,87 +3897,87 @@ impl GooseDefaultType<bool> for GooseAttack {
         Ok(Box::new(self))
     }
 }
-impl GooseDefaultType<GooseCoordinatedOmissionMitigation> for GooseAttack {
+impl SwanlingDefaultType<SwanlingCoordinatedOmissionMitigation> for SwanlingAttack {
     fn set_default(
         mut self,
-        key: GooseDefault,
-        value: GooseCoordinatedOmissionMitigation,
-    ) -> Result<Box<Self>, GooseError> {
+        key: SwanlingDefault,
+        value: SwanlingCoordinatedOmissionMitigation,
+    ) -> Result<Box<Self>, SwanlingError> {
         match key {
-            GooseDefault::CoordinatedOmissionMitigation => self.defaults.co_mitigation = Some(value),
+            SwanlingDefault::CoordinatedOmissionMitigation => self.defaults.co_mitigation = Some(value),
             // Otherwise display a helpful and explicit error.
-            GooseDefault::NoResetMetrics
-            | GooseDefault::NoMetrics
-            | GooseDefault::NoTaskMetrics
-            | GooseDefault::NoErrorSummary
-            | GooseDefault::NoDebugBody
-            | GooseDefault::NoTelnet
-            | GooseDefault::NoWebSocket
-            | GooseDefault::NoAutoStart
-            | GooseDefault::StatusCodes
-            | GooseDefault::StickyFollow
-            | GooseDefault::Manager
-            | GooseDefault::NoHashCheck
-            | GooseDefault::Worker => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::NoResetMetrics
+            | SwanlingDefault::NoMetrics
+            | SwanlingDefault::NoTaskMetrics
+            | SwanlingDefault::NoErrorSummary
+            | SwanlingDefault::NoDebugBody
+            | SwanlingDefault::NoTelnet
+            | SwanlingDefault::NoWebSocket
+            | SwanlingDefault::NoAutoStart
+            | SwanlingDefault::StatusCodes
+            | SwanlingDefault::StickyFollow
+            | SwanlingDefault::Manager
+            | SwanlingDefault::NoHashCheck
+            | SwanlingDefault::Worker => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected bool value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected bool value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::Host
-            | GooseDefault::GooseLog
-            | GooseDefault::ReportFile
-            | GooseDefault::RequestLog
-            | GooseDefault::TaskLog
-            | GooseDefault::RunningMetrics
-            | GooseDefault::ErrorLog
-            | GooseDefault::DebugLog
-            | GooseDefault::TelnetHost
-            | GooseDefault::WebSocketHost
-            | GooseDefault::ManagerBindHost
-            | GooseDefault::ManagerHost => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Host
+            | SwanlingDefault::SwanlingLog
+            | SwanlingDefault::ReportFile
+            | SwanlingDefault::RequestLog
+            | SwanlingDefault::TaskLog
+            | SwanlingDefault::RunningMetrics
+            | SwanlingDefault::ErrorLog
+            | SwanlingDefault::DebugLog
+            | SwanlingDefault::TelnetHost
+            | SwanlingDefault::WebSocketHost
+            | SwanlingDefault::ManagerBindHost
+            | SwanlingDefault::ManagerHost => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected &str value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected &str value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::Users
-            | GooseDefault::HatchRate
-            | GooseDefault::RunTime
-            | GooseDefault::LogLevel
-            | GooseDefault::Verbose
-            | GooseDefault::ThrottleRequests
-            | GooseDefault::ExpectWorkers
-            | GooseDefault::TelnetPort
-            | GooseDefault::WebSocketPort
-            | GooseDefault::ManagerBindPort
-            | GooseDefault::ManagerPort => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Users
+            | SwanlingDefault::HatchRate
+            | SwanlingDefault::RunTime
+            | SwanlingDefault::LogLevel
+            | SwanlingDefault::Verbose
+            | SwanlingDefault::ThrottleRequests
+            | SwanlingDefault::ExpectWorkers
+            | SwanlingDefault::TelnetPort
+            | SwanlingDefault::WebSocketPort
+            | SwanlingDefault::ManagerBindPort
+            | SwanlingDefault::ManagerPort => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected usize value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected usize value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::RequestFormat
-            | GooseDefault::DebugFormat
-            | GooseDefault::ErrorFormat
-            | GooseDefault::TaskFormat => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::RequestFormat
+            | SwanlingDefault::DebugFormat
+            | SwanlingDefault::ErrorFormat
+            | SwanlingDefault::TaskFormat => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected GooseLogFormat value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected SwanlingLogFormat value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
@@ -3986,87 +3986,87 @@ impl GooseDefaultType<GooseCoordinatedOmissionMitigation> for GooseAttack {
         Ok(Box::new(self))
     }
 }
-impl GooseDefaultType<GooseLogFormat> for GooseAttack {
+impl SwanlingDefaultType<SwanlingLogFormat> for SwanlingAttack {
     fn set_default(
         mut self,
-        key: GooseDefault,
-        value: GooseLogFormat,
-    ) -> Result<Box<Self>, GooseError> {
+        key: SwanlingDefault,
+        value: SwanlingLogFormat,
+    ) -> Result<Box<Self>, SwanlingError> {
         match key {
-            GooseDefault::RequestFormat => self.defaults.request_format = Some(value),
-            GooseDefault::DebugFormat => self.defaults.debug_format = Some(value),
-            GooseDefault::ErrorFormat => self.defaults.error_format = Some(value),
-            GooseDefault::TaskFormat => self.defaults.task_format = Some(value),
+            SwanlingDefault::RequestFormat => self.defaults.request_format = Some(value),
+            SwanlingDefault::DebugFormat => self.defaults.debug_format = Some(value),
+            SwanlingDefault::ErrorFormat => self.defaults.error_format = Some(value),
+            SwanlingDefault::TaskFormat => self.defaults.task_format = Some(value),
             // Otherwise display a helpful and explicit error.
-            GooseDefault::NoResetMetrics
-            | GooseDefault::NoMetrics
-            | GooseDefault::NoTaskMetrics
-            | GooseDefault::NoErrorSummary
-            | GooseDefault::NoDebugBody
-            | GooseDefault::NoTelnet
-            | GooseDefault::NoWebSocket
-            | GooseDefault::NoAutoStart
-            | GooseDefault::StatusCodes
-            | GooseDefault::StickyFollow
-            | GooseDefault::Manager
-            | GooseDefault::NoHashCheck
-            | GooseDefault::Worker => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::NoResetMetrics
+            | SwanlingDefault::NoMetrics
+            | SwanlingDefault::NoTaskMetrics
+            | SwanlingDefault::NoErrorSummary
+            | SwanlingDefault::NoDebugBody
+            | SwanlingDefault::NoTelnet
+            | SwanlingDefault::NoWebSocket
+            | SwanlingDefault::NoAutoStart
+            | SwanlingDefault::StatusCodes
+            | SwanlingDefault::StickyFollow
+            | SwanlingDefault::Manager
+            | SwanlingDefault::NoHashCheck
+            | SwanlingDefault::Worker => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected bool value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected bool value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::Host
-            | GooseDefault::GooseLog
-            | GooseDefault::ReportFile
-            | GooseDefault::RequestLog
-            | GooseDefault::TaskLog
-            | GooseDefault::RunningMetrics
-            | GooseDefault::ErrorLog
-            | GooseDefault::DebugLog
-            | GooseDefault::TelnetHost
-            | GooseDefault::WebSocketHost
-            | GooseDefault::ManagerBindHost
-            | GooseDefault::ManagerHost => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Host
+            | SwanlingDefault::SwanlingLog
+            | SwanlingDefault::ReportFile
+            | SwanlingDefault::RequestLog
+            | SwanlingDefault::TaskLog
+            | SwanlingDefault::RunningMetrics
+            | SwanlingDefault::ErrorLog
+            | SwanlingDefault::DebugLog
+            | SwanlingDefault::TelnetHost
+            | SwanlingDefault::WebSocketHost
+            | SwanlingDefault::ManagerBindHost
+            | SwanlingDefault::ManagerHost => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected &str value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected &str value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::Users
-            | GooseDefault::HatchRate
-            | GooseDefault::RunTime
-            | GooseDefault::LogLevel
-            | GooseDefault::Verbose
-            | GooseDefault::ThrottleRequests
-            | GooseDefault::ExpectWorkers
-            | GooseDefault::TelnetPort
-            | GooseDefault::WebSocketPort
-            | GooseDefault::ManagerBindPort
-            | GooseDefault::ManagerPort => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::Users
+            | SwanlingDefault::HatchRate
+            | SwanlingDefault::RunTime
+            | SwanlingDefault::LogLevel
+            | SwanlingDefault::Verbose
+            | SwanlingDefault::ThrottleRequests
+            | SwanlingDefault::ExpectWorkers
+            | SwanlingDefault::TelnetPort
+            | SwanlingDefault::WebSocketPort
+            | SwanlingDefault::ManagerBindPort
+            | SwanlingDefault::ManagerPort => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected usize value, received GooseCoordinatedOmissionMitigation",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected usize value, received SwanlingCoordinatedOmissionMitigation",
                         key, value
                     ),
                 })
             }
-            GooseDefault::CoordinatedOmissionMitigation => {
-                return Err(GooseError::InvalidOption {
-                    option: format!("GooseDefault::{:?}", key),
+            SwanlingDefault::CoordinatedOmissionMitigation => {
+                return Err(SwanlingError::InvalidOption {
+                    option: format!("SwanlingDefault::{:?}", key),
                     value: format!("{:?}", value),
                     detail: format!(
-                        "set_default(GooseDefault::{:?}, {:?}) expected GooseCoordinatedOmissionMitigation value, received GooseLogFormat",
+                        "set_default(SwanlingDefault::{:?}, {:?}) expected SwanlingCoordinatedOmissionMitigation value, received SwanlingLogFormat",
                         key, value
                     ),
                 })
@@ -4077,9 +4077,9 @@ impl GooseDefaultType<GooseLogFormat> for GooseAttack {
     }
 }
 
-/// Options available when launching a Goose load test.
+/// Options available when launching a Swanling load test.
 #[derive(Options, Debug, Clone, Serialize, Deserialize)]
-pub struct GooseConfiguration {
+pub struct SwanlingConfiguration {
     /// Displays this help
     #[options(short = "h")]
     pub help: bool,
@@ -4102,17 +4102,17 @@ pub struct GooseConfiguration {
     /// Stops after (30s, 20m, 3h, 1h30m, etc)
     #[options(short = "t", meta = "TIME")]
     pub run_time: String,
-    /// Enables Goose log file and sets name
+    /// Enables Swanling log file and sets name
     #[options(short = "G", meta = "NAME")]
-    pub goose_log: String,
-    /// Sets Goose log level (-g, -gg, etc)
+    pub swanling_log: String,
+    /// Sets Swanling log level (-g, -gg, etc)
     #[options(short = "g", count)]
     pub log_level: u8,
     #[options(
         count,
         short = "v",
         // Add a blank line and then a 'Metrics:' header after this option
-        help = "Sets Goose verbosity (-v, -vv, etc)\n\nMetrics:"
+        help = "Sets Swanling verbosity (-v, -vv, etc)\n\nMetrics:"
     )]
     pub verbose: u8,
 
@@ -4139,25 +4139,25 @@ pub struct GooseConfiguration {
     pub request_log: String,
     /// Sets request log format (csv, json, raw)
     #[options(no_short, meta = "FORMAT")]
-    pub request_format: Option<GooseLogFormat>,
+    pub request_format: Option<SwanlingLogFormat>,
     /// Sets task log file name
     #[options(short = "T", meta = "NAME")]
     pub task_log: String,
     /// Sets task log format (csv, json, raw)
     #[options(no_short, meta = "FORMAT")]
-    pub task_format: Option<GooseLogFormat>,
+    pub task_format: Option<SwanlingLogFormat>,
     /// Sets error log file name
     #[options(short = "E", meta = "NAME")]
     pub error_log: String,
     /// Sets error log format (csv, json, raw)
     #[options(no_short, meta = "FORMAT")]
-    pub error_format: Option<GooseLogFormat>,
+    pub error_format: Option<SwanlingLogFormat>,
     /// Sets debug log file name
     #[options(short = "D", meta = "NAME")]
     pub debug_log: String,
     /// Sets debug log format (csv, json, raw)
     #[options(no_short, meta = "FORMAT")]
-    pub debug_format: Option<GooseLogFormat>,
+    pub debug_format: Option<SwanlingLogFormat>,
     /// Do not include the response body in the debug log
     #[options(no_short)]
     pub no_debug_body: bool,
@@ -4188,7 +4188,7 @@ pub struct GooseConfiguration {
     pub no_autostart: bool,
     /// Sets coordinated omission mitigation strategy
     #[options(no_short, meta = "STRATEGY")]
-    pub co_mitigation: Option<GooseCoordinatedOmissionMitigation>,
+    pub co_mitigation: Option<SwanlingCoordinatedOmissionMitigation>,
     /// Sets maximum requests per second
     #[options(no_short, meta = "VALUE")]
     pub throttle_requests: usize,
@@ -4224,29 +4224,29 @@ pub struct GooseConfiguration {
     pub manager_port: u16,
 }
 
-/// Use the configured GooseScheduler to allocate all [`GooseTask`](./goose/struct.GooseTask.html)s
-/// within the [`GooseTaskSet`](./goose/struct.GooseTaskSet.html) in the appropriate order. Returns
+/// Use the configured SwanlingScheduler to allocate all [`SwanlingTask`](./swanling/struct.SwanlingTask.html)s
+/// within the [`SwanlingTaskSet`](./swanling/struct.SwanlingTaskSet.html) in the appropriate order. Returns
 /// three set of ordered tasks: /// `on_start_tasks`, `tasks`, and `on_stop_tasks`. The
-/// `on_start_tasks` are only run once when the [`GooseAttack`](./struct.GooseAttack.html) first
+/// `on_start_tasks` are only run once when the [`SwanlingAttack`](./struct.SwanlingAttack.html) first
 /// starts. Normal `tasks` are then run for the duration of the
-/// [`GooseAttack`](./struct.GooseAttack.html). The `on_stop_tasks` finally are only run once when
-/// the [`GooseAttack`](./struct.GooseAttack.html) stops.
+/// [`SwanlingAttack`](./struct.SwanlingAttack.html). The `on_stop_tasks` finally are only run once when
+/// the [`SwanlingAttack`](./struct.SwanlingAttack.html) stops.
 fn allocate_tasks(
-    task_set: &GooseTaskSet,
-    scheduler: &GooseScheduler,
-) -> (WeightedGooseTasks, WeightedGooseTasks, WeightedGooseTasks) {
+    task_set: &SwanlingTaskSet,
+    scheduler: &SwanlingScheduler,
+) -> (WeightedSwanlingTasks, WeightedSwanlingTasks, WeightedSwanlingTasks) {
     debug!(
-        "allocating GooseTasks on GooseUsers with {:?} scheduler",
+        "allocating SwanlingTasks on SwanlingUsers with {:?} scheduler",
         scheduler
     );
 
     // A BTreeMap of Vectors allows us to group and sort tasks per sequence value.
-    let mut sequenced_tasks: SequencedGooseTasks = BTreeMap::new();
-    let mut sequenced_on_start_tasks: SequencedGooseTasks = BTreeMap::new();
-    let mut sequenced_on_stop_tasks: SequencedGooseTasks = BTreeMap::new();
-    let mut unsequenced_tasks: UnsequencedGooseTasks = Vec::new();
-    let mut unsequenced_on_start_tasks: UnsequencedGooseTasks = Vec::new();
-    let mut unsequenced_on_stop_tasks: UnsequencedGooseTasks = Vec::new();
+    let mut sequenced_tasks: SequencedSwanlingTasks = BTreeMap::new();
+    let mut sequenced_on_start_tasks: SequencedSwanlingTasks = BTreeMap::new();
+    let mut sequenced_on_stop_tasks: SequencedSwanlingTasks = BTreeMap::new();
+    let mut unsequenced_tasks: UnsequencedSwanlingTasks = Vec::new();
+    let mut unsequenced_on_start_tasks: UnsequencedSwanlingTasks = Vec::new();
+    let mut unsequenced_on_stop_tasks: UnsequencedSwanlingTasks = Vec::new();
     let mut u: usize = 0;
     let mut v: usize;
 
@@ -4369,12 +4369,12 @@ fn allocate_tasks(
         on_stop_tasks.extend(vec![(*task, task_set.tasks[*task].name.to_string())])
     }
 
-    // Return sequenced buckets of weighted usize pointers to and names of Goose Tasks
+    // Return sequenced buckets of weighted usize pointers to and names of Swanling Tasks
     (on_start_tasks, tasks, on_stop_tasks)
 }
 
-/// Build a weighted vector of vectors of unsequenced GooseTasks.
-fn weight_unsequenced_tasks(unsequenced_tasks: &[GooseTask], u: usize) -> (Vec<Vec<usize>>, usize) {
+/// Build a weighted vector of vectors of unsequenced SwanlingTasks.
+fn weight_unsequenced_tasks(unsequenced_tasks: &[SwanlingTask], u: usize) -> (Vec<Vec<usize>>, usize) {
     // Build a vector of vectors to be used to schedule users.
     let mut available_unsequenced_tasks = Vec::with_capacity(unsequenced_tasks.len());
     let mut total_tasks = 0;
@@ -4395,14 +4395,14 @@ fn weight_unsequenced_tasks(unsequenced_tasks: &[GooseTask], u: usize) -> (Vec<V
     (available_unsequenced_tasks, total_tasks)
 }
 
-/// Build a weighted vector of vectors of sequenced GooseTasks.
+/// Build a weighted vector of vectors of sequenced SwanlingTasks.
 fn weight_sequenced_tasks(
-    sequenced_tasks: &SequencedGooseTasks,
+    sequenced_tasks: &SequencedSwanlingTasks,
     u: usize,
 ) -> BTreeMap<usize, Vec<Vec<usize>>> {
-    // Build a sequenced BTreeMap containing weighted vectors of GooseTasks.
+    // Build a sequenced BTreeMap containing weighted vectors of SwanlingTasks.
     let mut available_sequenced_tasks = BTreeMap::new();
-    // Step through sequences, each containing a bucket of all GooseTasks with the same
+    // Step through sequences, each containing a bucket of all SwanlingTasks with the same
     // sequence value, allowing actual weighting to be done by weight_unsequenced_tasks().
     for (sequence, unsequenced_tasks) in sequenced_tasks.iter() {
         let (weighted_tasks, _total_weighted_tasks) =
@@ -4415,7 +4415,7 @@ fn weight_sequenced_tasks(
 
 fn schedule_sequenced_tasks(
     available_sequenced_tasks: &BTreeMap<usize, Vec<Vec<usize>>>,
-    scheduler: &GooseScheduler,
+    scheduler: &SwanlingScheduler,
 ) -> Vec<usize> {
     let mut weighted_tasks: Vec<usize> = Vec::new();
 
@@ -4431,20 +4431,20 @@ fn schedule_sequenced_tasks(
 fn schedule_unsequenced_tasks(
     available_unsequenced_tasks: &[Vec<usize>],
     total_tasks: usize,
-    scheduler: &GooseScheduler,
+    scheduler: &SwanlingScheduler,
 ) -> Vec<usize> {
     // Now build the weighted list with the appropriate scheduler.
     let mut weighted_tasks = Vec::new();
 
     match scheduler {
-        GooseScheduler::RoundRobin => {
+        SwanlingScheduler::RoundRobin => {
             // Allocate task sets round robin.
             let tasks_len = available_unsequenced_tasks.len();
             let mut available_tasks = available_unsequenced_tasks.to_owned();
             loop {
                 // Tasks are contained in a vector of vectors. The outer vectors each
-                // contain a different GooseTask, and the inner vectors contain each
-                // instance of that specific GooseTask.
+                // contain a different SwanlingTask, and the inner vectors contain each
+                // instance of that specific SwanlingTask.
                 for (task_index, tasks) in available_tasks.iter_mut().enumerate().take(tasks_len) {
                     if let Some(task) = tasks.pop() {
                         debug!("allocating task from Task {}", task_index);
@@ -4456,7 +4456,7 @@ fn schedule_unsequenced_tasks(
                 }
             }
         }
-        GooseScheduler::Serial | GooseScheduler::Random => {
+        SwanlingScheduler::Serial | SwanlingScheduler::Random => {
             // Allocate task sets serially in the weighted order defined. If the Random
             // scheduler is being used, tasks will get shuffled later.
             for (task_index, tasks) in available_unsequenced_tasks.iter().enumerate() {
@@ -4467,7 +4467,7 @@ fn schedule_unsequenced_tasks(
                 );
 
                 let mut tasks_clone = tasks.clone();
-                if scheduler == &GooseScheduler::Random {
+                if scheduler == &SwanlingScheduler::Random {
                     tasks_clone.shuffle(&mut thread_rng());
                 }
                 weighted_tasks.append(&mut tasks_clone);
@@ -4489,13 +4489,13 @@ mod test {
         let run_time: usize = 10;
         let hatch_rate = "2".to_string();
         let log_level: usize = 1;
-        let goose_log = "custom-goose.log".to_string();
+        let swanling_log = "custom-swanling.log".to_string();
         let verbose: usize = 0;
-        let report_file = "custom-goose-report.html".to_string();
-        let request_log = "custom-goose-request.log".to_string();
-        let task_log = "custom-goose-task.log".to_string();
-        let debug_log = "custom-goose-debug.log".to_string();
-        let error_log = "custom-goose-error.log".to_string();
+        let report_file = "custom-swanling-report.html".to_string();
+        let request_log = "custom-swanling-request.log".to_string();
+        let task_log = "custom-swanling-task.log".to_string();
+        let debug_log = "custom-swanling-debug.log".to_string();
+        let error_log = "custom-swanling-error.log".to_string();
         let throttle_requests: usize = 25;
         let expect_workers: usize = 5;
         let manager_bind_host = "127.0.0.1".to_string();
@@ -4503,123 +4503,123 @@ mod test {
         let manager_host = "127.0.0.1".to_string();
         let manager_port: usize = 1221;
 
-        let goose_attack = GooseAttack::initialize()
+        let swanling_attack = SwanlingAttack::initialize()
             .unwrap()
-            .set_default(GooseDefault::Host, host.as_str())
+            .set_default(SwanlingDefault::Host, host.as_str())
             .unwrap()
-            .set_default(GooseDefault::Users, users)
+            .set_default(SwanlingDefault::Users, users)
             .unwrap()
-            .set_default(GooseDefault::RunTime, run_time)
+            .set_default(SwanlingDefault::RunTime, run_time)
             .unwrap()
-            .set_default(GooseDefault::HatchRate, hatch_rate.as_str())
+            .set_default(SwanlingDefault::HatchRate, hatch_rate.as_str())
             .unwrap()
-            .set_default(GooseDefault::LogLevel, log_level)
+            .set_default(SwanlingDefault::LogLevel, log_level)
             .unwrap()
-            .set_default(GooseDefault::GooseLog, goose_log.as_str())
+            .set_default(SwanlingDefault::SwanlingLog, swanling_log.as_str())
             .unwrap()
-            .set_default(GooseDefault::Verbose, verbose)
+            .set_default(SwanlingDefault::Verbose, verbose)
             .unwrap()
-            .set_default(GooseDefault::RunningMetrics, 15)
+            .set_default(SwanlingDefault::RunningMetrics, 15)
             .unwrap()
-            .set_default(GooseDefault::NoResetMetrics, true)
+            .set_default(SwanlingDefault::NoResetMetrics, true)
             .unwrap()
-            .set_default(GooseDefault::NoMetrics, true)
+            .set_default(SwanlingDefault::NoMetrics, true)
             .unwrap()
-            .set_default(GooseDefault::NoTaskMetrics, true)
+            .set_default(SwanlingDefault::NoTaskMetrics, true)
             .unwrap()
-            .set_default(GooseDefault::NoErrorSummary, true)
+            .set_default(SwanlingDefault::NoErrorSummary, true)
             .unwrap()
-            .set_default(GooseDefault::NoTelnet, true)
+            .set_default(SwanlingDefault::NoTelnet, true)
             .unwrap()
-            .set_default(GooseDefault::NoWebSocket, true)
+            .set_default(SwanlingDefault::NoWebSocket, true)
             .unwrap()
-            .set_default(GooseDefault::NoAutoStart, true)
+            .set_default(SwanlingDefault::NoAutoStart, true)
             .unwrap()
-            .set_default(GooseDefault::ReportFile, report_file.as_str())
+            .set_default(SwanlingDefault::ReportFile, report_file.as_str())
             .unwrap()
-            .set_default(GooseDefault::RequestLog, request_log.as_str())
+            .set_default(SwanlingDefault::RequestLog, request_log.as_str())
             .unwrap()
-            .set_default(GooseDefault::RequestFormat, GooseLogFormat::Raw)
+            .set_default(SwanlingDefault::RequestFormat, SwanlingLogFormat::Raw)
             .unwrap()
-            .set_default(GooseDefault::TaskLog, task_log.as_str())
+            .set_default(SwanlingDefault::TaskLog, task_log.as_str())
             .unwrap()
-            .set_default(GooseDefault::TaskFormat, GooseLogFormat::Raw)
+            .set_default(SwanlingDefault::TaskFormat, SwanlingLogFormat::Raw)
             .unwrap()
-            .set_default(GooseDefault::ErrorLog, error_log.as_str())
+            .set_default(SwanlingDefault::ErrorLog, error_log.as_str())
             .unwrap()
-            .set_default(GooseDefault::ErrorFormat, GooseLogFormat::Csv)
+            .set_default(SwanlingDefault::ErrorFormat, SwanlingLogFormat::Csv)
             .unwrap()
-            .set_default(GooseDefault::DebugLog, debug_log.as_str())
+            .set_default(SwanlingDefault::DebugLog, debug_log.as_str())
             .unwrap()
-            .set_default(GooseDefault::DebugFormat, GooseLogFormat::Csv)
+            .set_default(SwanlingDefault::DebugFormat, SwanlingLogFormat::Csv)
             .unwrap()
-            .set_default(GooseDefault::NoDebugBody, true)
+            .set_default(SwanlingDefault::NoDebugBody, true)
             .unwrap()
-            .set_default(GooseDefault::StatusCodes, true)
+            .set_default(SwanlingDefault::StatusCodes, true)
             .unwrap()
             .set_default(
-                GooseDefault::CoordinatedOmissionMitigation,
-                GooseCoordinatedOmissionMitigation::Disabled,
+                SwanlingDefault::CoordinatedOmissionMitigation,
+                SwanlingCoordinatedOmissionMitigation::Disabled,
             )
             .unwrap()
-            .set_default(GooseDefault::ThrottleRequests, throttle_requests)
+            .set_default(SwanlingDefault::ThrottleRequests, throttle_requests)
             .unwrap()
-            .set_default(GooseDefault::StickyFollow, true)
+            .set_default(SwanlingDefault::StickyFollow, true)
             .unwrap()
-            .set_default(GooseDefault::Manager, true)
+            .set_default(SwanlingDefault::Manager, true)
             .unwrap()
-            .set_default(GooseDefault::ExpectWorkers, expect_workers)
+            .set_default(SwanlingDefault::ExpectWorkers, expect_workers)
             .unwrap()
-            .set_default(GooseDefault::NoHashCheck, true)
+            .set_default(SwanlingDefault::NoHashCheck, true)
             .unwrap()
-            .set_default(GooseDefault::ManagerBindHost, manager_bind_host.as_str())
+            .set_default(SwanlingDefault::ManagerBindHost, manager_bind_host.as_str())
             .unwrap()
-            .set_default(GooseDefault::ManagerBindPort, manager_bind_port)
+            .set_default(SwanlingDefault::ManagerBindPort, manager_bind_port)
             .unwrap()
-            .set_default(GooseDefault::Worker, true)
+            .set_default(SwanlingDefault::Worker, true)
             .unwrap()
-            .set_default(GooseDefault::ManagerHost, manager_host.as_str())
+            .set_default(SwanlingDefault::ManagerHost, manager_host.as_str())
             .unwrap()
-            .set_default(GooseDefault::ManagerPort, manager_port)
+            .set_default(SwanlingDefault::ManagerPort, manager_port)
             .unwrap();
 
-        assert!(goose_attack.defaults.host == Some(host));
-        assert!(goose_attack.defaults.users == Some(users));
-        assert!(goose_attack.defaults.run_time == Some(run_time));
-        assert!(goose_attack.defaults.hatch_rate == Some(hatch_rate));
-        assert!(goose_attack.defaults.log_level == Some(log_level as u8));
-        assert!(goose_attack.defaults.goose_log == Some(goose_log));
-        assert!(goose_attack.defaults.no_debug_body == Some(true));
-        assert!(goose_attack.defaults.verbose == Some(verbose as u8));
-        assert!(goose_attack.defaults.running_metrics == Some(15));
-        assert!(goose_attack.defaults.no_reset_metrics == Some(true));
-        assert!(goose_attack.defaults.no_metrics == Some(true));
-        assert!(goose_attack.defaults.no_task_metrics == Some(true));
-        assert!(goose_attack.defaults.no_error_summary == Some(true));
-        assert!(goose_attack.defaults.no_telnet == Some(true));
-        assert!(goose_attack.defaults.no_websocket == Some(true));
-        assert!(goose_attack.defaults.no_autostart == Some(true));
-        assert!(goose_attack.defaults.report_file == Some(report_file));
-        assert!(goose_attack.defaults.request_log == Some(request_log));
-        assert!(goose_attack.defaults.request_format == Some(GooseLogFormat::Raw));
-        assert!(goose_attack.defaults.error_log == Some(error_log));
-        assert!(goose_attack.defaults.error_format == Some(GooseLogFormat::Csv));
-        assert!(goose_attack.defaults.debug_log == Some(debug_log));
-        assert!(goose_attack.defaults.debug_format == Some(GooseLogFormat::Csv));
-        assert!(goose_attack.defaults.status_codes == Some(true));
+        assert!(swanling_attack.defaults.host == Some(host));
+        assert!(swanling_attack.defaults.users == Some(users));
+        assert!(swanling_attack.defaults.run_time == Some(run_time));
+        assert!(swanling_attack.defaults.hatch_rate == Some(hatch_rate));
+        assert!(swanling_attack.defaults.log_level == Some(log_level as u8));
+        assert!(swanling_attack.defaults.swanling_log == Some(swanling_log));
+        assert!(swanling_attack.defaults.no_debug_body == Some(true));
+        assert!(swanling_attack.defaults.verbose == Some(verbose as u8));
+        assert!(swanling_attack.defaults.running_metrics == Some(15));
+        assert!(swanling_attack.defaults.no_reset_metrics == Some(true));
+        assert!(swanling_attack.defaults.no_metrics == Some(true));
+        assert!(swanling_attack.defaults.no_task_metrics == Some(true));
+        assert!(swanling_attack.defaults.no_error_summary == Some(true));
+        assert!(swanling_attack.defaults.no_telnet == Some(true));
+        assert!(swanling_attack.defaults.no_websocket == Some(true));
+        assert!(swanling_attack.defaults.no_autostart == Some(true));
+        assert!(swanling_attack.defaults.report_file == Some(report_file));
+        assert!(swanling_attack.defaults.request_log == Some(request_log));
+        assert!(swanling_attack.defaults.request_format == Some(SwanlingLogFormat::Raw));
+        assert!(swanling_attack.defaults.error_log == Some(error_log));
+        assert!(swanling_attack.defaults.error_format == Some(SwanlingLogFormat::Csv));
+        assert!(swanling_attack.defaults.debug_log == Some(debug_log));
+        assert!(swanling_attack.defaults.debug_format == Some(SwanlingLogFormat::Csv));
+        assert!(swanling_attack.defaults.status_codes == Some(true));
         assert!(
-            goose_attack.defaults.co_mitigation
-                == Some(GooseCoordinatedOmissionMitigation::Disabled)
+            swanling_attack.defaults.co_mitigation
+                == Some(SwanlingCoordinatedOmissionMitigation::Disabled)
         );
-        assert!(goose_attack.defaults.throttle_requests == Some(throttle_requests));
-        assert!(goose_attack.defaults.sticky_follow == Some(true));
-        assert!(goose_attack.defaults.manager == Some(true));
-        assert!(goose_attack.defaults.expect_workers == Some(expect_workers as u16));
-        assert!(goose_attack.defaults.no_hash_check == Some(true));
-        assert!(goose_attack.defaults.manager_bind_host == Some(manager_bind_host));
-        assert!(goose_attack.defaults.manager_bind_port == Some(manager_bind_port as u16));
-        assert!(goose_attack.defaults.worker == Some(true));
-        assert!(goose_attack.defaults.manager_host == Some(manager_host));
-        assert!(goose_attack.defaults.manager_port == Some(manager_port as u16));
+        assert!(swanling_attack.defaults.throttle_requests == Some(throttle_requests));
+        assert!(swanling_attack.defaults.sticky_follow == Some(true));
+        assert!(swanling_attack.defaults.manager == Some(true));
+        assert!(swanling_attack.defaults.expect_workers == Some(expect_workers as u16));
+        assert!(swanling_attack.defaults.no_hash_check == Some(true));
+        assert!(swanling_attack.defaults.manager_bind_host == Some(manager_bind_host));
+        assert!(swanling_attack.defaults.manager_bind_port == Some(manager_bind_port as u16));
+        assert!(swanling_attack.defaults.worker == Some(true));
+        assert!(swanling_attack.defaults.manager_host == Some(manager_host));
+        assert!(swanling_attack.defaults.manager_port == Some(manager_port as u16));
     }
 }

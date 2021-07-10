@@ -5,11 +5,11 @@ use std::net::TcpStream;
 use std::{str, thread, time};
 use tungstenite::Message;
 
-use goose::controller::{
-    GooseControllerCommand, GooseControllerWebSocketRequest, GooseControllerWebSocketResponse,
+use swanling::controller::{
+    SwanlingControllerCommand, SwanlingControllerWebSocketRequest, SwanlingControllerWebSocketResponse,
 };
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 mod common;
 
@@ -38,12 +38,12 @@ enum TestType {
 struct TestState {
     // A buffer for the telnet Controller.
     buf: [u8; 2048],
-    // Track iterations through GooseControllerCommands.
+    // Track iterations through SwanlingControllerCommands.
     position: usize,
     // Track the steps within a given iteration.
     step: usize,
     // The Controller command currently being tested.
-    command: GooseControllerCommand,
+    command: SwanlingControllerCommand,
     // A TCP socket if testing the telnet Controller.
     telnet_stream: Option<TcpStream>,
     // A TCP socket if testing the WebSocket Controller.
@@ -65,14 +65,14 @@ struct TestState {
 }
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
@@ -96,38 +96,38 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 // common::build_configuration() to get defaults most all tests needs, but
 // for these tests we don't want a default configuration. We keep the signature
 // the same to simplify reuse, accepting the MockServer but not using it.
-fn common_build_configuration(_server: &MockServer, custom: &mut Vec<&str>) -> GooseConfiguration {
+fn common_build_configuration(_server: &MockServer, custom: &mut Vec<&str>) -> SwanlingConfiguration {
     // Common elements in all our tests.
     let mut configuration: Vec<&str> = vec!["--no-autostart", "--co-mitigation", "disabled"];
 
     // Custom elements in some tests.
     configuration.append(custom);
 
-    // Parse these options to generate a GooseConfiguration.
-    GooseConfiguration::parse_args_default(&configuration)
+    // Parse these options to generate a SwanlingConfiguration.
+    SwanlingConfiguration::parse_args_default(&configuration)
         .expect("failed to parse options and generate a configuration")
 }
 
 // Helper to confirm all variations generate appropriate results.
 fn validate_one_taskset(
-    goose_metrics: &GooseMetrics,
+    swanling_metrics: &SwanlingMetrics,
     mock_endpoints: &[MockRef],
-    configuration: &GooseConfiguration,
+    configuration: &SwanlingConfiguration,
     _test_type: TestType,
 ) {
-    //println!("goose_metrics: {:#?}", goose_metrics);
+    //println!("swanling_metrics: {:#?}", swanling_metrics);
     //println!("configuration: {:#?}", configuration);
 
     // Confirm that we loaded the mock endpoints.
     assert!(mock_endpoints[INDEX_KEY].hits() > 0);
     assert!(mock_endpoints[ABOUT_KEY].hits() > 0);
 
-    // Get index and about out of goose metrics.
-    let index_metrics = goose_metrics
+    // Get index and about out of swanling metrics.
+    let index_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", INDEX_PATH))
         .unwrap();
-    let about_metrics = goose_metrics
+    let about_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", ABOUT_PATH))
         .unwrap();
@@ -137,17 +137,17 @@ fn validate_one_taskset(
     assert!(about_metrics.fail_count == 0);
 
     // Users were correctly configured through the controller.
-    assert!(goose_metrics.users == USERS);
+    assert!(swanling_metrics.users == USERS);
 
     // Host was not configured at start time.
     assert!(configuration.host.is_empty());
 
     // The load test was manually shut down instead of running to completion.
-    assert!(goose_metrics.duration < RUN_TIME);
+    assert!(swanling_metrics.duration < RUN_TIME);
 }
 
 // Returns the appropriate taskset needed to build these tests.
-fn get_tasks() -> GooseTaskSet {
+fn get_tasks() -> SwanlingTaskSet {
     taskset!("LoadTest")
         .register_task(task!(get_index).set_weight(2).unwrap())
         .register_task(task!(get_about).set_weight(1).unwrap())
@@ -175,7 +175,7 @@ fn run_standalone_test(test_type: TestType) {
 
     // Create a new thread from which to test the Controller.
     let _controller_handle = thread::spawn(move || {
-        // Sleep a half a second allowing the GooseAttack to start.
+        // Sleep a half a second allowing the SwanlingAttack to start.
         thread::sleep(time::Duration::from_millis(500));
 
         // Initiailize the state engine.
@@ -183,7 +183,7 @@ fn run_standalone_test(test_type: TestType) {
         loop {
             // Process data received from the client in a loop.
             let response;
-            let websocket_response: GooseControllerWebSocketResponse;
+            let websocket_response: SwanlingControllerWebSocketResponse;
             if let Some(stream) = test_state.telnet_stream.as_mut() {
                 let _ = match stream.read(&mut test_state.buf) {
                     Ok(data) => data,
@@ -223,7 +223,7 @@ fn run_standalone_test(test_type: TestType) {
 
             //println!("{:?}: {}", test_state.command, response);
             match test_state.command {
-                GooseControllerCommand::Exit => {
+                SwanlingControllerCommand::Exit => {
                     match test_state.step {
                         // Exit the Controller.
                         0 => {
@@ -241,7 +241,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Help => {
+                SwanlingControllerCommand::Help => {
                     match test_state.step {
                         0 => {
                             // Request the help text.
@@ -263,7 +263,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Host => {
+                SwanlingControllerCommand::Host => {
                     match test_state.step {
                         // Set the host to be load tested.
                         0 => {
@@ -294,7 +294,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Users => {
+                SwanlingControllerCommand::Users => {
                     match test_state.step {
                         // Reconfigure the number of users simulated by the load test.
                         0 => {
@@ -321,7 +321,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::HatchRate => {
+                SwanlingControllerCommand::HatchRate => {
                     match test_state.step {
                         // Configure a decimal hatch_rate.
                         0 => {
@@ -363,7 +363,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::RunTime => {
+                SwanlingControllerCommand::RunTime => {
                     match test_state.step {
                         // Configure run_time using h:m:s format.
                         0 => {
@@ -421,7 +421,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Config => {
+                SwanlingControllerCommand::Config => {
                     match test_state.step {
                         // Request the configuration.
                         0 => {
@@ -434,7 +434,7 @@ fn run_standalone_test(test_type: TestType) {
                                     .starts_with(r#"{"help":false,"version":false,"list":false,"#));
                             // Confirm the configuration object is returned.
                             } else {
-                                assert!(response.starts_with(r"GooseConfiguration "));
+                                assert!(response.starts_with(r"SwanlingConfiguration "));
                             }
 
                             // Move onto the next command.
@@ -442,7 +442,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::ConfigJson => {
+                SwanlingControllerCommand::ConfigJson => {
                     match test_state.step {
                         // Request the configuration in json format.
                         0 => {
@@ -458,7 +458,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Metrics => {
+                SwanlingControllerCommand::Metrics => {
                     match test_state.step {
                         // Request the running metrics.
                         0 => {
@@ -479,7 +479,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::MetricsJson => {
+                SwanlingControllerCommand::MetricsJson => {
                     match test_state.step {
                         // Request the running metrics in json format.
                         0 => {
@@ -494,7 +494,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Start => {
+                SwanlingControllerCommand::Start => {
                     match test_state.step {
                         // Try to stop an idle load test.
                         0 => {
@@ -523,7 +523,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Stop => {
+                SwanlingControllerCommand::Stop => {
                     match test_state.step {
                         // Try to configure users on a running load test.
                         0 => {
@@ -547,7 +547,7 @@ fn run_standalone_test(test_type: TestType) {
                         _ => {
                             assert!(response.starts_with("load test stopped"));
 
-                            // Give Goose a half second to stop before moving on.
+                            // Give Swanling a half second to stop before moving on.
                             thread::sleep(time::Duration::from_millis(500));
 
                             // Move onto the next command.
@@ -555,7 +555,7 @@ fn run_standalone_test(test_type: TestType) {
                         }
                     }
                 }
-                GooseControllerCommand::Shutdown => {
+                SwanlingControllerCommand::Shutdown => {
                     match test_state.step {
                         // Shut down the load test.
                         0 => {
@@ -579,15 +579,15 @@ fn run_standalone_test(test_type: TestType) {
         }
     });
 
-    // Run the Goose Attack.
-    let goose_metrics = common::run_load_test(
+    // Run the Swanling Attack.
+    let swanling_metrics = common::run_load_test(
         common::build_load_test(configuration.clone(), &get_tasks(), None, None),
         None,
     );
 
     // Confirm that the load test ran correctly.
     validate_one_taskset(
-        &goose_metrics,
+        &swanling_metrics,
         &mock_endpoints,
         &configuration,
         validate_test_type,
@@ -599,19 +599,19 @@ fn run_standalone_test(test_type: TestType) {
 fn update_state(test_state: Option<TestState>, test_type: &TestType) -> TestState {
     // The commands being tested, and the order they are tested.
     let commands_to_test = [
-        GooseControllerCommand::Exit,
-        GooseControllerCommand::Help,
-        GooseControllerCommand::Host,
-        GooseControllerCommand::Users,
-        GooseControllerCommand::HatchRate,
-        GooseControllerCommand::RunTime,
-        GooseControllerCommand::Start,
-        GooseControllerCommand::Config,
-        GooseControllerCommand::ConfigJson,
-        GooseControllerCommand::Metrics,
-        GooseControllerCommand::MetricsJson,
-        GooseControllerCommand::Stop,
-        GooseControllerCommand::Shutdown,
+        SwanlingControllerCommand::Exit,
+        SwanlingControllerCommand::Help,
+        SwanlingControllerCommand::Host,
+        SwanlingControllerCommand::Users,
+        SwanlingControllerCommand::HatchRate,
+        SwanlingControllerCommand::RunTime,
+        SwanlingControllerCommand::Start,
+        SwanlingControllerCommand::Config,
+        SwanlingControllerCommand::ConfigJson,
+        SwanlingControllerCommand::Metrics,
+        SwanlingControllerCommand::MetricsJson,
+        SwanlingControllerCommand::Stop,
+        SwanlingControllerCommand::Shutdown,
     ];
 
     if let Some(mut state) = test_state {
@@ -672,7 +672,7 @@ fn make_request(test_state: &mut TestState, command: &str) {
     } else if let Some(stream) = test_state.websocket_stream.as_mut() {
         stream
             .write_message(Message::Text(
-                serde_json::to_string(&GooseControllerWebSocketRequest {
+                serde_json::to_string(&SwanlingControllerWebSocketRequest {
                     request: command.to_string(),
                 })
                 .unwrap(),

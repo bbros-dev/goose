@@ -5,9 +5,9 @@ use httpmock::{
 
 mod common;
 
-use goose::goose::GooseTaskSet;
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::swanling::SwanlingTaskSet;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const LOGIN_PATH: &str = "/login";
@@ -23,16 +23,16 @@ const USERS: usize = 5;
 const RUN_TIME: usize = 2;
 
 // Test task.
-pub async fn login(user: &GooseUser) -> GooseTaskResult {
-    let request_builder = user.goose_post(LOGIN_PATH).await?;
+pub async fn login(user: &SwanlingUser) -> SwanlingTaskResult {
+    let request_builder = user.swanling_post(LOGIN_PATH).await?;
     let params = [("username", "me"), ("password", "s3crET!")];
-    let _goose = user.goose_send(request_builder.form(&params), None).await?;
+    let _swanling = user.swanling_send(request_builder.form(&params), None).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn logout(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(LOGOUT_PATH).await?;
+pub async fn logout(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(LOGOUT_PATH).await?;
     Ok(())
 }
 
@@ -57,7 +57,7 @@ fn common_build_configuration(
     server: &MockServer,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -94,13 +94,13 @@ fn common_build_configuration(
 
 // Helper to confirm all variations generate appropriate results.
 fn validate_test(mock_endpoints: &[MockRef]) {
-    // Confirm that the on_start and on_exit tasks actually ran once per GooseUser.
+    // Confirm that the on_start and on_exit tasks actually ran once per SwanlingUser.
     mock_endpoints[LOGIN_KEY].assert_hits(USERS);
     mock_endpoints[LOGOUT_KEY].assert_hits(USERS);
 }
 
 // Returns the appropriate taskset needed to build these tests.
-fn get_tasks() -> GooseTaskSet {
+fn get_tasks() -> SwanlingTaskSet {
     taskset!("LoadTest")
         .register_task(task!(login).set_on_start())
         .register_task(task!(logout).set_on_stop())
@@ -121,7 +121,7 @@ fn run_load_test(is_gaggle: bool) {
             // Build common configuration.
             let configuration = common_build_configuration(&server, None, None);
 
-            // Run the Goose Attack.
+            // Run the Swanling Attack.
             common::run_load_test(
                 common::build_load_test(configuration, &get_tasks(), None, None),
                 None,
@@ -141,7 +141,7 @@ fn run_load_test(is_gaggle: bool) {
             let manager_configuration =
                 common_build_configuration(&server, None, Some(EXPECT_WORKERS));
 
-            // Run the Goose Attack.
+            // Run the Swanling Attack.
             common::run_load_test(
                 common::build_load_test(manager_configuration, &get_tasks(), None, None),
                 Some(worker_handles),

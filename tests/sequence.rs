@@ -4,8 +4,8 @@ use tokio::time::{sleep, Duration};
 
 mod common;
 
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const ONE_PATH: &str = "/one";
@@ -38,15 +38,15 @@ enum TestType {
 }
 
 // Test task.
-pub async fn one(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ONE_PATH).await?;
+pub async fn one(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ONE_PATH).await?;
 
     Ok(())
 }
 
 // Test task.
-pub async fn two_with_delay(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(TWO_PATH).await?;
+pub async fn two_with_delay(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(TWO_PATH).await?;
 
     // "Run out the clock" on the load test when this function runs. Sleep for
     // the total duration the test is to run plus 1 second to be sure no
@@ -57,22 +57,22 @@ pub async fn two_with_delay(user: &GooseUser) -> GooseTaskResult {
 }
 
 // Test task.
-pub async fn three(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(THREE_PATH).await?;
+pub async fn three(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(THREE_PATH).await?;
 
     Ok(())
 }
 
 // Used as a test_start() function, which always runs one time.
-pub async fn start_one(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(START_ONE_PATH).await?;
+pub async fn start_one(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(START_ONE_PATH).await?;
 
     Ok(())
 }
 
 // Used as a test_stop() function, which always runs one time.
-pub async fn stop_one(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(STOP_ONE_PATH).await?;
+pub async fn stop_one(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(STOP_ONE_PATH).await?;
 
     Ok(())
 }
@@ -113,7 +113,7 @@ fn common_build_configuration(
     server: &MockServer,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -187,7 +187,7 @@ fn validate_test(test_type: &TestType, mock_endpoints: &[MockRef]) {
 }
 
 // Returns the appropriate taskset, start_task and stop_task needed to build these tests.
-fn get_tasks(test_type: &TestType) -> (GooseTaskSet, GooseTask, GooseTask) {
+fn get_tasks(test_type: &TestType) -> (SwanlingTaskSet, SwanlingTask, SwanlingTask) {
     match test_type {
         // No sequence declared, so tasks run in default RoundRobin order: 1, 3, 2, 1...
         TestType::NotSequenced => (
@@ -240,30 +240,30 @@ fn run_standalone_test(test_type: TestType) {
     // Get the taskset, start and stop tasks to build a load test.
     let (taskset, start_task, stop_task) = get_tasks(&test_type);
 
-    let goose_attack;
+    let swanling_attack;
     match test_type {
         TestType::NotSequenced | TestType::SequencedRoundRobin => {
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(configuration)
                 .unwrap()
                 .register_taskset(taskset)
                 .test_start(start_task)
                 .test_stop(stop_task)
-                .set_scheduler(GooseScheduler::RoundRobin)
+                .set_scheduler(SwanlingScheduler::RoundRobin)
         }
         TestType::SequencedSerial => {
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(configuration)
                 .unwrap()
                 .register_taskset(taskset)
                 .test_start(start_task)
                 .test_stop(stop_task)
-                .set_scheduler(GooseScheduler::Serial)
+                .set_scheduler(SwanlingScheduler::Serial)
         }
     }
 
-    // Run the Goose Attack.
-    common::run_load_test(goose_attack, None);
+    // Run the Swanling Attack.
+    common::run_load_test(swanling_attack, None);
 
     // Confirm the load test ran correctly.
     validate_test(&test_type, &mock_endpoints);
@@ -283,62 +283,62 @@ fn run_gaggle_test(test_type: TestType) {
     // Get the taskset, start and stop tasks to build a load test.
     let (taskset, start_task, stop_task) = get_tasks(&test_type);
 
-    let goose_attack;
+    let swanling_attack;
     match test_type {
         TestType::NotSequenced | TestType::SequencedRoundRobin => {
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(worker_configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset.clone())
                 .test_start(start_task.clone())
                 .test_stop(stop_task.clone())
                 // Unnecessary as this is the default.
-                .set_scheduler(GooseScheduler::RoundRobin);
+                .set_scheduler(SwanlingScheduler::RoundRobin);
         }
         TestType::SequencedSerial => {
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(worker_configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset.clone())
                 .test_start(start_task.clone())
                 .test_stop(stop_task.clone())
-                .set_scheduler(GooseScheduler::Serial);
+                .set_scheduler(SwanlingScheduler::Serial);
         }
     }
 
     // Workers launched in own threads, store thread handles.
-    let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
+    let worker_handles = common::launch_gaggle_workers(swanling_attack, EXPECT_WORKERS);
 
     // Build Manager configuration.
     let manager_configuration = common_build_configuration(&server, None, Some(EXPECT_WORKERS));
 
-    let manager_goose_attack;
+    let manager_swanling_attack;
     match test_type {
         TestType::NotSequenced | TestType::SequencedRoundRobin => {
             // Set up the common base configuration.
-            manager_goose_attack =
-                crate::GooseAttack::initialize_with_config(manager_configuration)
+            manager_swanling_attack =
+                crate::SwanlingAttack::initialize_with_config(manager_configuration)
                     .unwrap()
                     .register_taskset(taskset)
                     .test_start(start_task)
                     .test_stop(stop_task)
                     // Unnecessary as this is the default.
-                    .set_scheduler(GooseScheduler::RoundRobin);
+                    .set_scheduler(SwanlingScheduler::RoundRobin);
         }
         TestType::SequencedSerial => {
             // Set up the common base configuration.
-            manager_goose_attack =
-                crate::GooseAttack::initialize_with_config(manager_configuration)
+            manager_swanling_attack =
+                crate::SwanlingAttack::initialize_with_config(manager_configuration)
                     .unwrap()
                     .register_taskset(taskset)
                     .test_start(start_task)
                     .test_stop(stop_task)
-                    .set_scheduler(GooseScheduler::Serial);
+                    .set_scheduler(SwanlingScheduler::Serial);
         }
     }
 
-    // Run the Goose Attack.
-    common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm the load test ran correctly.
     validate_test(&test_type, &mock_endpoints);

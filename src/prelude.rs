@@ -1,16 +1,18 @@
-//! A list of things that typically must be imported to write a Goose load test.
+//! A list of things that typically must be imported to write a Swanling load test.
 //!
-//! Instead of manually importing everything each time you write a Goose load test,
+//! Instead of manually importing everything each time you write a Swanling load test,
 //! you can simply import this prelude as follows:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //! ```
 
-pub use crate::goose::{
-    GooseTask, GooseTaskError, GooseTaskFunction, GooseTaskResult, GooseTaskSet, GooseUser,
+pub use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetrics};
+pub use crate::swanling::{
+    SwanlingTask, SwanlingTaskError, SwanlingTaskFunction, SwanlingTaskResult, SwanlingTaskSet,
+    SwanlingUser,
 };
-pub use crate::metrics::{GooseCoordinatedOmissionMitigation, GooseMetrics};
 pub use crate::{
-    task, taskset, GooseAttack, GooseDefault, GooseDefaultType, GooseError, GooseScheduler,
+    task, taskset, SwanlingAttack, SwanlingDefault, SwanlingDefaultType, SwanlingError,
+    SwanlingScheduler,
 };

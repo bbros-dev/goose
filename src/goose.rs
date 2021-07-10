@@ -1,18 +1,18 @@
-//! Helpers and objects for building Goose load tests.
+//! Helpers and objects for building Swanling load tests.
 //!
-//! Goose manages load tests with a series of objects:
+//! Swanling manages load tests with a series of objects:
 //!
-//! - [`GooseTaskSet`](./struct.GooseTaskSet.html) each user is assigned a task set, which is a collection of tasks.
-//! - [`GooseTask`](./struct.GooseTask.html) tasks define one or more web requests and are assigned to task sets.
-//! - [`GooseUser`](./struct.GooseUser.html) a user state responsible for repeatedly running all tasks in the assigned task set.
-//! - [`GooseRequest`](./struct.GooseRequest.html) optional metrics collected for each URL/method pair.
+//! - [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html) each user is assigned a task set, which is a collection of tasks.
+//! - [`SwanlingTask`](./struct.SwanlingTask.html) tasks define one or more web requests and are assigned to task sets.
+//! - [`SwanlingUser`](./struct.SwanlingUser.html) a user state responsible for repeatedly running all tasks in the assigned task set.
+//! - [`SwanlingRequest`](./struct.SwanlingRequest.html) optional metrics collected for each URL/method pair.
 //!
 //! ## Creating Task Sets
 //!
-//! A [`GooseTaskSet`](./struct.GooseTaskSet.html) is created by passing in a `&str` name to the `new` function, for example:
+//! A [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html) is created by passing in a `&str` name to the `new` function, for example:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut loadtest_tasks = taskset!("LoadtestTasks");
 //! ```
@@ -20,16 +20,16 @@
 //! ### Task Set Weight
 //!
 //! A weight can be applied to a task set, controlling how often it is assigned to
-//! [`GooseUser`](../goose/struct.GooseUser.html) threads. The larger the integer value
+//! [`SwanlingUser`](../swanling/struct.SwanlingUser.html) threads. The larger the integer value
 //! of weight, the more the task set will be assigned to user threads. In the following
 //! example, `FooTasks` will be assigned to users twice as often as `Bar` tasks. We could
 //! have just added a weight of `2` to `FooTasks` and left the default weight of `1`
 //! assigned to `BarTasks` for the same weighting:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
-//! fn main() -> Result<(), GooseError> {
+//! fn main() -> Result<(), SwanlingError> {
 //!     let mut foo_tasks = taskset!("FooTasks").set_weight(10)?;
 //!     let mut bar_tasks = taskset!("BarTasks").set_weight(5)?;
 //!
@@ -46,7 +46,7 @@
 //! hosts to different task sets if this is desirable:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut foo_tasks = taskset!("FooTasks").set_host("http://www.local");
 //! let mut bar_tasks = taskset!("BarTasks").set_host("http://www2.local");
@@ -61,24 +61,24 @@
 //! sleep 5 to 10 seconds after each task completes.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut foo_tasks = taskset!("FooTasks").set_wait_time(0, 3).unwrap();
 //! let mut bar_tasks = taskset!("BarTasks").set_wait_time(5, 10).unwrap();
 //! ```
 //! ## Creating Tasks
 //!
-//! A [`GooseTask`](./struct.GooseTask.html) must include a pointer to a function which
+//! A [`SwanlingTask`](./struct.SwanlingTask.html) must include a pointer to a function which
 //! will be executed each time the task is run.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut a_task = task!(task_function);
 //!
 //! /// A very simple task that loads the front page.
-//! async fn task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/").await?;
+//! async fn task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/").await?;
 //!
 //!     Ok(())
 //! }
@@ -90,13 +90,13 @@
 //! made by the task.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut a_task = task!(task_function).set_name("a");
 //!
 //! /// A very simple task that loads the front page.
-//! async fn task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/").await?;
+//! async fn task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/").await?;
 //!
 //!     Ok(())
 //! }
@@ -109,9 +109,9 @@
 //! runs 3 times as often as `b_task`:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
-//! fn main() -> Result<(), GooseError> {
+//! fn main() -> Result<(), SwanlingError> {
 //!     let mut a_task = task!(a_task_function).set_weight(9)?;
 //!     let mut b_task = task!(b_task_function).set_weight(3)?;
 //!
@@ -119,15 +119,15 @@
 //! }
 //!
 //! /// A very simple task that loads the "a" page.
-//! async fn a_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/a/").await?;
+//! async fn a_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/a/").await?;
 //!
 //!     Ok(())
 //! }
 //!
 //! /// Another very simple task that loads the "b" page.
-//! async fn b_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/b/").await?;
+//! async fn b_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/b/").await?;
 //!
 //!     Ok(())
 //! }
@@ -144,29 +144,29 @@
 //! `a_task` runs before `b_task`, which runs before `c_task`:
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut a_task = task!(a_task_function).set_sequence(1);
 //! let mut b_task = task!(b_task_function).set_sequence(2);
 //! let mut c_task = task!(c_task_function);
 //!
 //! /// A very simple task that loads the "a" page.
-//! async fn a_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/a/").await?;
+//! async fn a_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/a/").await?;
 //!
 //!     Ok(())
 //! }
 //!
 //! /// Another very simple task that loads the "b" page.
-//! async fn b_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/b/").await?;
+//! async fn b_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/b/").await?;
 //!
 //!     Ok(())
 //! }
 //!
 //! /// Another very simple task that loads the "c" page.
-//! async fn c_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/c/").await?;
+//! async fn c_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/c/").await?;
 //!
 //!     Ok(())
 //! }
@@ -176,18 +176,18 @@
 //!
 //! Tasks can be flagged to only run when a user first starts. This can be useful if you'd
 //! like your load test to use a logged-in user. It is possible to assign sequences and weights
-//! to [`on_start`](./struct.GooseTask.html#method.set_on_start) functions if you want to have
+//! to [`on_start`](./struct.SwanlingTask.html#method.set_on_start) functions if you want to have
 //! multiple tasks run in a specific order at start time, and/or the tasks to run multiple times.
 //! A task can be flagged to run both on start and on stop.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut a_task = task!(a_task_function).set_sequence(1).set_on_start();
 //!
 //! /// A very simple task that loads the "a" page.
-//! async fn a_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/a/").await?;
+//! async fn a_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/a/").await?;
 //!
 //!     Ok(())
 //! }
@@ -197,18 +197,18 @@
 //!
 //! Tasks can be flagged to only run when a user stops. This can be useful if you'd like your
 //! load test to simulate a user logging out when it finishes. It is possible to assign sequences
-//! and weights to [`on_stop`](./struct.GooseTask.html#method.set_on_stop) functions if you want to
+//! and weights to [`on_stop`](./struct.SwanlingTask.html#method.set_on_stop) functions if you want to
 //! have multiple tasks run in a specific order at stop time, and/or the tasks to run multiple
 //! times. A task can be flagged to run both on start and on stop.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut b_task = task!(b_task_function).set_sequence(2).set_on_stop();
 //!
 //! /// Another very simple task that loads the "b" page.
-//! async fn b_task_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/b/").await?;
+//! async fn b_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/b/").await?;
 //!
 //!     Ok(())
 //! }
@@ -216,16 +216,16 @@
 //!
 //! ## Controlling User
 //!
-//! When Goose starts, it creates one or more [`GooseUser`](./struct.GooseUser.html)s,
-//! assigning a single [`GooseTaskSet`](./struct.GooseTaskSet.html) to each. This user is
-//! then used to generate load. Behind the scenes, Goose is leveraging the
+//! When Swanling starts, it creates one or more [`SwanlingUser`](./struct.SwanlingUser.html)s,
+//! assigning a single [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html) to each. This user is
+//! then used to generate load. Behind the scenes, Swanling is leveraging the
 //! [`reqwest::client`](https://docs.rs/reqwest/*/reqwest/struct.Client.html)
-//! to load web pages, and Goose can therefor do anything [`reqwest`](https://docs.rs/reqwest/)
+//! to load web pages, and Swanling can therefor do anything [`reqwest`](https://docs.rs/reqwest/)
 //! can do.
 //!
-//! The most common request types are [`GET`](./struct.GooseUser.html#method.get) and
-//! [`POST`](./struct.GooseUser.html#method.post), but [`HEAD`](./struct.GooseUser.html#method.head),
-//! PUT, PATCH and [`DELETE`](./struct.GooseUser.html#method.delete) are also supported.
+//! The most common request types are [`GET`](./struct.SwanlingUser.html#method.get) and
+//! [`POST`](./struct.SwanlingUser.html#method.post), but [`HEAD`](./struct.SwanlingUser.html#method.head),
+//! PUT, PATCH and [`DELETE`](./struct.SwanlingUser.html#method.delete) are also supported.
 //!
 //! ### GET
 //!
@@ -233,13 +233,13 @@
 //! Automatically prepends the correct host.
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut task = task!(get_function);
 //!
 //! /// A very simple task that makes a GET request.
-//! async fn get_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.get("/path/to/foo/").await?;
+//! async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.get("/path/to/foo/").await?;
 //!
 //!     Ok(())
 //! }
@@ -256,13 +256,13 @@
 //! [`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)
 //!
 //! ```rust
-//! use goose::prelude::*;
+//! use swanling::prelude::*;
 //!
 //! let mut task = task!(post_function);
 //!
 //! /// A very simple task that makes a POST request.
-//! async fn post_function(user: &GooseUser) -> GooseTaskResult {
-//!     let _goose = user.post("/path/to/foo/", "string value to post").await?;
+//! async fn post_function(user: &SwanlingUser) -> SwanlingTaskResult {
+//!     let _swanling = user.post("/path/to/foo/", "string value to post").await?;
 //!
 //!     Ok(())
 //! }
@@ -295,65 +295,65 @@ use std::{future::Future, pin::Pin, time::Instant};
 use tokio::sync::{Mutex, RwLock};
 use url::Url;
 
-use crate::logger::GooseLog;
-use crate::metrics::{GooseCoordinatedOmissionMitigation, GooseMetric, GooseRequestMetric};
-use crate::{GooseConfiguration, GooseError, WeightedGooseTasks};
+use crate::logger::SwanlingLog;
+use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetric, SwanlingRequestMetric};
+use crate::{SwanlingConfiguration, SwanlingError, WeightedSwanlingTasks};
 
-/// By default Goose sets the following User-Agent header when making requests.
+/// By default Swanling sets the following User-Agent header when making requests.
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
-/// `task!(foo)` expands to `GooseTask::new(foo)`, but also does some boxing to work around a limitation in the compiler.
+/// `task!(foo)` expands to `SwanlingTask::new(foo)`, but also does some boxing to work around a limitation in the compiler.
 #[macro_export]
 macro_rules! task {
     ($task_func:ident) => {
-        GooseTask::new(std::sync::Arc::new(move |s| {
+        SwanlingTask::new(std::sync::Arc::new(move |s| {
             std::boxed::Box::pin($task_func(s))
         }))
     };
 }
 
-/// `taskset!("foo")` expands to `GooseTaskSet::new("foo")`.
+/// `taskset!("foo")` expands to `SwanlingTaskSet::new("foo")`.
 #[macro_export]
 macro_rules! taskset {
     ($name:tt) => {
-        GooseTaskSet::new($name)
+        SwanlingTaskSet::new($name)
     };
 }
 
-/// Goose tasks return a result, which is empty on success, or contains a
-/// [`GooseTaskError`](./enum.GooseTaskError.html) on error.
-pub type GooseTaskResult = Result<(), GooseTaskError>;
+/// Swanling tasks return a result, which is empty on success, or contains a
+/// [`SwanlingTaskError`](./enum.SwanlingTaskError.html) on error.
+pub type SwanlingTaskResult = Result<(), SwanlingTaskError>;
 
-/// An enumeration of all errors a [`GooseTask`](./struct.GooseTask.html) can return.
+/// An enumeration of all errors a [`SwanlingTask`](./struct.SwanlingTask.html) can return.
 #[derive(Debug)]
-pub enum GooseTaskError {
+pub enum SwanlingTaskError {
     /// Wraps a [`reqwest::Error`](https://docs.rs/reqwest/*/reqwest/struct.Error.html).
     Reqwest(reqwest::Error),
     /// Wraps a [`url::ParseError`](https://docs.rs/url/*/url/enum.ParseError.html).
     Url(url::ParseError),
     /// The request failed.
     RequestFailed {
-        /// The [`GooseRequestMetric`](./struct.GooseRequestMetric.html) that failed.
-        raw_request: GooseRequestMetric,
+        /// The [`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html) that failed.
+        raw_request: SwanlingRequestMetric,
     },
     /// The request was canceled. This happens when the throttle is enabled and the load
     /// test finishes.
     RequestCanceled {
         /// Wraps a [`flume::SendError`](https://docs.rs/flume/*/flume/struct.SendError.html),
-        /// a [`GooseRequestMetric`](./struct.GooseRequestMetric.html) has not yet been constructed.
+        /// a [`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html) has not yet been constructed.
         source: flume::SendError<bool>,
     },
     /// There was an error sending the metrics for a request to the parent thread.
     MetricsFailed {
         /// Wraps a [`flume::SendError`](https://docs.rs/flume/*/flume/struct.SendError.html),
-        /// which contains the [`GooseMetric`](../metrics/enum.GooseMetric.html) that wasn't sent.
-        source: flume::SendError<GooseMetric>,
+        /// which contains the [`SwanlingMetric`](../metrics/enum.SwanlingMetric.html) that wasn't sent.
+        source: flume::SendError<SwanlingMetric>,
     },
     /// There was an error sending debug information to the logger thread.
     LoggerFailed {
         /// Wraps a [`flume::SendError`](https://docs.rs/flume/*/flume/struct.SendError.html),
-        /// which contains the [`GooseDebug`](./struct.GooseDebug.html) that wasn't sent.
-        source: flume::SendError<Option<GooseLog>>,
+        /// which contains the [`SwanlingDebug`](./struct.SwanlingDebug.html) that wasn't sent.
+        source: flume::SendError<Option<SwanlingLog>>,
     },
     /// Attempted an unrecognized HTTP request method.
     InvalidMethod {
@@ -362,72 +362,72 @@ pub enum GooseTaskError {
     },
 }
 /// Implement a helper to provide a text description of all possible types of errors.
-impl GooseTaskError {
+impl SwanlingTaskError {
     fn describe(&self) -> &str {
         match *self {
-            GooseTaskError::Reqwest(_) => "reqwest::Error",
-            GooseTaskError::Url(_) => "url::ParseError",
-            GooseTaskError::RequestFailed { .. } => "request failed",
-            GooseTaskError::RequestCanceled { .. } => {
+            SwanlingTaskError::Reqwest(_) => "reqwest::Error",
+            SwanlingTaskError::Url(_) => "url::ParseError",
+            SwanlingTaskError::RequestFailed { .. } => "request failed",
+            SwanlingTaskError::RequestCanceled { .. } => {
                 "request canceled because throttled load test ended"
             }
-            GooseTaskError::MetricsFailed { .. } => "failed to send metrics to parent thread",
-            GooseTaskError::LoggerFailed { .. } => "failed to send log message to logger thread",
-            GooseTaskError::InvalidMethod { .. } => "unrecognized HTTP request method",
+            SwanlingTaskError::MetricsFailed { .. } => "failed to send metrics to parent thread",
+            SwanlingTaskError::LoggerFailed { .. } => "failed to send log message to logger thread",
+            SwanlingTaskError::InvalidMethod { .. } => "unrecognized HTTP request method",
         }
     }
 }
 
 /// Implement format trait to allow displaying errors.
-impl fmt::Display for GooseTaskError {
+impl fmt::Display for SwanlingTaskError {
     // Implement display of error with `{}` marker.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            GooseTaskError::Reqwest(ref source) => {
-                write!(f, "GooseTaskError: {} ({})", self.describe(), source)
+            SwanlingTaskError::Reqwest(ref source) => {
+                write!(f, "SwanlingTaskError: {} ({})", self.describe(), source)
             }
-            GooseTaskError::Url(ref source) => {
-                write!(f, "GooseTaskError: {} ({})", self.describe(), source)
+            SwanlingTaskError::Url(ref source) => {
+                write!(f, "SwanlingTaskError: {} ({})", self.describe(), source)
             }
-            GooseTaskError::RequestCanceled { ref source } => {
-                write!(f, "GooseTaskError: {} ({})", self.describe(), source)
+            SwanlingTaskError::RequestCanceled { ref source } => {
+                write!(f, "SwanlingTaskError: {} ({})", self.describe(), source)
             }
-            GooseTaskError::MetricsFailed { ref source } => {
-                write!(f, "GooseTaskError: {} ({})", self.describe(), source)
+            SwanlingTaskError::MetricsFailed { ref source } => {
+                write!(f, "SwanlingTaskError: {} ({})", self.describe(), source)
             }
-            GooseTaskError::LoggerFailed { ref source } => {
-                write!(f, "GooseTaskError: {} ({})", self.describe(), source)
+            SwanlingTaskError::LoggerFailed { ref source } => {
+                write!(f, "SwanlingTaskError: {} ({})", self.describe(), source)
             }
-            _ => write!(f, "GooseTaskError: {}", self.describe()),
+            _ => write!(f, "SwanlingTaskError: {}", self.describe()),
         }
     }
 }
 
 // Define the lower level source of this error, if any.
-impl std::error::Error for GooseTaskError {
+impl std::error::Error for SwanlingTaskError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
-            GooseTaskError::Reqwest(ref source) => Some(source),
-            GooseTaskError::Url(ref source) => Some(source),
-            GooseTaskError::RequestCanceled { ref source } => Some(source),
-            GooseTaskError::MetricsFailed { ref source } => Some(source),
-            GooseTaskError::LoggerFailed { ref source } => Some(source),
+            SwanlingTaskError::Reqwest(ref source) => Some(source),
+            SwanlingTaskError::Url(ref source) => Some(source),
+            SwanlingTaskError::RequestCanceled { ref source } => Some(source),
+            SwanlingTaskError::MetricsFailed { ref source } => Some(source),
+            SwanlingTaskError::LoggerFailed { ref source } => Some(source),
             _ => None,
         }
     }
 }
 
 /// Auto-convert Reqwest errors.
-impl From<reqwest::Error> for GooseTaskError {
-    fn from(err: reqwest::Error) -> GooseTaskError {
-        GooseTaskError::Reqwest(err)
+impl From<reqwest::Error> for SwanlingTaskError {
+    fn from(err: reqwest::Error) -> SwanlingTaskError {
+        SwanlingTaskError::Reqwest(err)
     }
 }
 
 /// Auto-convert Url errors.
-impl From<url::ParseError> for GooseTaskError {
-    fn from(err: url::ParseError) -> GooseTaskError {
-        GooseTaskError::Url(err)
+impl From<url::ParseError> for SwanlingTaskError {
+    fn from(err: url::ParseError) -> SwanlingTaskError {
+        SwanlingTaskError::Url(err)
     }
 }
 
@@ -435,34 +435,34 @@ impl From<url::ParseError> for GooseTaskError {
 /// shut down. This causes a
 /// [`flume::SendError`](https://docs.rs/flume/*/flume/struct.SendError.html),
 /// which gets automatically converted to `RequestCanceled`.
-/// [`RequestCanceled`](./enum.GooseTaskError.html#variant.RequestCanceled)
-impl From<flume::SendError<bool>> for GooseTaskError {
-    fn from(source: flume::SendError<bool>) -> GooseTaskError {
-        GooseTaskError::RequestCanceled { source }
+/// [`RequestCanceled`](./enum.SwanlingTaskError.html#variant.RequestCanceled)
+impl From<flume::SendError<bool>> for SwanlingTaskError {
+    fn from(source: flume::SendError<bool>) -> SwanlingTaskError {
+        SwanlingTaskError::RequestCanceled { source }
     }
 }
 
 /// Attempt to send metrics to the parent thread failed.
-impl From<flume::SendError<GooseMetric>> for GooseTaskError {
-    fn from(source: flume::SendError<GooseMetric>) -> GooseTaskError {
-        GooseTaskError::MetricsFailed { source }
+impl From<flume::SendError<SwanlingMetric>> for SwanlingTaskError {
+    fn from(source: flume::SendError<SwanlingMetric>) -> SwanlingTaskError {
+        SwanlingTaskError::MetricsFailed { source }
     }
 }
 
 /// Attempt to send logs to the logger thread failed.
-impl From<flume::SendError<Option<GooseLog>>> for GooseTaskError {
-    fn from(source: flume::SendError<Option<GooseLog>>) -> GooseTaskError {
-        GooseTaskError::LoggerFailed { source }
+impl From<flume::SendError<Option<SwanlingLog>>> for SwanlingTaskError {
+    fn from(source: flume::SendError<Option<SwanlingLog>>) -> SwanlingTaskError {
+        SwanlingTaskError::LoggerFailed { source }
     }
 }
 
 /// An individual task set.
 #[derive(Clone, Hash)]
-pub struct GooseTaskSet {
+pub struct SwanlingTaskSet {
     /// The name of the task set.
     pub name: String,
     /// An integer reflecting where this task set lives in the internal
-    /// [`GooseAttack`](../struct.GooseAttack.html)`.task_sets` vector.
+    /// [`SwanlingAttack`](../struct.SwanlingAttack.html)`.task_sets` vector.
     pub task_sets_index: usize,
     /// An integer value that controls the frequency that this task set will be assigned to a user.
     pub weight: usize,
@@ -470,38 +470,38 @@ pub struct GooseTaskSet {
     pub min_wait: usize,
     /// An integer value indicating the maximum number of seconds a user will sleep after running a task.
     pub max_wait: usize,
-    /// A vector containing one copy of each [`GooseTask`](./struct.GooseTask.html) that will
+    /// A vector containing one copy of each [`SwanlingTask`](./struct.SwanlingTask.html) that will
     /// run by users running this task set.
-    pub tasks: Vec<GooseTask>,
+    pub tasks: Vec<SwanlingTask>,
     /// A fully scheduled and weighted vector of integers (pointing to
-    /// [`GooseTask`](./struct.GooseTask.html)s and [`GooseTask`](./struct.GooseTask.html) names.
-    pub weighted_tasks: WeightedGooseTasks,
+    /// [`SwanlingTask`](./struct.SwanlingTask.html)s and [`SwanlingTask`](./struct.SwanlingTask.html) names.
+    pub weighted_tasks: WeightedSwanlingTasks,
     /// A vector of vectors of integers, controlling the sequence and order
-    /// [`on_start`](./struct.GooseTask.html#method.set_on_start)
-    /// [`GooseTask`](./struct.GooseTask.html)s are run when the user first starts.
-    pub weighted_on_start_tasks: WeightedGooseTasks,
+    /// [`on_start`](./struct.SwanlingTask.html#method.set_on_start)
+    /// [`SwanlingTask`](./struct.SwanlingTask.html)s are run when the user first starts.
+    pub weighted_on_start_tasks: WeightedSwanlingTasks,
     /// A vector of vectors of integers, controlling the sequence and order
-    /// [`on_stop`](./struct.GooseTask.html#method.set_on_stop)
-    /// [`GooseTask`](./struct.GooseTask.html)s are run when the user first starts.
-    pub weighted_on_stop_tasks: WeightedGooseTasks,
-    /// An optional default host to run this `GooseTaskSet` against.
+    /// [`on_stop`](./struct.SwanlingTask.html#method.set_on_stop)
+    /// [`SwanlingTask`](./struct.SwanlingTask.html)s are run when the user first starts.
+    pub weighted_on_stop_tasks: WeightedSwanlingTasks,
+    /// An optional default host to run this `SwanlingTaskSet` against.
     pub host: Option<String>,
 }
-impl GooseTaskSet {
-    /// Creates a new [`GooseTaskSet`](./struct.GooseTaskSet.html). Once created, a
-    /// [`GooseTask`](./struct.GooseTask.html) must be assigned to it, and finally it must
-    /// be registered with the [`GooseAttack`](../struct.GooseAttack.html) object. The
+impl SwanlingTaskSet {
+    /// Creates a new [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html). Once created, a
+    /// [`SwanlingTask`](./struct.SwanlingTask.html) must be assigned to it, and finally it must
+    /// be registered with the [`SwanlingAttack`](../struct.SwanlingAttack.html) object. The
     /// returned object must be stored in a mutable value.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut example_tasks = taskset!("ExampleTasks");
     /// ```
     pub fn new(name: &str) -> Self {
         trace!("new taskset: name: {}", &name);
-        GooseTaskSet {
+        SwanlingTaskSet {
             name: name.to_string(),
             task_sets_index: usize::max_value(),
             weight: 1,
@@ -515,26 +515,26 @@ impl GooseTaskSet {
         }
     }
 
-    /// Registers a [`GooseTask`](./struct.GooseTask.html) with a
-    /// [`GooseTaskSet`](./struct.GooseTaskSet.html), where it is stored in the
-    /// [`GooseTaskSet`](./struct.GooseTaskSet.html)`.tasks` vector. The function
+    /// Registers a [`SwanlingTask`](./struct.SwanlingTask.html) with a
+    /// [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html), where it is stored in the
+    /// [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html)`.tasks` vector. The function
     /// associated with the task will be run during the load test.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut example_tasks = taskset!("ExampleTasks");
     /// example_tasks.register_task(task!(a_task_function));
     ///
     /// /// A very simple task that loads the "a" page.
-    /// async fn a_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/a/").await?;
+    /// async fn a_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/a/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn register_task(mut self, mut task: GooseTask) -> Self {
+    pub fn register_task(mut self, mut task: SwanlingTask) -> Self {
         trace!("{} register_task: {}", self.name, task.name);
         task.tasks_index = self.tasks.len();
         self.tasks.push(task);
@@ -548,18 +548,18 @@ impl GooseTaskSet {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
+    /// fn main() -> Result<(), SwanlingError> {
     ///     let mut example_tasks = taskset!("ExampleTasks").set_weight(3)?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn set_weight(mut self, weight: usize) -> Result<Self, GooseError> {
+    pub fn set_weight(mut self, weight: usize) -> Result<Self, SwanlingError> {
         trace!("{} set_weight: {}", self.name, weight);
         if weight == 0 {
-            return Err(GooseError::InvalidWeight {
+            return Err(SwanlingError::InvalidWeight {
                 weight,
                 detail: ("Weight must be set to at least 1.".to_string()),
             });
@@ -576,7 +576,7 @@ impl GooseTaskSet {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut example_tasks = taskset!("ExampleTasks").set_host("http://10.1.1.42");
     /// ```
@@ -593,15 +593,15 @@ impl GooseTaskSet {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
+    /// fn main() -> Result<(), SwanlingError> {
     ///     taskset!("ExampleTasks").set_wait_time(0, 1)?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn set_wait_time(mut self, min_wait: usize, max_wait: usize) -> Result<Self, GooseError> {
+    pub fn set_wait_time(mut self, min_wait: usize, max_wait: usize) -> Result<Self, SwanlingError> {
         trace!(
             "{} set_wait time: min: {} max: {}",
             self.name,
@@ -609,7 +609,7 @@ impl GooseTaskSet {
             max_wait
         );
         if min_wait > max_wait {
-            return Err(GooseError::InvalidWaitTime {
+            return Err(SwanlingError::InvalidWaitTime {
                 min_wait,
                 max_wait,
                 detail:
@@ -627,7 +627,7 @@ impl GooseTaskSet {
 /// Commands sent from the parent thread to the user threads, and from the manager to the
 /// worker processes.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum GooseUserCommand {
+pub enum SwanlingUserCommand {
     /// Tell worker process to pause load test.
     Wait,
     /// Tell worker process to start load test.
@@ -638,7 +638,7 @@ pub enum GooseUserCommand {
 
 /// Supported HTTP methods.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Ord, PartialOrd)]
-pub enum GooseMethod {
+pub enum SwanlingMethod {
     Delete,
     Get,
     Head,
@@ -647,71 +647,71 @@ pub enum GooseMethod {
     Put,
 }
 /// Display method in upper case.
-impl fmt::Display for GooseMethod {
-    // Implement display of `GooseMethod` with `{}` marker.
+impl fmt::Display for SwanlingMethod {
+    // Implement display of `SwanlingMethod` with `{}` marker.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            GooseMethod::Delete => write!(f, "DELETE"),
-            GooseMethod::Get => write!(f, "GET"),
-            GooseMethod::Head => write!(f, "HEAD"),
-            GooseMethod::Patch => write!(f, "PATCH"),
-            GooseMethod::Post => write!(f, "POST"),
-            GooseMethod::Put => write!(f, "PUT"),
+            SwanlingMethod::Delete => write!(f, "DELETE"),
+            SwanlingMethod::Get => write!(f, "GET"),
+            SwanlingMethod::Head => write!(f, "HEAD"),
+            SwanlingMethod::Patch => write!(f, "PATCH"),
+            SwanlingMethod::Post => write!(f, "POST"),
+            SwanlingMethod::Put => write!(f, "PUT"),
         }
     }
 }
 
 /// Convert [`http::method::Method`](https://docs.rs/http/0.2.4/http/method/struct.Method.html)
-/// to [`GooseMethod`](./enum.GooseMethod.html).
-pub fn goose_method_from_method(method: Method) -> Result<GooseMethod, GooseTaskError> {
+/// to [`SwanlingMethod`](./enum.SwanlingMethod.html).
+pub fn swanling_method_from_method(method: Method) -> Result<SwanlingMethod, SwanlingTaskError> {
     Ok(match method {
-        Method::DELETE => GooseMethod::Delete,
-        Method::GET => GooseMethod::Get,
-        Method::HEAD => GooseMethod::Head,
-        Method::PATCH => GooseMethod::Patch,
-        Method::POST => GooseMethod::Post,
-        Method::PUT => GooseMethod::Put,
+        Method::DELETE => SwanlingMethod::Delete,
+        Method::GET => SwanlingMethod::Get,
+        Method::HEAD => SwanlingMethod::Head,
+        Method::PATCH => SwanlingMethod::Patch,
+        Method::POST => SwanlingMethod::Post,
+        Method::PUT => SwanlingMethod::Put,
         _ => {
-            return Err(GooseTaskError::InvalidMethod { method });
+            return Err(SwanlingTaskError::InvalidMethod { method });
         }
     })
 }
 
-/// The response to a GooseRequest
+/// The response to a SwanlingRequest
 #[derive(Debug)]
-pub struct GooseResponse {
+pub struct SwanlingResponse {
     /// The request that this is a response to.
-    pub request: GooseRequestMetric,
+    pub request: SwanlingRequestMetric,
     /// The response.
     pub response: Result<Response, reqwest::Error>,
 }
-impl GooseResponse {
-    pub fn new(request: GooseRequestMetric, response: Result<Response, reqwest::Error>) -> Self {
-        GooseResponse { request, response }
+impl SwanlingResponse {
+    pub fn new(request: SwanlingRequestMetric, response: Result<Response, reqwest::Error>) -> Self {
+        SwanlingResponse { request, response }
     }
 }
 
-/// Object created by [`log_debug()`](struct.GooseUser.html#method.log_debug) and written
+/// Object created by [`log_debug()`](struct.SwanlingUser.html#method.log_debug) and written
 /// to log to assist in debugging.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct GooseDebug {
+pub struct SwanlingDebug {
     /// String to identify the source of the log message.
     pub tag: String,
     /// Optional request made.
-    pub request: Option<GooseRequestMetric>,
+    pub request: Option<SwanlingRequestMetric>,
     /// Optional headers returned by server.
     pub header: Option<String>,
     /// Optional body text returned by server.
     pub body: Option<String>,
 }
-impl GooseDebug {
+impl SwanlingDebug {
     fn new(
         tag: &str,
-        request: Option<&GooseRequestMetric>,
+        request: Option<&SwanlingRequestMetric>,
         header: Option<&header::HeaderMap>,
         body: Option<&str>,
     ) -> Self {
-        GooseDebug {
+        SwanlingDebug {
             // Convert tag from &str to string.
             tag: tag.to_string(),
             // If request is defined, clone it.
@@ -727,8 +727,8 @@ impl GooseDebug {
 /// The elements needed to build an individual user state on a Regatta Worker.
 #[derive(Debug, Clone)]
 pub struct GaggleUser {
-    /// An index into the internal [`GooseAttack`](../struct.GooseAttack.html)`.task_sets`
-    /// vector, indicating which [`GooseTaskSet`](./struct.GooseTaskSet.html) is running.
+    /// An index into the internal [`SwanlingAttack`](../struct.SwanlingAttack.html)`.task_sets`
+    /// vector, indicating which [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html) is running.
     pub task_sets_index: usize,
     /// The base URL to prepend to all relative paths.
     pub base_url: Arc<RwLock<Url>>,
@@ -736,8 +736,8 @@ pub struct GaggleUser {
     pub min_wait: usize,
     /// Maximum amount of time to sleep after running a task.
     pub max_wait: usize,
-    /// A local copy of the global GooseConfiguration.
-    pub config: GooseConfiguration,
+    /// A local copy of the global SwanlingConfiguration.
+    pub config: SwanlingConfiguration,
     /// Load test hash.
     pub load_test_hash: u64,
 }
@@ -748,7 +748,7 @@ impl GaggleUser {
         base_url: Url,
         min_wait: usize,
         max_wait: usize,
-        configuration: &GooseConfiguration,
+        configuration: &SwanlingConfiguration,
         load_test_hash: u64,
     ) -> Self {
         trace!("new gaggle user");
@@ -764,37 +764,37 @@ impl GaggleUser {
 }
 
 /// Used internally by Coordinated Omission Mitigation, tracks the cadence between when the same request
-/// is made as Goose loops through a GooseTaskSet.
+/// is made as Swanling loops through a SwanlingTaskSet.
 #[derive(Debug, Clone)]
-struct GooseRequestCadence {
-    /// The last time this GooseUser lopped through its GooseTasks.
+struct SwanlingRequestCadence {
+    /// The last time this SwanlingUser lopped through its SwanlingTasks.
     last_time: std::time::Instant,
-    /// Total milliseconds of delays followed each GooseTask. This has to be substracted out as it's
+    /// Total milliseconds of delays followed each SwanlingTask. This has to be substracted out as it's
     /// not impacted by the upstream server and it can change randomly affecting the cadence.
     delays_since_last_time: u64,
-    /// How many times this GooseUser has looped through all of its GooseTasks.
+    /// How many times this SwanlingUser has looped through all of its SwanlingTasks.
     counter: u64,
-    /// The minimum time taken to loop through all GooseTasks.
+    /// The minimum time taken to loop through all SwanlingTasks.
     minimum_cadence: u64,
-    /// The maximum time taken to loop through all GooseTasks.
+    /// The maximum time taken to loop through all SwanlingTasks.
     maximum_cadence: u64,
-    /// Average amount of time taken to loop through all GooseTasks.
+    /// Average amount of time taken to loop through all SwanlingTasks.
     average_cadence: u64,
-    /// Total amount of time spent processing GooseTasks.
+    /// Total amount of time spent processing SwanlingTasks.
     total_elapsed: u64,
-    /// If non-zero, the length of the server slowdown detected by the Goose Coordinated
+    /// If non-zero, the length of the server slowdown detected by the Swanling Coordinated
     /// Omission Mitigation in milliseconds.
     coordinated_omission_mitigation: u64,
-    /// The expected cadence to loop through all GooseTasks.
+    /// The expected cadence to loop through all SwanlingTasks.
     user_cadence: u64,
     /// If -1 coordinated_omission_mitigation was never enabled. Otherwise is a counter of how
     /// many times the mitigation triggered.
     coordinated_omission_counter: isize,
 }
-impl GooseRequestCadence {
+impl SwanlingRequestCadence {
     // Return a new, empty RequestCadence object.
-    fn new() -> GooseRequestCadence {
-        GooseRequestCadence {
+    fn new() -> SwanlingRequestCadence {
+        SwanlingRequestCadence {
             last_time: std::time::Instant::now(),
             delays_since_last_time: 0,
             counter: 0,
@@ -809,14 +809,14 @@ impl GooseRequestCadence {
     }
 }
 
-/// An individual user state, repeatedly running all [`GooseTask`](./struct.GooseTask.html)s
-/// in a specific [`GooseTaskSet`](./struct.GooseTaskSet.html).
+/// An individual user state, repeatedly running all [`SwanlingTask`](./struct.SwanlingTask.html)s
+/// in a specific [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html).
 #[derive(Debug, Clone)]
-pub struct GooseUser {
-    /// The Instant when this `GooseUser` client started.
+pub struct SwanlingUser {
+    /// The Instant when this `SwanlingUser` client started.
     pub started: Instant,
-    /// An index into the internal [`GooseAttack`](../struct.GooseAttack.html)`.task_sets`
-    /// vector, indicating which [`GooseTaskSet`](./struct.GooseTaskSet.html) is running.
+    /// An index into the internal [`SwanlingAttack`](../struct.SwanlingAttack.html)`.task_sets`
+    /// vector, indicating which [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html) is running.
     pub task_sets_index: usize,
     /// Client used to make requests, managing sessions and cookies.
     pub client: Arc<Mutex<Client>>,
@@ -828,52 +828,52 @@ pub struct GooseUser {
     pub min_wait: usize,
     /// Maximum amount of time to sleep after running a task.
     pub max_wait: usize,
-    /// A local copy of the global [`GooseConfiguration`](../struct.GooseConfiguration.html).
-    pub config: GooseConfiguration,
+    /// A local copy of the global [`SwanlingConfiguration`](../struct.SwanlingConfiguration.html).
+    pub config: SwanlingConfiguration,
     /// Channel to logger.
-    pub logger: Option<flume::Sender<Option<GooseLog>>>,
+    pub logger: Option<flume::Sender<Option<SwanlingLog>>>,
     /// Channel to throttle.
     pub throttle: Option<flume::Sender<bool>>,
     /// Normal tasks are optionally throttled,
-    /// [`test_start`](../struct.GooseAttack.html#method.test_start) and
-    /// [`test_stop`](../struct.GooseAttack.html#method.test_stop) tasks are not.
+    /// [`test_start`](../struct.SwanlingAttack.html#method.test_start) and
+    /// [`test_stop`](../struct.SwanlingAttack.html#method.test_stop) tasks are not.
     pub is_throttled: bool,
     /// Channel to parent.
-    pub channel_to_parent: Option<flume::Sender<GooseMetric>>,
-    /// An index into the internal [`GooseAttack`](../struct.GooseAttack.html)`.weighted_users`
-    /// vector, indicating which weighted `GooseUser` is running.
+    pub channel_to_parent: Option<flume::Sender<SwanlingMetric>>,
+    /// An index into the internal [`SwanlingAttack`](../struct.SwanlingAttack.html)`.weighted_users`
+    /// vector, indicating which weighted `SwanlingUser` is running.
     pub weighted_users_index: usize,
     /// A weighted list of all tasks that run when the user first starts.
-    pub weighted_on_start_tasks: WeightedGooseTasks,
+    pub weighted_on_start_tasks: WeightedSwanlingTasks,
     /// A weighted list of all tasks that this user runs once started.
-    pub weighted_tasks: WeightedGooseTasks,
+    pub weighted_tasks: WeightedSwanlingTasks,
     /// A weighted list of all tasks that run when the user stops.
-    pub weighted_on_stop_tasks: WeightedGooseTasks,
+    pub weighted_on_stop_tasks: WeightedSwanlingTasks,
     /// Load test hash.
     pub load_test_hash: u64,
-    /// Tracks the cadence that this user is looping through all GooseTasks, used by Coordinated
+    /// Tracks the cadence that this user is looping through all SwanlingTasks, used by Coordinated
     /// Omission Mitigation.
-    request_cadence: Arc<RwLock<GooseRequestCadence>>,
+    request_cadence: Arc<RwLock<SwanlingRequestCadence>>,
     /// Tracks how much time is spent sleeping during a loop through all tasks.
     pub(crate) slept: Arc<AtomicU64>,
 }
-impl GooseUser {
+impl SwanlingUser {
     /// Create a new user state.
     pub fn new(
         task_sets_index: usize,
         base_url: Url,
         min_wait: usize,
         max_wait: usize,
-        configuration: &GooseConfiguration,
+        configuration: &SwanlingConfiguration,
         load_test_hash: u64,
-    ) -> Result<Self, GooseError> {
-        trace!("new GooseUser");
+    ) -> Result<Self, SwanlingError> {
+        trace!("new SwanlingUser");
         let client = Client::builder()
             .user_agent(APP_USER_AGENT)
             .cookie_store(true)
             .build()?;
 
-        Ok(GooseUser {
+        Ok(SwanlingUser {
             started: Instant::now(),
             task_sets_index,
             client: Arc::new(Mutex::new(client)),
@@ -892,18 +892,18 @@ impl GooseUser {
             weighted_tasks: Vec::new(),
             weighted_on_stop_tasks: Vec::new(),
             load_test_hash,
-            request_cadence: Arc::new(RwLock::new(GooseRequestCadence::new())),
+            request_cadence: Arc::new(RwLock::new(SwanlingRequestCadence::new())),
             slept: Arc::new(AtomicU64::new(0)),
         })
     }
 
     /// Create a new single-use user.
-    pub fn single(base_url: Url, configuration: &GooseConfiguration) -> Result<Self, GooseError> {
-        let mut single_user = GooseUser::new(0, base_url, 0, 0, configuration, 0)?;
+    pub fn single(base_url: Url, configuration: &SwanlingConfiguration) -> Result<Self, SwanlingError> {
+        let mut single_user = SwanlingUser::new(0, base_url, 0, 0, configuration, 0)?;
         // Only one user, so index is 0.
         single_user.weighted_users_index = 0;
-        // Do not throttle [`test_start`](../struct.GooseAttack.html#method.test_start) (setup) and
-        // [`test_stop`](../struct.GooseAttack.html#method.test_stop) (teardown) tasks.
+        // Do not throttle [`test_start`](../struct.SwanlingAttack.html#method.test_start) (setup) and
+        // [`test_stop`](../struct.SwanlingAttack.html#method.test_stop) (teardown) tasks.
         single_user.is_throttled = false;
 
         Ok(single_user)
@@ -914,11 +914,11 @@ impl GooseUser {
     /// A `base_url` is determined per user thread, using the following order
     /// of precedence:
     ///  1. `--host` (host specified on the command line when running load test)
-    ///  2. [`GooseTaskSet`](./struct.GooseTaskSet.html)`.host` (default host defined for the
+    ///  2. [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html)`.host` (default host defined for the
     /// current task set)
-    ///  3. [`GooseDefault::Host`](../enum.GooseDefault.html#variant.Host) (default host
+    ///  3. [`SwanlingDefault::Host`](../enum.SwanlingDefault.html#variant.Host) (default host
     /// defined for the current load test)
-    pub async fn build_url(&self, path: &str) -> Result<String, GooseTaskError> {
+    pub async fn build_url(&self, path: &str) -> Result<String, SwanlingTaskError> {
         // If URL includes a host, simply use it.
         if let Ok(parsed_path) = Url::parse(path) {
             if let Some(_host) = parsed_path.host() {
@@ -935,52 +935,52 @@ impl GooseUser {
     ///
     /// (If you need to set headers, change timeouts, or otherwise make use of the
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-    /// object, you can instead call [`goose_get`](./struct.GooseUser.html#method.goose_get)
+    /// object, you can instead call [`swanling_get`](./struct.SwanlingUser.html#method.swanling_get)
     /// which returns a
     /// [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html),
     /// then call
-    /// [`goose_send`](./struct.GooseUser.html#method.goose_send) to invoke the request.)
+    /// [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) to invoke the request.)
     ///
-    /// Calls to `get()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `get()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(get_function);
     ///
     /// /// A very simple task that makes a GET request.
-    /// async fn get_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/path/to/foo/").await?;
+    /// async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/path/to/foo/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn get(&self, path: &str) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_get(path).await?;
+    pub async fn get(&self, path: &str) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_get(path).await?;
 
-        Ok(self.goose_send(request_builder, None).await?)
+        Ok(self.swanling_send(request_builder, None).await?)
     }
 
     /// A helper to make a named `GET` request of a path and collect relevant metrics.
     /// Automatically prepends the correct host. Naming a request only affects collected
     /// metrics.
     ///
-    /// Calls to `get_named()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `get_named()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(get_function);
     ///
     /// /// A very simple task that makes a GET request.
-    /// async fn get_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get_named("/path/to/foo/", "foo").await?;
+    /// async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get_named("/path/to/foo/", "foo").await?;
     ///
     ///     Ok(())
     /// }
@@ -989,10 +989,10 @@ impl GooseUser {
         &self,
         path: &str,
         request_name: &str,
-    ) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_get(path).await?;
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_get(path).await?;
 
-        Ok(self.goose_send(request_builder, Some(request_name)).await?)
+        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
     }
 
     /// A helper to make a `POST` request of a path and collect relevant metrics.
@@ -1000,50 +1000,50 @@ impl GooseUser {
     ///
     /// (If you need to set headers, change timeouts, or otherwise make use of the
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-    /// object, you can instead call `goose_post` which returns a
+    /// object, you can instead call `swanling_post` which returns a
     /// [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html),
-    /// then call `goose_send` to invoke the request.)
+    /// then call `swanling_send` to invoke the request.)
     ///
-    /// Calls to `post()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `post()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(post_function);
     ///
     /// /// A very simple task that makes a POST request.
-    /// async fn post_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.post("/path/to/foo/", "BODY BEING POSTED").await?;
+    /// async fn post_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.post("/path/to/foo/", "BODY BEING POSTED").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn post(&self, path: &str, body: &str) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_post(path).await?.body(body.to_string());
+    pub async fn post(&self, path: &str, body: &str) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_post(path).await?.body(body.to_string());
 
-        Ok(self.goose_send(request_builder, None).await?)
+        Ok(self.swanling_send(request_builder, None).await?)
     }
 
     /// A helper to make a named `POST` request of a path and collect relevant metrics.
     /// Automatically prepends the correct host. Naming a request only affects collected
     /// metrics.
     ///
-    /// Calls to `post_named()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `post_named()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(post_function);
     ///
     /// /// A very simple task that makes a POST request.
-    /// async fn post_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.post_named("/path/to/foo/", "foo", "BODY BEING POSTED").await?;
+    /// async fn post_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.post_named("/path/to/foo/", "foo", "BODY BEING POSTED").await?;
     ///
     ///     Ok(())
     /// }
@@ -1053,10 +1053,10 @@ impl GooseUser {
         path: &str,
         request_name: &str,
         body: &str,
-    ) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_post(path).await?.body(body.to_string());
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_post(path).await?.body(body.to_string());
 
-        Ok(self.goose_send(request_builder, Some(request_name)).await?)
+        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
     }
 
     /// A helper to make a `HEAD` request of a path and collect relevant metrics.
@@ -1064,50 +1064,50 @@ impl GooseUser {
     ///
     /// (If you need to set headers, change timeouts, or otherwise make use of the
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-    /// object, you can instead call `goose_head` which returns a
+    /// object, you can instead call `swanling_head` which returns a
     /// [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html),
-    /// then call `goose_send` to invoke the request.)
+    /// then call `swanling_send` to invoke the request.)
     ///
-    /// Calls to `head()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `head()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(head_function);
     ///
     /// /// A very simple task that makes a HEAD request.
-    /// async fn head_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.head("/path/to/foo/").await?;
+    /// async fn head_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.head("/path/to/foo/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn head(&self, path: &str) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_head(path).await?;
+    pub async fn head(&self, path: &str) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_head(path).await?;
 
-        Ok(self.goose_send(request_builder, None).await?)
+        Ok(self.swanling_send(request_builder, None).await?)
     }
 
     /// A helper to make a named `HEAD` request of a path and collect relevant metrics.
     /// Automatically prepends the correct host. Naming a request only affects collected
     /// metrics.
     ///
-    /// Calls to `head_named()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `head_named()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(head_function);
     ///
     /// /// A very simple task that makes a HEAD request.
-    /// async fn head_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.head_named("/path/to/foo/", "foo").await?;
+    /// async fn head_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.head_named("/path/to/foo/", "foo").await?;
     ///
     ///     Ok(())
     /// }
@@ -1116,10 +1116,10 @@ impl GooseUser {
         &self,
         path: &str,
         request_name: &str,
-    ) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_head(path).await?;
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_head(path).await?;
 
-        Ok(self.goose_send(request_builder, Some(request_name)).await?)
+        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
     }
 
     /// A helper to make a `DELETE` request of a path and collect relevant metrics.
@@ -1127,50 +1127,50 @@ impl GooseUser {
     ///
     /// (If you need to set headers, change timeouts, or otherwise make use of the
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
-    /// object, you can instead call `goose_delete` which returns a
+    /// object, you can instead call `swanling_delete` which returns a
     /// [`RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html),
-    /// then call `goose_send` to invoke the request.)
+    /// then call `swanling_send` to invoke the request.)
     ///
-    /// Calls to `delete()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `delete()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(delete_function);
     ///
     /// /// A very simple task that makes a DELETE request.
-    /// async fn delete_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.delete("/path/to/foo/").await?;
+    /// async fn delete_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.delete("/path/to/foo/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn delete(&self, path: &str) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_delete(path).await?;
+    pub async fn delete(&self, path: &str) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_delete(path).await?;
 
-        Ok(self.goose_send(request_builder, None).await?)
+        Ok(self.swanling_send(request_builder, None).await?)
     }
 
     /// A helper to make a named `DELETE` request of a path and collect relevant metrics.
     /// Automatically prepends the correct host. Naming a request only affects collected
     /// metrics.
     ///
-    /// Calls to `delete_named()` return a [`GooseResponse`](./struct.GooseResponse.html) object which
-    /// contains a copy of the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)),
+    /// Calls to `delete_named()` return a [`SwanlingResponse`](./struct.SwanlingResponse.html) object which
+    /// contains a copy of the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)),
     /// and the response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(delete_function);
     ///
     /// /// A very simple task that makes a DELETE request.
-    /// async fn delete_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.delete_named("/path/to/foo/", "foo").await?;
+    /// async fn delete_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.delete_named("/path/to/foo/", "foo").await?;
     ///
     ///     Ok(())
     /// }
@@ -1179,35 +1179,35 @@ impl GooseUser {
         &self,
         path: &str,
         request_name: &str,
-    ) -> Result<GooseResponse, GooseTaskError> {
-        let request_builder = self.goose_delete(path).await?;
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
+        let request_builder = self.swanling_delete(path).await?;
 
-        Ok(self.goose_send(request_builder, Some(request_name)).await?)
+        Ok(self.swanling_send(request_builder, Some(request_name)).await?)
     }
 
     /// Prepends the correct host on the path, then prepares a
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `GET` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(get_function);
     ///
     /// /// A simple task that makes a GET request, exposing the Reqwest
     /// /// request builder.
-    /// async fn get_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_get("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_get("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_get(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_get(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.get(&url))
@@ -1217,25 +1217,25 @@ impl GooseUser {
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `POST` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(post_function);
     ///
     /// /// A simple task that makes a POST request, exposing the Reqwest
     /// /// request builder.
-    /// async fn post_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_post("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn post_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_post("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_post(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_post(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.post(&url))
@@ -1245,25 +1245,25 @@ impl GooseUser {
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `HEAD` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(head_function);
     ///
     /// /// A simple task that makes a HEAD request, exposing the Reqwest
     /// /// request builder.
-    /// async fn head_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_head("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn head_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_head("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_head(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_head(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.head(&url))
@@ -1273,25 +1273,25 @@ impl GooseUser {
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `PUT` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(put_function);
     ///
     /// /// A simple task that makes a PUT request, exposing the Reqwest
     /// /// request builder.
-    /// async fn put_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_put("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn put_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_put("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_put(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_put(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.put(&url))
@@ -1301,25 +1301,25 @@ impl GooseUser {
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `PATCH` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(patch_function);
     ///
     /// /// A simple task that makes a PUT request, exposing the Reqwest
     /// /// request builder.
-    /// async fn patch_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_patch("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn patch_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_patch("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_patch(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_patch(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.patch(&url))
@@ -1329,25 +1329,25 @@ impl GooseUser {
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object for making a `DELETE` request.
     ///
-    /// (You must then call [`goose_send`](./struct.GooseUser.html#method.goose_send) on this
+    /// (You must then call [`swanling_send`](./struct.SwanlingUser.html#method.swanling_send) on this
     /// object to actually execute the request.)
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(delete_function);
     ///
     /// /// A simple task that makes a DELETE request, exposing the Reqwest
     /// /// request builder.
-    /// async fn delete_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_delete("/path/to/foo").await?;
-    ///     let _goose = user.goose_send(request_builder, None).await?;
+    /// async fn delete_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_delete("/path/to/foo").await?;
+    ///     let _swanling = user.swanling_send(request_builder, None).await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_delete(&self, path: &str) -> Result<RequestBuilder, GooseTaskError> {
+    pub async fn swanling_delete(&self, path: &str) -> Result<RequestBuilder, SwanlingTaskError> {
         let url = self.build_url(path).await?;
 
         Ok(self.client.lock().await.delete(&url))
@@ -1361,43 +1361,43 @@ impl GooseUser {
     /// It is possible to build and execute a
     /// [`reqwest::RequestBuilder`](https://docs.rs/reqwest/*/reqwest/struct.RequestBuilder.html)
     /// object directly with [`reqwest`](https://docs.rs/reqwest/) without using this helper
-    /// function, but then Goose is unable to capture metrics.
+    /// function, but then Swanling is unable to capture metrics.
     ///
-    /// Calls to `goose_send()` returns a `Result` containing a
-    /// [`GooseResponse`](./struct.GooseResponse.html) on success, and a
+    /// Calls to `swanling_send()` returns a `Result` containing a
+    /// [`SwanlingResponse`](./struct.SwanlingResponse.html) on success, and a
     /// [`flume::SendError`](https://docs.rs/flume/*/flume/struct.SendError.html)`<bool>`,
     /// on failure. Failure only happens when `--throttle-requests` is enabled and the load test
-    /// completes. The [`GooseResponse`](./struct.GooseResponse.html) object contains a copy of
-    /// the request you made ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)), and the
+    /// completes. The [`SwanlingResponse`](./struct.SwanlingResponse.html) object contains a copy of
+    /// the request you made ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)), and the
     /// response ([`reqwest::Response`](https://docs.rs/reqwest/*/reqwest/struct.Response.html)).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(get_function);
     ///
     /// /// A simple task that makes a GET request, exposing the Reqwest
     /// /// request builder.
-    /// async fn get_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let request_builder = user.goose_get("/path/to/foo").await?;
-    ///     let goose = user.goose_send(request_builder, None).await?;
+    /// async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let request_builder = user.swanling_get("/path/to/foo").await?;
+    ///     let swanling = user.swanling_send(request_builder, None).await?;
     ///
-    ///     // Do stuff with goose.request and/or goose.response here.
+    ///     // Do stuff with swanling.request and/or swanling.response here.
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn goose_send(
+    pub async fn swanling_send(
         &self,
         request_builder: RequestBuilder,
         request_name: Option<&str>,
-    ) -> Result<GooseResponse, GooseTaskError> {
+    ) -> Result<SwanlingResponse, SwanlingTaskError> {
         // If throttle-requests is enabled...
         if self.is_throttled && self.throttle.is_some() {
             // ...wait until there's room to add a token to the throttle channel before proceeding.
-            debug!("GooseUser: waiting on throttle");
-            // Will result in GooseTaskError::RequestCanceled if this fails.
+            debug!("SwanlingUser: waiting on throttle");
+            // Will result in SwanlingTaskError::RequestCanceled if this fails.
             self.throttle.clone().unwrap().send_async(true).await?;
         };
 
@@ -1412,11 +1412,11 @@ impl GooseUser {
                 "".to_string()
             }
         };
-        let method = goose_method_from_method(request.method().clone())?;
+        let method = swanling_method_from_method(request.method().clone())?;
         let request_name = self.get_request_name(&path, request_name);
 
         // Record information about the request.
-        let mut request_metric = GooseRequestMetric::new(
+        let mut request_metric = SwanlingRequestMetric::new(
             method,
             &request_name,
             &request.url().to_string(),
@@ -1468,8 +1468,8 @@ impl GooseUser {
         };
 
         // If enabled, track the cadence between each time the same request is made while
-        // this GooseUser is running. If requests are blocked by the upstream server, this
-        // allows Goose to backfill the requests that should have been made based on
+        // this SwanlingUser is running. If requests are blocked by the upstream server, this
+        // allows Swanling to backfill the requests that should have been made based on
         // cadence statistics.
         request_metric.user_cadence = self
             .coordinated_omission_mitigation(&request_metric)
@@ -1481,15 +1481,15 @@ impl GooseUser {
             self.send_request_metric_to_parent(request_metric.clone())?;
         }
 
-        Ok(GooseResponse::new(request_metric, response))
+        Ok(SwanlingResponse::new(request_metric, response))
     }
 
-    /// Tracks the time it takes for the current GooseUser to loop through all GooseTasks
+    /// Tracks the time it takes for the current SwanlingUser to loop through all SwanlingTasks
     /// if Coordinated Omission Mitigation is enabled.
     pub(crate) async fn update_request_cadence(&self, thread_number: usize) {
         if let Some(co_mitigation) = self.config.co_mitigation.as_ref() {
             // Return immediately if coordinated omission mitigation is disabled.
-            if co_mitigation == &GooseCoordinatedOmissionMitigation::Disabled {
+            if co_mitigation == &SwanlingCoordinatedOmissionMitigation::Disabled {
                 return;
             }
 
@@ -1501,13 +1501,13 @@ impl GooseUser {
             // time through the loop.
             let now = std::time::Instant::now();
 
-            // Swap out the `slept` counter, which is the total time the GooseUser slept
+            // Swap out the `slept` counter, which is the total time the SwanlingUser slept
             // between tasks, a potentially randomly changing value. Reset to 0 for the
-            // next loop through all GooseTasks.
+            // next loop through all SwanlingTasks.
             request_cadence.delays_since_last_time = self.slept.swap(0, Ordering::SeqCst);
 
-            // How much time passed since the last time this GooseUser looped through all
-            // tasks, accounting for time waiting between GooseTasks due to `set_wait_time`.
+            // How much time passed since the last time this SwanlingUser looped through all
+            // tasks, accounting for time waiting between SwanlingTasks due to `set_wait_time`.
             let elapsed = (now - request_cadence.last_time).as_millis() as u64
                 - request_cadence.delays_since_last_time;
 
@@ -1534,17 +1534,17 @@ impl GooseUser {
                     );
                     request_cadence.coordinated_omission_counter += 1;
                 }
-                // Calculate the expected cadence for this GooseTask request.
+                // Calculate the expected cadence for this SwanlingTask request.
                 let cadence = match co_mitigation {
                     // Expected cadence is the average time between requests.
-                    GooseCoordinatedOmissionMitigation::Average => request_cadence.average_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Average => request_cadence.average_cadence,
                     // Expected cadence is the maximum time between requests.
-                    GooseCoordinatedOmissionMitigation::Maximum => request_cadence.maximum_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Maximum => request_cadence.maximum_cadence,
                     // Expected cadence is the minimum time between requests.
-                    GooseCoordinatedOmissionMitigation::Minimum => request_cadence.minimum_cadence,
+                    SwanlingCoordinatedOmissionMitigation::Minimum => request_cadence.minimum_cadence,
                     // This is not possible as we would have exited already if coordinated
                     // omission mitigation was disabled.
-                    GooseCoordinatedOmissionMitigation::Disabled => unreachable!(),
+                    SwanlingCoordinatedOmissionMitigation::Disabled => unreachable!(),
                 };
                 if elapsed > (cadence * 2) {
                     debug!(
@@ -1566,16 +1566,16 @@ impl GooseUser {
     }
 
     /// If Coordinated Omission Mitigation is enabled, compares how long has passed since the last
-    /// loop through all GooseTasks by the current GooseUser. Through this mechanism, Goose is
+    /// loop through all SwanlingTasks by the current SwanlingUser. Through this mechanism, Swanling is
     /// able to detect stalls on the upstream server being load tested, backfilling requests based
     /// on what statistically should have happened. Can be disabled with `--co-mitigation disabled`.
     async fn coordinated_omission_mitigation(
         &self,
-        request_metric: &GooseRequestMetric,
-    ) -> Result<u64, GooseTaskError> {
+        request_metric: &SwanlingRequestMetric,
+    ) -> Result<u64, SwanlingTaskError> {
         if let Some(co_mitigation) = self.config.co_mitigation.as_ref() {
             // Return immediately if coordinated omission mitigation is disabled.
-            if co_mitigation == &GooseCoordinatedOmissionMitigation::Disabled {
+            if co_mitigation == &SwanlingCoordinatedOmissionMitigation::Disabled {
                 return Ok(0);
             }
 
@@ -1600,7 +1600,7 @@ impl GooseUser {
                     "".to_string()
                 };
                 info!(
-                    "{:.3}s into goose attack: \"{} {}\" [{}] took abnormally long ({} ms){}",
+                    "{:.3}s into swanling attack: \"{} {}\" [{}] took abnormally long ({} ms){}",
                     request_metric.elapsed as f64 / 1_000.0,
                     request_metric.method,
                     request_metric.url,
@@ -1630,32 +1630,32 @@ impl GooseUser {
         }
     }
 
-    fn send_request_metric_to_parent(&self, request_metric: GooseRequestMetric) -> GooseTaskResult {
+    fn send_request_metric_to_parent(&self, request_metric: SwanlingRequestMetric) -> SwanlingTaskResult {
         // If requests-file is enabled, send a copy of the raw request to the logger thread.
         if !self.config.request_log.is_empty() {
             if let Some(logger) = self.logger.as_ref() {
-                logger.send(Some(GooseLog::Request(request_metric.clone())))?;
+                logger.send(Some(SwanlingLog::Request(request_metric.clone())))?;
             }
         }
 
         // Parent is not defined when running
-        // [`test_start`](../struct.GooseAttack.html#method.test_start),
-        // [`test_stop`](../struct.GooseAttack.html#method.test_stop), and during testing.
+        // [`test_start`](../struct.SwanlingAttack.html#method.test_start),
+        // [`test_stop`](../struct.SwanlingAttack.html#method.test_stop), and during testing.
         if let Some(parent) = self.channel_to_parent.clone() {
-            parent.send(GooseMetric::Request(request_metric))?;
+            parent.send(SwanlingMetric::Request(request_metric))?;
         }
 
         Ok(())
     }
 
-    /// If `request_name` is set, unwrap and use this. Otherwise, if the GooseTask has a name
+    /// If `request_name` is set, unwrap and use this. Otherwise, if the SwanlingTask has a name
     /// set use it. Otherwise use the path.
     fn get_request_name(&self, path: &str, request_name: Option<&str>) -> String {
         match request_name {
             // If a request_name was passed in, unwrap and return a copy of it.
             Some(rn) => rn.to_string(),
             None => {
-                // Otherwise determine if the current GooseTask is named, and if so return
+                // Otherwise determine if the current SwanlingTask is named, and if so return
                 // a copy of it.
                 let position = self.position.load(Ordering::SeqCst);
                 if !self.weighted_tasks.is_empty() && !self.weighted_tasks[position].1.is_empty() {
@@ -1670,34 +1670,34 @@ impl GooseUser {
 
     /// Manually mark a request as a success.
     ///
-    /// By default, Goose will consider any response with a 2xx status code as a success.
+    /// By default, Swanling will consider any response with a 2xx status code as a success.
     /// It may be valid in your test for a non-2xx HTTP status code to be returned. A copy
     /// of your original request is returned with the response, and a mutable copy must be
     /// included when setting a request as a success.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(get_function);
     ///
     /// /// A simple task that makes a GET request.
-    /// async fn get_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let mut goose = user.get("/404").await?;
+    /// async fn get_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let mut swanling = user.get("/404").await?;
     ///
-    ///     if let Ok(response) = &goose.response {
+    ///     if let Ok(response) = &swanling.response {
     ///         // We expect a 404 here.
     ///         if response.status() == 404 {
-    ///             return user.set_success(&mut goose.request);
+    ///             return user.set_success(&mut swanling.request);
     ///         }
     ///     }
     ///
-    ///     Err(GooseTaskError::RequestFailed {
-    ///         raw_request: goose.request.clone(),
+    ///     Err(SwanlingTaskError::RequestFailed {
+    ///         raw_request: swanling.request.clone(),
     ///     })
     /// }
     /// ````
-    pub fn set_success(&self, request: &mut GooseRequestMetric) -> GooseTaskResult {
+    pub fn set_success(&self, request: &mut SwanlingRequestMetric) -> SwanlingTaskResult {
         // Only send update if this was previously not a success.
         if !request.success {
             request.success = true;
@@ -1710,7 +1710,7 @@ impl GooseUser {
 
     /// Manually mark a request as a failure.
     ///
-    /// By default, Goose will consider any response with a 2xx status code as a success.
+    /// By default, Swanling will consider any response with a 2xx status code as a success.
     /// You may require more advanced logic, in which a 2xx status code is actually a
     /// failure. A copy of your original request is returned with the response, and a
     /// mutable copy must be included when setting a request as a failure.
@@ -1718,7 +1718,7 @@ impl GooseUser {
     /// Calls to `set_failure` must include four parameters. The first, `tag`, is an
     /// arbitrary string identifying the reason for the failure, used when logging. The
     /// second, `request`, is a mutable reference to the
-    /// ([`GooseRequestMetric`](./struct.GooseRequestMetric.html)) object of the request being
+    /// ([`SwanlingRequestMetric`](./struct.SwanlingRequestMetric.html)) object of the request being
     /// identified as a failure (the contained `success` field will be set to `false`,
     /// and the `update` field will be set to `true`). The last two parameters, `header`
     /// and `body`, are optional and used to provide more detail in logs.
@@ -1729,18 +1729,18 @@ impl GooseUser {
     /// be collected.
     ///
     /// This also calls
-    /// [`log_debug`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.log_debug).
+    /// [`log_debug`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.log_debug).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(loadtest_index_page);
     ///
-    /// async fn loadtest_index_page(user: &GooseUser) -> GooseTaskResult {
-    ///     let mut goose = user.get_named("/", "index").await?;
+    /// async fn loadtest_index_page(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let mut swanling = user.get_named("/", "index").await?;
     ///
-    ///     if let Ok(response) = goose.response {
+    ///     if let Ok(response) = swanling.response {
     ///         // We only need to check pages that returned a success status code.
     ///         if response.status().is_success() {
     ///             match response.text().await {
@@ -1749,12 +1749,12 @@ impl GooseUser {
     ///                     // was a failure.
     ///                     if !text.contains("this string must exist") {
     ///                         // As this is a named request, pass in the name not the URL
-    ///                         return user.set_failure("string missing", &mut goose.request, None, None);
+    ///                         return user.set_failure("string missing", &mut swanling.request, None, None);
     ///                     }
     ///                 }
     ///                 // Empty page, this is a failure.
     ///                 Err(_) => {
-    ///                     return user.set_failure("empty page", &mut goose.request, None, None);
+    ///                     return user.set_failure("empty page", &mut swanling.request, None, None);
     ///                 }
     ///             }
     ///         }
@@ -1766,10 +1766,10 @@ impl GooseUser {
     pub fn set_failure(
         &self,
         tag: &str,
-        request: &mut GooseRequestMetric,
+        request: &mut SwanlingRequestMetric,
         headers: Option<&header::HeaderMap>,
         body: Option<&str>,
-    ) -> GooseTaskResult {
+    ) -> SwanlingTaskResult {
         // Only send update if this was previously a success.
         if request.success {
             request.success = false;
@@ -1783,27 +1783,27 @@ impl GooseUser {
         // Print log to stdout if `-v` is enabled.
         info!("set_failure: {}", tag);
 
-        Err(GooseTaskError::RequestFailed {
+        Err(SwanlingTaskError::RequestFailed {
             raw_request: request.clone(),
         })
     }
 
-    /// Write to [`debug_file`](../struct.GooseConfiguration.html#structfield.debug_file)
+    /// Write to [`debug_file`](../struct.SwanlingConfiguration.html#structfield.debug_file)
     /// if enabled.
     ///
     /// This function provides a mechanism for optional debug logging when a load test
     /// is running. This can be especially helpful when writing a load test. Each entry
     /// must include a tag, which is an arbitrary string identifying the debug message.
-    /// It may also optionally include references to the GooseRequestMetric made, the headers
+    /// It may also optionally include references to the SwanlingRequestMetric made, the headers
     /// returned by the server, and the response body returned by the server,
     ///
     /// As the response body can be large, the `--no-debug-body` option (or
-    /// [`GooseDefault::NoDebugBody`](../enum.GooseDefault.html#variant.NoDebugBody) default)
+    /// [`SwanlingDefault::NoDebugBody`](../enum.SwanlingDefault.html#variant.NoDebugBody) default)
     /// can be set to prevent the debug log from including the response body. When this option
     /// is enabled, the body will always show up as `null` in the debug log.
     ///
     /// Calls to
-    /// [`set_failure`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.set_failure)
+    /// [`set_failure`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.set_failure)
     /// automatically invoke `log_debug`.
     ///
     /// To enable the debug log, a load test must be run with the `--debug-log-file=foo`
@@ -1814,14 +1814,14 @@ impl GooseUser {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let mut task = task!(loadtest_index_page);
     ///
-    /// async fn loadtest_index_page(user: &GooseUser) -> GooseTaskResult {
-    ///     let mut goose = user.get("/").await?;
+    /// async fn loadtest_index_page(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let mut swanling = user.get("/").await?;
     ///
-    ///     match goose.response {
+    ///     match swanling.response {
     ///         Ok(response) => {
     ///             // Grab a copy of the headers so we can include them when logging errors.
     ///             let headers = &response.headers().clone();
@@ -1832,7 +1832,7 @@ impl GooseUser {
     ///                         // Server returned an error code, log everything.
     ///                         user.log_debug(
     ///                             "error loading /",
-    ///                             Some(&goose.request),
+    ///                             Some(&swanling.request),
     ///                             Some(headers),
     ///                             Some(&html),
     ///                         );
@@ -1841,7 +1841,7 @@ impl GooseUser {
     ///                         // No body was returned, log everything else.
     ///                         user.log_debug(
     ///                             &format!("error loading /: {}", e),
-    ///                             Some(&goose.request),
+    ///                             Some(&swanling.request),
     ///                             Some(headers),
     ///                             None,
     ///                         );
@@ -1853,7 +1853,7 @@ impl GooseUser {
     ///         Err(e) => {
     ///             user.log_debug(
     ///                 "no response from server when loading /",
-    ///                 Some(&goose.request),
+    ///                 Some(&swanling.request),
     ///                 None,
     ///                 None,
     ///             );
@@ -1866,21 +1866,21 @@ impl GooseUser {
     pub fn log_debug(
         &self,
         tag: &str,
-        request: Option<&GooseRequestMetric>,
+        request: Option<&SwanlingRequestMetric>,
         headers: Option<&header::HeaderMap>,
         body: Option<&str>,
-    ) -> GooseTaskResult {
+    ) -> SwanlingTaskResult {
         if !self.config.debug_log.is_empty() {
             // Logger is not defined when running
-            // [`test_start`](../struct.GooseAttack.html#method.test_start),
-            // [`test_stop`](../struct.GooseAttack.html#method.test_stop), and during testing.
+            // [`test_start`](../struct.SwanlingAttack.html#method.test_start),
+            // [`test_stop`](../struct.SwanlingAttack.html#method.test_stop), and during testing.
             if let Some(logger) = self.logger.clone() {
                 if self.config.no_debug_body {
-                    logger.send(Some(GooseLog::Debug(GooseDebug::new(
+                    logger.send(Some(SwanlingLog::Debug(SwanlingDebug::new(
                         tag, request, headers, None,
                     ))))?;
                 } else {
-                    logger.send(Some(GooseLog::Debug(GooseDebug::new(
+                    logger.send(Some(SwanlingLog::Debug(SwanlingDebug::new(
                         tag, request, headers, body,
                     ))))?;
                 }
@@ -1893,11 +1893,11 @@ impl GooseUser {
     /// Manually build a
     /// [`reqwest::Client`](https://docs.rs/reqwest/*/reqwest/struct.Client.html).
     ///
-    /// By default, Goose configures two options when building a
+    /// By default, Swanling configures two options when building a
     /// [`reqwest::Client`](https://docs.rs/reqwest/*/reqwest/struct.Client.html). The first
-    /// configures Goose to report itself as the
+    /// configures Swanling to report itself as the
     /// [`user_agent`](https://docs.rs/reqwest/*/reqwest/struct.ClientBuilder.html#method.user_agent)
-    /// requesting web pages (ie `goose/0.11.2`). The second option configures
+    /// requesting web pages (ie `swanling/0.11.2`). The second option configures
     /// [`reqwest`](https://docs.rs/reqwest/) to
     /// [store cookies](https://docs.rs/reqwest/*/reqwest/struct.ClientBuilder.html#method.cookie_store),
     /// which is generally necessary if you aim to simulate logged in users.
@@ -1923,32 +1923,32 @@ impl GooseUser {
     /// When manually building a
     /// [`reqwest::Client`](https://docs.rs/reqwest/*/reqwest/struct.Client.html),
     /// there are a few things to be aware of:
-    ///  - Manually building a client in [`test_start`](../struct.GooseAttack.html#method.test_start)
+    ///  - Manually building a client in [`test_start`](../struct.SwanlingAttack.html#method.test_start)
     ///    will only affect requests made during test setup;
-    ///  - Manually building a client in [`test_stop`](../struct.GooseAttack.html#method.test_stop)
+    ///  - Manually building a client in [`test_stop`](../struct.SwanlingAttack.html#method.test_stop)
     ///    will only affect requests made during test teardown;
-    ///  - A manually built client is specific to a single Goose thread -- if you are
+    ///  - A manually built client is specific to a single Swanling thread -- if you are
     ///    generating a large load test with many users, each will need to manually build their
     ///    own client (typically you'd do this in a Task that is registered with `set_on_start()`
     ///    in each Task Set requiring a custom client;
     ///  - Manually building a client will completely replace the automatically built client
     ///    with a brand new one, so any configuration, cookies or headers set in the previously
     ///    built client will be gone;
-    ///  - You must include all desired configuration, as you are completely replacing Goose
-    ///    defaults. For example, if you want Goose clients to store cookies, you will have to
+    ///  - You must include all desired configuration, as you are completely replacing Swanling
+    ///    defaults. For example, if you want Swanling clients to store cookies, you will have to
     ///    include
     ///    [`.cookie_store(true)`](https://docs.rs/reqwest/*/reqwest/struct.ClientBuilder.html#method.cookie_store).
     ///
-    /// In the following example, the Goose client is configured with a different user agent,
+    /// In the following example, the Swanling client is configured with a different user agent,
     /// sets a default header on every request, and stores cookies.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// task!(setup_custom_client).set_on_start();
     ///
-    /// async fn setup_custom_client(user: &GooseUser) -> GooseTaskResult {
+    /// async fn setup_custom_client(user: &SwanlingUser) -> SwanlingTaskResult {
     ///     use reqwest::{Client, header};
     ///
     ///     // Build a custom HeaderMap to include with all requests made by this client.
@@ -1965,14 +1965,14 @@ impl GooseUser {
     ///     Ok(())
     /// }
     /// ```
-    pub async fn set_client_builder(&self, builder: ClientBuilder) -> Result<(), GooseTaskError> {
+    pub async fn set_client_builder(&self, builder: ClientBuilder) -> Result<(), SwanlingTaskError> {
         *self.client.lock().await = builder.build()?;
 
         Ok(())
     }
 
     /// Some websites use multiple domains to serve traffic, redirecting depending on
-    /// the user's roll. For this reason, Goose needs to respect a redirect of the
+    /// the user's roll. For this reason, Swanling needs to respect a redirect of the
     /// `base_url` and subsequent paths should be built from the redirect domain.
     ///
     /// For example, if the `base_url` (ie `--host`) is set to `foo.example.com` and the
@@ -1991,20 +1991,20 @@ impl GooseUser {
     /// to `http://other.example.com`, subsequent relative requests would still be made
     /// against `foo.example.com`.
     ///
-    /// This functionality is used internally by Goose to follow redirects of the
+    /// This functionality is used internally by Swanling to follow redirects of the
     /// `base_url` when `--sticky-follow` is specified at run time, or
-    /// [`set_default`](../struct.GooseAttack.html#method.set_default)
-    /// `(`[`GooseDefault::StickyFollow`](../enum.GooseDefault.html#variant.StickyFollow)
+    /// [`set_default`](../struct.SwanlingAttack.html#method.set_default)
+    /// `(`[`SwanlingDefault::StickyFollow`](../enum.SwanlingDefault.html#variant.StickyFollow)
     /// `, true)` is enabled. It is also
     /// available to be manually invoked from a load test such as in the following
     /// example.
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     let _goose_metrics = GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     let _swanling_metrics = SwanlingAttack::initialize()?
     ///         .register_taskset(taskset!("LoadtestTasks")
     ///             .set_host("http://foo.example.com/")
     ///             .set_wait_time(0, 3)?
@@ -2012,29 +2012,29 @@ impl GooseUser {
     ///             .register_task(task!(task_bar))
     ///         )
     ///         // Set a default run time so this test runs to completion.
-    ///         .set_default(GooseDefault::RunTime, 1)?
+    ///         .set_default(SwanlingDefault::RunTime, 1)?
     ///         .execute()?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn task_foo(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn task_foo(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn task_bar(user: &GooseUser) -> GooseTaskResult {
+    /// async fn task_bar(user: &SwanlingUser) -> SwanlingTaskResult {
     ///     // Before this task runs, all requests are being made against
     ///     // http://foo.example.com, after this task runs all subsequent
     ///     // requests are made against http://bar.example.com/.
     ///     user.set_base_url("http://bar.example.com/");
-    ///     let _goose = user.get("/").await?;
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn set_base_url(&self, host: &str) -> Result<(), GooseTaskError> {
+    pub async fn set_base_url(&self, host: &str) -> Result<(), SwanlingTaskError> {
         let url = Url::parse(host)?;
         *self.base_url.write().await = url;
 
@@ -2047,19 +2047,19 @@ impl GooseUser {
 ///
 /// The first of these defined will be returned as the prepended host:
 ///  1. `--host` (host specified on the command line when running load test)
-///  2. [`GooseTaskSet`](./struct.GooseTaskSet.html)`.host` (default host defined
+///  2. [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html)`.host` (default host defined
 ///     for the current task set)
-///  3. [`GooseDefault::Host`](../enum.GooseDefault.html#variant.Host) (default
+///  3. [`SwanlingDefault::Host`](../enum.SwanlingDefault.html#variant.Host) (default
 ///     host defined for the current load test)
 pub fn get_base_url(
     config_host: Option<String>,
     task_set_host: Option<String>,
     default_host: Option<String>,
-) -> Result<Url, GooseError> {
+) -> Result<Url, SwanlingError> {
     // If the `--host` CLI option is set, build the URL with it.
     match config_host {
         Some(host) => Ok(
-            Url::parse(&host).map_err(|parse_error| GooseError::InvalidHost {
+            Url::parse(&host).map_err(|parse_error| SwanlingError::InvalidHost {
                 host,
                 detail: "There was a failure parsing the host specified with --host.".to_string(),
                 parse_error,
@@ -2067,24 +2067,24 @@ pub fn get_base_url(
         ),
         None => {
             match task_set_host {
-                // Otherwise, if `GooseTaskSet.host` is defined, usee this
+                // Otherwise, if `SwanlingTaskSet.host` is defined, usee this
                 Some(host) => {
                     Ok(
-                        Url::parse(&host).map_err(|parse_error| GooseError::InvalidHost {
+                        Url::parse(&host).map_err(|parse_error| SwanlingError::InvalidHost {
                             host,
-                            detail: "There was a failure parsing the host specified with the GooseTaskSet.set_host() function.".to_string(),
+                            detail: "There was a failure parsing the host specified with the SwanlingTaskSet.set_host() function.".to_string(),
                             parse_error,
                         })?,
                     )
                 }
-                // Otherwise, use global `GooseAttack.host`. `unwrap` okay as host validation was done at startup.
+                // Otherwise, use global `SwanlingAttack.host`. `unwrap` okay as host validation was done at startup.
                 None => {
                     // Host is required, if we get here it's safe to unwrap this variable.
                     let default_host = default_host.unwrap();
                     Ok(
-                        Url::parse(&default_host).map_err(|parse_error| GooseError::InvalidHost {
+                        Url::parse(&default_host).map_err(|parse_error| SwanlingError::InvalidHost {
                             host: default_host.to_string(),
-                            detail: "There was a failure parsing the host specified globally with the GooseAttack.set_default() function.".to_string(),
+                            detail: "There was a failure parsing the host specified globally with the SwanlingAttack.set_default() function.".to_string(),
                             parse_error,
                         })?,
                     )
@@ -2094,17 +2094,17 @@ pub fn get_base_url(
     }
 }
 
-/// The function type of a goose task function.
-pub type GooseTaskFunction = Arc<
-    dyn for<'r> Fn(&'r GooseUser) -> Pin<Box<dyn Future<Output = GooseTaskResult> + Send + 'r>>
+/// The function type of a swanling task function.
+pub type SwanlingTaskFunction = Arc<
+    dyn for<'r> Fn(&'r SwanlingUser) -> Pin<Box<dyn Future<Output = SwanlingTaskResult> + Send + 'r>>
         + Send
         + Sync,
 >;
 
-/// An individual task within a [`GooseTaskSet`](./struct.GooseTaskSet.html).
+/// An individual task within a [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html).
 #[derive(Clone)]
-pub struct GooseTask {
-    /// An index into [`GooseTaskSet`](./struct.GooseTaskSet.html)`.task`, indicating which
+pub struct SwanlingTask {
+    /// An index into [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html)`.task`, indicating which
     /// task this is.
     pub tasks_index: usize,
     /// An optional name for the task, used when displaying metrics about requests made.
@@ -2112,19 +2112,19 @@ pub struct GooseTask {
     /// An integer value that controls the frequency that this task will be run.
     pub weight: usize,
     /// An integer value that controls when this task runs compared to other tasks in the same
-    /// [`GooseTaskSet`](./struct.GooseTaskSet.html).
+    /// [`SwanlingTaskSet`](./struct.SwanlingTaskSet.html).
     pub sequence: usize,
     /// A flag indicating that this task runs when the user starts.
     pub on_start: bool,
     /// A flag indicating that this task runs when the user stops.
     pub on_stop: bool,
     /// A required function that is executed each time this task runs.
-    pub function: GooseTaskFunction,
+    pub function: SwanlingTaskFunction,
 }
-impl GooseTask {
-    pub fn new(function: GooseTaskFunction) -> Self {
+impl SwanlingTask {
+    pub fn new(function: SwanlingTaskFunction) -> Self {
         trace!("new task");
-        GooseTask {
+        SwanlingTask {
             tasks_index: usize::max_value(),
             name: "".to_string(),
             weight: 1,
@@ -2140,17 +2140,17 @@ impl GooseTask {
     ///
     /// Individual requests can also be named withing your load test if you use the
     /// `_named` version of each method, for example
-    /// [`get_named`](./struct.GooseUser.html#method.get_named) or
-    /// [`post_named`](./struct.GooseUser.html#method.post_named).
+    /// [`get_named`](./struct.SwanlingUser.html#method.get_named) or
+    /// [`post_named`](./struct.SwanlingUser.html#method.post_named).
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// task!(my_task_function).set_name("foo");
     ///
-    /// async fn my_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn my_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
@@ -2173,12 +2173,12 @@ impl GooseTask {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// task!(my_on_start_function).set_on_start();
     ///
-    /// async fn my_on_start_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn my_on_start_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
@@ -2201,12 +2201,12 @@ impl GooseTask {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// task!(my_on_stop_function).set_on_stop();
     ///
-    /// async fn my_on_stop_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn my_on_stop_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
@@ -2223,21 +2223,21 @@ impl GooseTask {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
+    /// fn main() -> Result<(), SwanlingError> {
     ///     task!(task_function).set_weight(3)?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub fn set_weight(mut self, weight: usize) -> Result<Self, GooseError> {
+    pub fn set_weight(mut self, weight: usize) -> Result<Self, SwanlingError> {
         trace!(
             "{} [{}] set_weight: {}",
             self.name,
@@ -2245,7 +2245,7 @@ impl GooseTask {
             weight
         );
         if weight == 0 {
-            return Err(GooseError::InvalidWeight {
+            return Err(SwanlingError::InvalidWeight {
                 weight,
                 detail: "Weight must be set to at least 1.".to_string(),
             });
@@ -2266,26 +2266,26 @@ impl GooseTask {
     /// # Examples
     /// In this first example, the variable names indicate the order the tasks will be run in:
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
     /// let runs_first = task!(first_task_function).set_sequence(3);
     /// let runs_second = task!(second_task_function).set_sequence(5835);
     /// let runs_last = task!(third_task_function);
     ///
-    /// async fn first_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/1").await?;
+    /// async fn first_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/1").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn second_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/2").await?;
+    /// async fn second_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/2").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn third_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/3").await?;
+    /// async fn third_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/3").await?;
     ///
     ///     Ok(())
     /// }
@@ -2296,9 +2296,9 @@ impl GooseTask {
     /// the entire time it runs, with `runs_first` always running first, then the other tasks being
     /// run in a random and weighted order:
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
+    /// fn main() -> Result<(), SwanlingError> {
     ///     let runs_first = task!(first_task_function).set_sequence(1).set_weight(2)?;
     ///     let runs_second = task!(second_task_function_a).set_sequence(2);
     ///     let also_runs_second = task!(second_task_function_b).set_sequence(2).set_weight(2)?;
@@ -2306,20 +2306,20 @@ impl GooseTask {
     ///     Ok(())
     /// }
     ///
-    /// async fn first_task_function(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/1").await?;
+    /// async fn first_task_function(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/1").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn second_task_function_a(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/2a").await?;
+    /// async fn second_task_function_a(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/2a").await?;
     ///
     ///     Ok(())
     /// }
     ///
-    ///     async fn second_task_function_b(user: &GooseUser) -> GooseTaskResult {
-    ///       let _goose = user.get("/2b").await?;
+    ///     async fn second_task_function_b(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///       let _swanling = user.get("/2b").await?;
     ///
     ///       Ok(())
     ///     }
@@ -2341,7 +2341,7 @@ impl GooseTask {
         self
     }
 }
-impl Hash for GooseTask {
+impl Hash for SwanlingTask {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.tasks_index.hash(state);
         self.name.hash(state);
@@ -2364,24 +2364,24 @@ mod tests {
 
     const EMPTY_ARGS: Vec<&str> = vec![];
 
-    async fn setup_user(server: &MockServer) -> Result<GooseUser, GooseError> {
-        let mut configuration = GooseConfiguration::parse_args_default(&EMPTY_ARGS).unwrap();
-        configuration.co_mitigation = Some(GooseCoordinatedOmissionMitigation::Average);
+    async fn setup_user(server: &MockServer) -> Result<SwanlingUser, SwanlingError> {
+        let mut configuration = SwanlingConfiguration::parse_args_default(&EMPTY_ARGS).unwrap();
+        configuration.co_mitigation = Some(SwanlingCoordinatedOmissionMitigation::Average);
         let base_url = get_base_url(Some(server.url("/")), None, None).unwrap();
-        GooseUser::single(base_url, &configuration)
+        SwanlingUser::single(base_url, &configuration)
     }
 
     #[test]
-    fn goose_task_set() {
+    fn swanling_task_set() {
         // Simplistic test task functions.
-        async fn test_function_a(user: &GooseUser) -> GooseTaskResult {
-            let _goose = user.get("/a/").await?;
+        async fn test_function_a(user: &SwanlingUser) -> SwanlingTaskResult {
+            let _swanling = user.get("/a/").await?;
 
             Ok(())
         }
 
-        async fn test_function_b(user: &GooseUser) -> GooseTaskResult {
-            let _goose = user.get("/b/").await?;
+        async fn test_function_b(user: &SwanlingUser) -> SwanlingTaskResult {
+            let _swanling = user.get("/b/").await?;
 
             Ok(())
         }
@@ -2473,10 +2473,10 @@ mod tests {
     }
 
     #[test]
-    fn goose_task() {
+    fn swanling_task() {
         // Simplistic test task functions.
-        async fn test_function_a(user: &GooseUser) -> GooseTaskResult {
-            let _goose = user.get("/a/").await?;
+        async fn test_function_a(user: &SwanlingUser) -> SwanlingTaskResult {
+            let _swanling = user.get("/a/").await?;
 
             Ok(())
         }
@@ -2553,11 +2553,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn goose_user() {
+    async fn swanling_user() {
         const HOST: &str = "http://example.com/";
-        let configuration = GooseConfiguration::parse_args_default(&EMPTY_ARGS).unwrap();
+        let configuration = SwanlingConfiguration::parse_args_default(&EMPTY_ARGS).unwrap();
         let base_url = get_base_url(Some(HOST.to_string()), None, None).unwrap();
-        let user = GooseUser::new(0, base_url, 0, 0, &configuration, 0).unwrap();
+        let user = SwanlingUser::new(0, base_url, 0, 0, &configuration, 0).unwrap();
         assert_eq!(user.task_sets_index, 0);
         assert_eq!(user.min_wait, 0);
         assert_eq!(user.max_wait, 0);
@@ -2590,7 +2590,7 @@ mod tests {
             Some("http://www.example.com/".to_string()),
         )
         .unwrap();
-        let user2 = GooseUser::new(0, base_url, 1, 3, &configuration, 0).unwrap();
+        let user2 = SwanlingUser::new(0, base_url, 1, 3, &configuration, 0).unwrap();
         assert_eq!(user2.min_wait, 1);
         assert_eq!(user2.max_wait, 3);
 
@@ -2607,43 +2607,43 @@ mod tests {
         let user2 = setup_user(&server).await.unwrap();
 
         // Create a GET request.
-        let mut goose_request = user2.goose_get("/foo").await.unwrap();
-        let mut built_request = goose_request.build().unwrap();
+        let mut swanling_request = user2.swanling_get("/foo").await.unwrap();
+        let mut built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::GET);
         assert_eq!(built_request.url().as_str(), server.url("/foo"));
         assert_eq!(built_request.timeout(), None);
 
         // Create a POST request.
-        goose_request = user2.goose_post("/path/to/post").await.unwrap();
-        built_request = goose_request.build().unwrap();
+        swanling_request = user2.swanling_post("/path/to/post").await.unwrap();
+        built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::POST);
         assert_eq!(built_request.url().as_str(), server.url("/path/to/post"));
         assert_eq!(built_request.timeout(), None);
 
         // Create a PUT request.
-        goose_request = user2.goose_put("/path/to/put").await.unwrap();
-        built_request = goose_request.build().unwrap();
+        swanling_request = user2.swanling_put("/path/to/put").await.unwrap();
+        built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::PUT);
         assert_eq!(built_request.url().as_str(), server.url("/path/to/put"));
         assert_eq!(built_request.timeout(), None);
 
         // Create a PATCH request.
-        goose_request = user2.goose_patch("/path/to/patch").await.unwrap();
-        built_request = goose_request.build().unwrap();
+        swanling_request = user2.swanling_patch("/path/to/patch").await.unwrap();
+        built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::PATCH);
         assert_eq!(built_request.url().as_str(), server.url("/path/to/patch"));
         assert_eq!(built_request.timeout(), None);
 
         // Create a DELETE request.
-        goose_request = user2.goose_delete("/path/to/delete").await.unwrap();
-        built_request = goose_request.build().unwrap();
+        swanling_request = user2.swanling_delete("/path/to/delete").await.unwrap();
+        built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::DELETE);
         assert_eq!(built_request.url().as_str(), server.url("/path/to/delete"));
         assert_eq!(built_request.timeout(), None);
 
         // Create a HEAD request.
-        goose_request = user2.goose_head("/path/to/head").await.unwrap();
-        built_request = goose_request.build().unwrap();
+        swanling_request = user2.swanling_head("/path/to/head").await.unwrap();
+        built_request = swanling_request.build().unwrap();
         assert_eq!(built_request.method(), &Method::HEAD);
         assert_eq!(built_request.url().as_str(), server.url("/path/to/head"));
         assert_eq!(built_request.timeout(), None);
@@ -2664,17 +2664,17 @@ mod tests {
 
         // Make a GET request to the mock http server and confirm we get a 200 response.
         assert_eq!(index.hits(), 0);
-        let goose = user
+        let swanling = user
             .get(INDEX_PATH)
             .await
             .expect("get returned unexpected error");
-        let status = goose.response.unwrap().status();
+        let status = swanling.response.unwrap().status();
         assert_eq!(status, 200);
-        assert_eq!(goose.request.method, GooseMethod::Get);
-        assert_eq!(goose.request.name, INDEX_PATH);
-        assert!(goose.request.success);
-        assert!(!goose.request.update);
-        assert_eq!(goose.request.status_code, 200);
+        assert_eq!(swanling.request.method, SwanlingMethod::Get);
+        assert_eq!(swanling.request.name, INDEX_PATH);
+        assert!(swanling.request.success);
+        assert!(!swanling.request.update);
+        assert_eq!(swanling.request.status_code, 200);
         assert_eq!(index.hits(), 1);
 
         const NO_SUCH_PATH: &str = "/no/such/path";
@@ -2686,17 +2686,17 @@ mod tests {
 
         // Make an invalid GET request to the mock http server and confirm we get a 404 response.
         assert_eq!(not_found.hits(), 0);
-        let goose = user
+        let swanling = user
             .get(NO_SUCH_PATH)
             .await
             .expect("get returned unexpected error");
-        let status = goose.response.unwrap().status();
+        let status = swanling.response.unwrap().status();
         assert_eq!(status, 404);
-        assert_eq!(goose.request.method, GooseMethod::Get);
-        assert_eq!(goose.request.name, NO_SUCH_PATH);
-        assert!(!goose.request.success);
-        assert!(!goose.request.update);
-        assert_eq!(goose.request.status_code, 404,);
+        assert_eq!(swanling.request.method, SwanlingMethod::Get);
+        assert_eq!(swanling.request.name, NO_SUCH_PATH);
+        assert!(!swanling.request.success);
+        assert!(!swanling.request.update);
+        assert_eq!(swanling.request.status_code, 404,);
         not_found.assert_hits(1);
 
         // Set up a mock http server endpoint.
@@ -2708,20 +2708,20 @@ mod tests {
 
         // Make a POST request to the mock http server and confirm we get a 200 OK response.
         assert_eq!(comment.hits(), 0);
-        let goose = user
+        let swanling = user
             .post(COMMENT_PATH, "foo")
             .await
             .expect("post returned unexpected error");
-        let unwrapped_response = goose.response.unwrap();
+        let unwrapped_response = swanling.response.unwrap();
         let status = unwrapped_response.status();
         assert_eq!(status, 200);
         let body = unwrapped_response.text().await.unwrap();
         assert_eq!(body, "foo");
-        assert_eq!(goose.request.method, GooseMethod::Post);
-        assert_eq!(goose.request.name, COMMENT_PATH);
-        assert!(goose.request.success);
-        assert!(!goose.request.update);
-        assert_eq!(goose.request.status_code, 200);
+        assert_eq!(swanling.request.method, SwanlingMethod::Post);
+        assert_eq!(swanling.request.name, COMMENT_PATH);
+        assert!(swanling.request.success);
+        assert!(!swanling.request.update);
+        assert_eq!(swanling.request.status_code, 200);
         comment.assert_hits(1);
     }
 }

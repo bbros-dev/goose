@@ -2,9 +2,9 @@ use gumdrop::Options;
 use httpmock::MockServer;
 use std::io::{self, BufRead};
 
-use goose::goose::{GooseTask, GooseTaskSet};
-use goose::metrics::GooseMetrics;
-use goose::{GooseAttack, GooseConfiguration};
+use swanling::swanling::{SwanlingTask, SwanlingTaskSet};
+use swanling::metrics::SwanlingMetrics;
+use swanling::{SwanlingAttack, SwanlingConfiguration};
 
 type WorkerHandles = Vec<std::thread::JoinHandle<()>>;
 
@@ -19,7 +19,7 @@ type WorkerHandles = Vec<std::thread::JoinHandle<()>>;
 ///  --run-time 1
 ///  --co-mitigation disabled
 #[allow(dead_code)]
-pub fn build_configuration(server: &MockServer, custom: Vec<&str>) -> GooseConfiguration {
+pub fn build_configuration(server: &MockServer, custom: Vec<&str>) -> SwanlingConfiguration {
     // Start with an empty configuration.
     let mut configuration: Vec<&str> = vec![];
     // Declare server_url here no matter what, so its lifetime is sufficient when needed.
@@ -56,65 +56,65 @@ pub fn build_configuration(server: &MockServer, custom: Vec<&str>) -> GooseConfi
         }
     }
 
-    // Parse these options to generate a GooseConfiguration.
-    GooseConfiguration::parse_args_default(&configuration)
+    // Parse these options to generate a SwanlingConfiguration.
+    SwanlingConfiguration::parse_args_default(&configuration)
         .expect("failed to parse options and generate a configuration")
 }
 
 /// Launch each Worker in its own thread, and return a vector of Worker handles.
 #[allow(dead_code)]
 pub fn launch_gaggle_workers(
-    // A goose attack object which is cloned for each Worker.
-    goose_attack: GooseAttack,
+    // A swanling attack object which is cloned for each Worker.
+    swanling_attack: SwanlingAttack,
     // The number of Workers to launch.
     expect_workers: usize,
 ) -> WorkerHandles {
     // Launch each worker in its own thread, storing the join handles.
     let mut worker_handles = Vec::new();
     for _ in 0..expect_workers {
-        let worker_goose_attack = goose_attack.clone();
+        let worker_swanling_attack = swanling_attack.clone();
         // Start worker instance of the load test.
         worker_handles.push(std::thread::spawn(move || {
             // Run the load test as configured.
-            run_load_test(worker_goose_attack, None);
+            run_load_test(worker_swanling_attack, None);
         }));
     }
 
     worker_handles
 }
 
-// Create a GooseAttack object from the configuration, taskset, and optional start and
+// Create a SwanlingAttack object from the configuration, taskset, and optional start and
 // stop tasks.
 #[allow(dead_code)]
 pub fn build_load_test(
-    configuration: GooseConfiguration,
-    taskset: &GooseTaskSet,
-    start_task: Option<&GooseTask>,
-    stop_task: Option<&GooseTask>,
-) -> GooseAttack {
+    configuration: SwanlingConfiguration,
+    taskset: &SwanlingTaskSet,
+    start_task: Option<&SwanlingTask>,
+    stop_task: Option<&SwanlingTask>,
+) -> SwanlingAttack {
     // First set up the common base configuration.
-    let mut goose = crate::GooseAttack::initialize_with_config(configuration)
+    let mut swanling = crate::SwanlingAttack::initialize_with_config(configuration)
         .unwrap()
         .register_taskset(taskset.clone());
 
     if let Some(task) = start_task {
-        goose = goose.test_start(task.clone());
+        swanling = swanling.test_start(task.clone());
     }
 
     if let Some(task) = stop_task {
-        goose = goose.test_stop(task.clone());
+        swanling = swanling.test_stop(task.clone());
     }
 
-    goose
+    swanling
 }
 
-/// Run the actual load test, returning the GooseMetrics.
+/// Run the actual load test, returning the SwanlingMetrics.
 pub fn run_load_test(
-    goose_attack: GooseAttack,
+    swanling_attack: SwanlingAttack,
     worker_handles: Option<WorkerHandles>,
-) -> GooseMetrics {
+) -> SwanlingMetrics {
     // Execute the load test.
-    let goose_metrics = goose_attack.execute().unwrap();
+    let swanling_metrics = swanling_attack.execute().unwrap();
 
     // If this is a Manager test, first wait for the Workers to exit to return.
     if let Some(handles) = worker_handles {
@@ -124,7 +124,7 @@ pub fn run_load_test(
         }
     }
 
-    goose_metrics
+    swanling_metrics
 }
 
 /// Helper to count the number of lines in a test artifact.

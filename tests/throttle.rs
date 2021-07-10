@@ -2,8 +2,8 @@ use httpmock::{Method::GET, MockRef, MockServer};
 
 mod common;
 
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -21,14 +21,14 @@ const RUN_TIME: usize = 3;
 const EXPECT_WORKERS: usize = 2;
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
@@ -57,7 +57,7 @@ fn common_build_configuration(
     run_time: usize,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -127,7 +127,7 @@ fn validate_test(
     assert!(mock_endpoints[INDEX_KEY].hits() > 0);
     assert!(mock_endpoints[ABOUT_KEY].hits() > 0);
 
-    // Requests are made while GooseUsers are hatched, and then for RUN_TIME seconds.
+    // Requests are made while SwanlingUsers are hatched, and then for RUN_TIME seconds.
     assert!(current_requests_file_lines <= (RUN_TIME + 1) * throttle_value);
 
     if let Some(previous_lines) = previous_requests_file_lines {
@@ -148,7 +148,7 @@ fn validate_test(
 }
 
 // Returns the appropriate taskset needed to build these tests.
-fn get_tasks() -> GooseTaskSet {
+fn get_tasks() -> SwanlingTaskSet {
     taskset!("LoadTest")
         .register_task(task!(get_index))
         .register_task(task!(get_about))
@@ -176,7 +176,7 @@ fn test_throttle() {
         None,
     );
 
-    // Run the Goose Attack.
+    // Run the Swanling Attack.
     common::run_load_test(
         common::build_load_test(configuration, &get_tasks(), None, None),
         None,
@@ -205,7 +205,7 @@ fn test_throttle() {
         None,
     );
 
-    // Run the Goose Attack.
+    // Run the Swanling Attack.
     common::run_load_test(
         common::build_load_test(configuration, &get_tasks(), None, None),
         None,
@@ -247,12 +247,12 @@ fn test_throttle_gaggle() {
         let mut worker_configuration = configuration.clone();
         worker_configuration.request_log = request_log.clone() + &i.to_string();
         request_logs.push(worker_configuration.request_log.clone());
-        let worker_goose_attack =
+        let worker_swanling_attack =
             common::build_load_test(worker_configuration.clone(), &get_tasks(), None, None);
         // Start worker instance of the load test.
         worker_handles.push(std::thread::spawn(move || {
             // Run the load test as configured.
-            common::run_load_test(worker_goose_attack, None);
+            common::run_load_test(worker_swanling_attack, None);
         }));
     }
 
@@ -268,11 +268,11 @@ fn test_throttle_gaggle() {
     );
 
     // Build the load test for the Manager.
-    let manager_goose_attack =
+    let manager_swanling_attack =
         common::build_load_test(manager_configuration.clone(), &get_tasks(), None, None);
 
-    // Run the Goose Attack.
-    common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm that the load test was actually throttled.
     let test1_lines = validate_test(
@@ -299,21 +299,21 @@ fn test_throttle_gaggle() {
         let mut worker_configuration = configuration.clone();
         worker_configuration.request_log = request_log.clone() + &i.to_string();
         request_logs.push(worker_configuration.request_log.clone());
-        let worker_goose_attack =
+        let worker_swanling_attack =
             common::build_load_test(worker_configuration.clone(), &get_tasks(), None, None);
         // Start worker instance of the load test.
         worker_handles.push(std::thread::spawn(move || {
             // Run the load test as configured.
-            common::run_load_test(worker_goose_attack, None);
+            common::run_load_test(worker_swanling_attack, None);
         }));
     }
 
     // Build the load test for the Manager.
-    let manager_goose_attack =
+    let manager_swanling_attack =
         common::build_load_test(manager_configuration, &get_tasks(), None, None);
 
-    // Run the Goose Attack.
-    common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm that the load test was actually throttled, at an increased rate.
     let _ = validate_test(

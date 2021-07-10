@@ -1,12 +1,12 @@
 //! Optional metrics collected and aggregated during load tests.
 //!
-//! By default, Goose collects a large number of metrics while performing a load test.
-//! When [`GooseAttack::execute()`](../struct.GooseAttack.html#method.execute) completes
-//! it returns a [`GooseMetrics`] object.
+//! By default, Swanling collects a large number of metrics while performing a load test.
+//! When [`SwanlingAttack::execute()`](../struct.SwanlingAttack.html#method.execute) completes
+//! it returns a [`SwanlingMetrics`] object.
 //!
-//! When the [`GooseMetrics`] object is viewed with [`std::fmt::Display`], the
-//! contained [`GooseTaskMetrics`], [`GooseRequestMetrics`], and
-//! [`GooseErrorMetrics`] are displayed in tables.
+//! When the [`SwanlingMetrics`] object is viewed with [`std::fmt::Display`], the
+//! contained [`SwanlingTaskMetrics`], [`SwanlingRequestMetrics`], and
+//! [`SwanlingErrorMetrics`] are displayed in tables.
 
 use chrono::prelude::*;
 use http::StatusCode;
@@ -21,71 +21,73 @@ use std::str::FromStr;
 use std::{f32, fmt};
 use tokio::io::AsyncWriteExt;
 
-use crate::goose::{GooseMethod, GooseTaskSet};
-use crate::logger::GooseLog;
+use crate::logger::SwanlingLog;
 use crate::report;
+use crate::swanling::{SwanlingMethod, SwanlingTaskSet};
 use crate::util;
 #[cfg(feature = "gaggle")]
 use crate::worker::{self, GaggleMetrics};
-use crate::{AttackMode, GooseAttack, GooseAttackRunState, GooseConfiguration, GooseError};
+use crate::{
+    AttackMode, SwanlingAttack, SwanlingAttackRunState, SwanlingConfiguration, SwanlingError,
+};
 
-/// Used to send metrics from [`GooseUser`](../goose/struct.GooseUser.html) threads
-/// to the parent Goose process.
+/// Used to send metrics from [`SwanlingUser`](../swanling/struct.SwanlingUser.html) threads
+/// to the parent Swanling process.
 ///
-/// [`GooseUser`](../goose/struct.GooseUser.html) threads send these metrics to the
-/// Goose parent process using an
+/// [`SwanlingUser`](../swanling/struct.SwanlingUser.html) threads send these metrics to the
+/// Swanling parent process using an
 /// [`unbounded Flume channel`](https://docs.rs/flume/*/flume/fn.unbounded.html).
 ///
 /// The parent process will spend up to 80% of its time receiving and aggregating
-/// these metrics. The parent process aggregates [`GooseRequestMetric`]s into
-/// [`GooseRequestMetricAggregate`], [`GooseTaskMetric`]s into [`GooseTaskMetricAggregate`],
-/// and [`GooseErrorMetric`]s into [`GooseErrorMetricAggregate`]. Aggregation happens in the
-/// parent process so the individual [`GooseUser`](../goose/struct.GooseUser.html) threads
+/// these metrics. The parent process aggregates [`SwanlingRequestMetric`]s into
+/// [`SwanlingRequestMetricAggregate`], [`SwanlingTaskMetric`]s into [`SwanlingTaskMetricAggregate`],
+/// and [`SwanlingErrorMetric`]s into [`SwanlingErrorMetricAggregate`]. Aggregation happens in the
+/// parent process so the individual [`SwanlingUser`](../swanling/struct.SwanlingUser.html) threads
 /// can spend all their time generating and validating load.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum GooseMetric {
-    Request(GooseRequestMetric),
-    Task(GooseTaskMetric),
+pub enum SwanlingMetric {
+    Request(SwanlingRequestMetric),
+    Task(SwanlingTaskMetric),
 }
 
 /// THIS IS IN EXPERIMENTAL FEATURE, DISABLED BY DEFAULT. Optionally mitigate the loss of data
 /// (coordinated omission) due to stalls on the upstream server.
 ///
 /// Stalling can happen for many reasons, for example: garbage collection, a cache stampede,
-/// even unrelated load on the same server. Without any mitigation, Goose loses
-/// statistically relevant information as [`GooseUser`](../goose/struct.GooseUser.html)
+/// even unrelated load on the same server. Without any mitigation, Swanling loses
+/// statistically relevant information as [`SwanlingUser`](../swanling/struct.SwanlingUser.html)
 /// threads are unable to make additional requests while they are blocked by an upstream stall.
-/// Goose mitigates this by backfilling the requests that would have been made during that time.
+/// Swanling mitigates this by backfilling the requests that would have been made during that time.
 /// Backfilled requests show up in the `--request-file` if enabled, though they were not actually
 /// sent to the server.
 ///
-/// Goose can be configured to backfill requests based on the expected
-/// [`user_cadence`](struct.GooseRequestMetric.html#structfield.user_cadence). The expected
+/// Swanling can be configured to backfill requests based on the expected
+/// [`user_cadence`](struct.SwanlingRequestMetric.html#structfield.user_cadence). The expected
 /// cadence can be automatically calculated with any of the following configuration options.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub enum GooseCoordinatedOmissionMitigation {
+pub enum SwanlingCoordinatedOmissionMitigation {
     /// Backfill based on the average
-    /// [`user_cadence`](struct.GooseRequestMetric.html#structfield.user_cadence) for this
-    /// [`GooseUser`](../goose/struct.GooseUser.html).
+    /// [`user_cadence`](struct.SwanlingRequestMetric.html#structfield.user_cadence) for this
+    /// [`SwanlingUser`](../swanling/struct.SwanlingUser.html).
     Average,
     /// Backfill based on the maximum
-    /// [`user_cadence`](struct.GooseRequestMetric.html#structfield.user_cadence) for this
-    /// [`GooseUser`](../goose/struct.GooseUser.html).
+    /// [`user_cadence`](struct.SwanlingRequestMetric.html#structfield.user_cadence) for this
+    /// [`SwanlingUser`](../swanling/struct.SwanlingUser.html).
     Maximum,
     /// Backfill based on the minimum
-    /// [`user_cadence`](struct.GooseRequestMetric.html#structfield.user_cadence) for this
-    /// [`GooseUser`](../goose/struct.GooseUser.html).
+    /// [`user_cadence`](struct.SwanlingRequestMetric.html#structfield.user_cadence) for this
+    /// [`SwanlingUser`](../swanling/struct.SwanlingUser.html).
     Minimum,
     /// Completely disable coordinated omission mitigation (default).
     Disabled,
 }
 /// Allow `--co-mitigation` from the command line using text variations on supported
-/// `GooseCoordinatedOmissionMitigation`s by implementing [`FromStr`].
-impl FromStr for GooseCoordinatedOmissionMitigation {
-    type Err = GooseError;
+/// `SwanlingCoordinatedOmissionMitigation`s by implementing [`FromStr`].
+impl FromStr for SwanlingCoordinatedOmissionMitigation {
+    type Err = SwanlingError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // Use a [`RegexSet`] to match string representations of `GooseCoordinatedOmissionMitigation`,
+        // Use a [`RegexSet`] to match string representations of `SwanlingCoordinatedOmissionMitigation`,
         // returning the appropriate enum value. Also match a wide range of abbreviations and synonyms.
         let co_mitigation = RegexSet::new(&[
             r"(?i)^(average|ave|aver|avg|mean)$",
@@ -96,16 +98,16 @@ impl FromStr for GooseCoordinatedOmissionMitigation {
         .expect("failed to compile co_mitigation RegexSet");
         let matches = co_mitigation.matches(&s);
         if matches.matched(0) {
-            Ok(GooseCoordinatedOmissionMitigation::Average)
+            Ok(SwanlingCoordinatedOmissionMitigation::Average)
         } else if matches.matched(1) {
-            Ok(GooseCoordinatedOmissionMitigation::Maximum)
+            Ok(SwanlingCoordinatedOmissionMitigation::Maximum)
         } else if matches.matched(2) {
-            Ok(GooseCoordinatedOmissionMitigation::Minimum)
+            Ok(SwanlingCoordinatedOmissionMitigation::Minimum)
         } else if matches.matched(3) {
-            Ok(GooseCoordinatedOmissionMitigation::Disabled)
+            Ok(SwanlingCoordinatedOmissionMitigation::Disabled)
         } else {
-            Err(GooseError::InvalidOption {
-                option: format!("GooseCoordinatedOmissionMitigation::{:?}", s),
+            Err(SwanlingError::InvalidOption {
+                option: format!("SwanlingCoordinatedOmissionMitigation::{:?}", s),
                 value: s.to_string(),
                 detail:
                     "Invalid co_mitigation, expected: average, disabled, maximum, median, or minimum"
@@ -117,15 +119,15 @@ impl FromStr for GooseCoordinatedOmissionMitigation {
 
 /// All requests made during a load test.
 ///
-/// Goose optionally tracks metrics about requests made during a load test. The
+/// Swanling optionally tracks metrics about requests made during a load test. The
 /// metrics can be disabled with the `--no-metrics` run-time option, or with
-/// [`GooseDefault::NoMetrics`](../enum.GooseDefault.html#variant.NoMetrics).
+/// [`SwanlingDefault::NoMetrics`](../enum.SwanlingDefault.html#variant.NoMetrics).
 ///
-/// Aggregated requests ([`GooseRequestMetricAggregate`]) are stored in a HashMap
+/// Aggregated requests ([`SwanlingRequestMetricAggregate`]) are stored in a HashMap
 /// with they key `method request-name`, for example `GET /`.
 ///
 /// # Example
-/// When viewed with [`std::fmt::Display`], [`GooseRequestMetrics`] are displayed in
+/// When viewed with [`std::fmt::Display`], [`SwanlingRequestMetrics`] are displayed in
 /// a table:
 /// ```text
 /// === PER REQUEST METRICS ===
@@ -174,21 +176,21 @@ impl FromStr for GooseCoordinatedOmissionMitigation {
 /// -------------------------+--------+--------+--------+--------+--------+-------
 /// Aggregated               |     10 |     20 |     64 |     71 |    210 |    230
 /// ```
-pub type GooseRequestMetrics = HashMap<String, GooseRequestMetricAggregate>;
+pub type SwanlingRequestMetrics = HashMap<String, SwanlingRequestMetricAggregate>;
 
 /// All tasks executed during a load test.
 ///
-/// Goose optionally tracks metrics about tasks executed during a load test. The
+/// Swanling optionally tracks metrics about tasks executed during a load test. The
 /// metrics can be disabled with either the `--no-task-metrics` or the `--no-metrics`
 /// run-time option, or with either
-/// [`GooseDefault::NoTaskMetrics`](../enum.GooseDefault.html#variant.NoTaskMetrics) or
-/// [`GooseDefault::NoMetrics`](../enum.GooseDefault.html#variant.NoMetrics).
+/// [`SwanlingDefault::NoTaskMetrics`](../enum.SwanlingDefault.html#variant.NoTaskMetrics) or
+/// [`SwanlingDefault::NoMetrics`](../enum.SwanlingDefault.html#variant.NoMetrics).
 ///
-/// Aggregated tasks ([`GooseTaskMetricAggregate`]) are stored in a Vector of Vectors
+/// Aggregated tasks ([`SwanlingTaskMetricAggregate`]) are stored in a Vector of Vectors
 /// keyed to the order the task is created in the load test.
 ///
 /// # Example
-/// When viewed with [`std::fmt::Display`], [`GooseTaskMetrics`] are displayed in
+/// When viewed with [`std::fmt::Display`], [`SwanlingTaskMetrics`] are displayed in
 /// a table:
 /// ```text
 ///  === PER TASK METRICS ===
@@ -223,21 +225,21 @@ pub type GooseRequestMetrics = HashMap<String, GooseRequestMetricAggregate>;
 /// -------------------------+-------------+------------+-------------+-----------
 /// Aggregated               |       76.78 |          3 |         307 |         74
 /// ```
-pub type GooseTaskMetrics = Vec<Vec<GooseTaskMetricAggregate>>;
+pub type SwanlingTaskMetrics = Vec<Vec<SwanlingTaskMetricAggregate>>;
 
 /// All errors detected during a load test.
 ///
-/// By default Goose tracks all errors detected during the load test. Each error is stored
-/// as a [`GooseErrorMetricAggregate`](./struct.GooseErrorMetricAggregate.html), and they
+/// By default Swanling tracks all errors detected during the load test. Each error is stored
+/// as a [`SwanlingErrorMetricAggregate`](./struct.SwanlingErrorMetricAggregate.html), and they
 /// are all stored together within a `BTreeMap` which is returned by
-/// [`GooseAttack::execute()`](../struct.GooseAttack.html#method.execute) when a load test
+/// [`SwanlingAttack::execute()`](../struct.SwanlingAttack.html#method.execute) when a load test
 /// completes.
 ///
-/// `GooseErrorMetrics` can be disabled with the `--no-error-summary` run-time option, or with
-/// [GooseDefault::NoErrorSummary](../enum.GooseDefault.html#variant.NoErrorSummary).
+/// `SwanlingErrorMetrics` can be disabled with the `--no-error-summary` run-time option, or with
+/// [SwanlingDefault::NoErrorSummary](../enum.SwanlingDefault.html#variant.NoErrorSummary).
 ///
 /// # Example
-/// When viewed with [`std::fmt::Display`], [`GooseErrorMetrics`] are displayed in
+/// When viewed with [`std::fmt::Display`], [`SwanlingErrorMetrics`] are displayed in
 /// a table:
 /// ```text
 ///  === ERRORS ===
@@ -248,22 +250,22 @@ pub type GooseTaskMetrics = Vec<Vec<GooseTaskMetricAggregate>>;
 /// 715           POST (Auth) front page: 503 Service Unavailable: /user
 /// 36            GET (Anon) front page: error sending request for url (http://example.com/): connection closed before message completed
 /// ```
-pub type GooseErrorMetrics = BTreeMap<String, GooseErrorMetricAggregate>;
+pub type SwanlingErrorMetrics = BTreeMap<String, SwanlingErrorMetricAggregate>;
 
 /// For tracking and counting requests made during a load test.
 ///
-/// The request that Goose is making. User threads send this data to the parent thread
+/// The request that Swanling is making. User threads send this data to the parent thread
 /// when metrics are enabled. This request object must be provided to calls to
-/// [`set_success`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.set_success)
+/// [`set_success`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.set_success)
 /// or
-/// [`set_failure`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.set_failure)
-/// so Goose knows which request is being updated.
+/// [`set_failure`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.set_failure)
+/// so Swanling knows which request is being updated.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GooseRequestMetric {
+pub struct SwanlingRequestMetric {
     /// How many milliseconds the load test has been running.
     pub elapsed: u64,
     /// The method being used (ie, Get, Post, etc).
-    pub method: GooseMethod,
+    pub method: SwanlingMethod,
     /// The optional name of the request.
     pub name: String,
     /// The full URL that was requested.
@@ -280,7 +282,7 @@ pub struct GooseRequestMetric {
     pub success: bool,
     /// Whether or not we're updating a previous request, modifies how the parent thread records it.
     pub update: bool,
-    /// Which [`GooseUser`](../goose/struct.GooseUser.html) thread processed the request.
+    /// Which [`SwanlingUser`](../swanling/struct.SwanlingUser.html) thread processed the request.
     pub user: usize,
     /// The optional error caused by this request.
     pub error: String,
@@ -288,19 +290,19 @@ pub struct GooseRequestMetric {
     /// the upstream server, blocking requests from being made.
     pub coordinated_omission_elapsed: u64,
     /// If non-zero, the calculated cadence of looping through all
-    /// [`GooseTask`](../goose/struct.GooseTask.html)s by this
-    /// [`GooseUser`](../goose/struct.GooseUser.html).
+    /// [`SwanlingTask`](../swanling/struct.SwanlingTask.html)s by this
+    /// [`SwanlingUser`](../swanling/struct.SwanlingUser.html).
     pub user_cadence: u64,
 }
-impl GooseRequestMetric {
+impl SwanlingRequestMetric {
     pub(crate) fn new(
-        method: GooseMethod,
+        method: SwanlingMethod,
         name: &str,
         url: &str,
         elapsed: u128,
         user: usize,
     ) -> Self {
-        GooseRequestMetric {
+        SwanlingRequestMetric {
             elapsed: elapsed as u64,
             method,
             name: name.to_string(),
@@ -342,23 +344,23 @@ impl GooseRequestMetric {
 
 /// Metrics collected about a method-path pair, (for example `GET /index`).
 ///
-/// [`GooseRequestMetric`]s are sent by [`GooseUser`](../goose/struct.GooseUser.html)
-/// threads to the Goose parent process where they are aggregated together into this
-/// structure, and stored in [`GooseMetrics::requests`].
+/// [`SwanlingRequestMetric`]s are sent by [`SwanlingUser`](../swanling/struct.SwanlingUser.html)
+/// threads to the Swanling parent process where they are aggregated together into this
+/// structure, and stored in [`SwanlingMetrics::requests`].
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GooseRequestMetricAggregate {
+pub struct SwanlingRequestMetricAggregate {
     /// The request path for which metrics are being collected.
     ///
     /// For example: "/".
     pub path: String,
     /// The method for which metrics are being collected.
     ///
-    /// For example: [`GooseMethod::Get`].
-    pub method: GooseMethod,
+    /// For example: [`SwanlingMethod::Get`].
+    pub method: SwanlingMethod,
     /// The raw data seen from actual requests.
-    pub raw_data: GooseRequestMetricTimingData,
+    pub raw_data: SwanlingRequestMetricTimingData,
     /// Combines the raw data with statistically generated Coordinated Omission Metrics.
-    pub coordinated_omission_data: Option<GooseRequestMetricTimingData>,
+    pub coordinated_omission_data: Option<SwanlingRequestMetricTimingData>,
     /// Per-status-code counters, tracking how often each response code was returned for this request.
     pub status_code_counts: HashMap<u16, usize>,
     /// Total number of times this path-method request resulted in a successful (2xx) status code.
@@ -375,14 +377,14 @@ pub struct GooseRequestMetricAggregate {
     /// that all Workers are running the same load test plan.
     pub load_test_hash: u64,
 }
-impl GooseRequestMetricAggregate {
-    /// Create a new GooseRequestMetricAggregate object.
-    pub(crate) fn new(path: &str, method: GooseMethod, load_test_hash: u64) -> Self {
+impl SwanlingRequestMetricAggregate {
+    /// Create a new SwanlingRequestMetricAggregate object.
+    pub(crate) fn new(path: &str, method: SwanlingMethod, load_test_hash: u64) -> Self {
         trace!("new request");
-        GooseRequestMetricAggregate {
+        SwanlingRequestMetricAggregate {
             path: path.to_string(),
             method,
-            raw_data: GooseRequestMetricTimingData::new(None),
+            raw_data: SwanlingRequestMetricTimingData::new(None),
             coordinated_omission_data: None,
             status_code_counts: HashMap::new(),
             success_count: 0,
@@ -430,21 +432,21 @@ impl GooseRequestMetricAggregate {
         debug!("incremented {} counter: {}", status_code, counter);
     }
 }
-/// Implement ordering for GooseRequestMetricAggregate.
-impl Ord for GooseRequestMetricAggregate {
+/// Implement ordering for SwanlingRequestMetricAggregate.
+impl Ord for SwanlingRequestMetricAggregate {
     fn cmp(&self, other: &Self) -> Ordering {
         (&self.method, &self.path).cmp(&(&other.method, &other.path))
     }
 }
-/// Implement partial-ordering for GooseRequestMetricAggregate.
-impl PartialOrd for GooseRequestMetricAggregate {
+/// Implement partial-ordering for SwanlingRequestMetricAggregate.
+impl PartialOrd for SwanlingRequestMetricAggregate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 /// Collects per-request timing metrics.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GooseRequestMetricTimingData {
+pub struct SwanlingRequestMetricTimingData {
     /// Per-response-time counters, tracking how often pages are returned with this response time.
     ///
     /// All response times between 1 and 100ms are stored without any rounding. Response times between
@@ -471,16 +473,16 @@ pub struct GooseRequestMetricTimingData {
     /// A count of how many requests have been tracked for this method-path pair.
     pub counter: usize,
 }
-impl GooseRequestMetricTimingData {
-    /// Create a new GooseRequestMetricAggregate object.
-    pub(crate) fn new(metric_data: Option<&GooseRequestMetricTimingData>) -> Self {
-        trace!("new GooseRequestMetricTimingData");
+impl SwanlingRequestMetricTimingData {
+    /// Create a new SwanlingRequestMetricAggregate object.
+    pub(crate) fn new(metric_data: Option<&SwanlingRequestMetricTimingData>) -> Self {
+        trace!("new SwanlingRequestMetricTimingData");
         // Simply clone the exiting metric_data.
         if let Some(data) = metric_data {
             data.clone()
         // Create a new empty metric_data.
         } else {
-            GooseRequestMetricTimingData {
+            SwanlingRequestMetricTimingData {
                 times: BTreeMap::new(),
                 minimum_time: 0,
                 maximum_time: 0,
@@ -549,12 +551,12 @@ impl GooseRequestMetricTimingData {
 
 /// The per-task metrics collected each time a task is invoked.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GooseTaskMetric {
+pub struct SwanlingTaskMetric {
     /// How many milliseconds the load test has been running.
     pub elapsed: u64,
-    /// An index into [`GooseAttack`]`.task_sets`, indicating which task set this is.
+    /// An index into [`SwanlingAttack`]`.task_sets`, indicating which task set this is.
     pub taskset_index: usize,
-    /// An index into [`GooseTaskSet`]`.task`, indicating which task this is.
+    /// An index into [`SwanlingTaskSet`]`.task`, indicating which task this is.
     pub task_index: usize,
     /// The optional name of the task.
     pub name: String,
@@ -562,11 +564,11 @@ pub struct GooseTaskMetric {
     pub run_time: u64,
     /// Whether or not the request was successful.
     pub success: bool,
-    /// Which GooseUser thread processed the request.
+    /// Which SwanlingUser thread processed the request.
     pub user: usize,
 }
-impl GooseTaskMetric {
-    /// Create a new GooseTaskMetric metric.
+impl SwanlingTaskMetric {
+    /// Create a new SwanlingTaskMetric metric.
     pub(crate) fn new(
         elapsed: u128,
         taskset_index: usize,
@@ -574,7 +576,7 @@ impl GooseTaskMetric {
         name: String,
         user: usize,
     ) -> Self {
-        GooseTaskMetric {
+        SwanlingTaskMetric {
             elapsed: elapsed as u64,
             taskset_index,
             task_index,
@@ -585,7 +587,7 @@ impl GooseTaskMetric {
         }
     }
 
-    /// Update a GooseTaskMetric metric.
+    /// Update a SwanlingTaskMetric metric.
     pub(crate) fn set_time(&mut self, time: u128, success: bool) {
         self.run_time = time as u64;
         self.success = success;
@@ -594,17 +596,17 @@ impl GooseTaskMetric {
 
 /// Aggregated per-task metrics updated each time a task is invoked.
 ///
-/// [`GooseTaskMetric`]s are sent by [`GooseUser`](../goose/struct.GooseUser.html)
-/// threads to the Goose parent process where they are aggregated together into this
-/// structure, and stored in [`GooseMetrics::tasks`].
+/// [`SwanlingTaskMetric`]s are sent by [`SwanlingUser`](../swanling/struct.SwanlingUser.html)
+/// threads to the Swanling parent process where they are aggregated together into this
+/// structure, and stored in [`SwanlingMetrics::tasks`].
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GooseTaskMetricAggregate {
-    /// An index into [`GooseAttack`](../struct.GooseAttack.html)`.task_sets`,
+pub struct SwanlingTaskMetricAggregate {
+    /// An index into [`SwanlingAttack`](../struct.SwanlingAttack.html)`.task_sets`,
     /// indicating which task set this is.
     pub taskset_index: usize,
     /// The task set name.
     pub taskset_name: String,
-    /// An index into [`GooseTaskSet`](../goose/struct.GooseTaskSet.html)`.task`,
+    /// An index into [`SwanlingTaskSet`](../swanling/struct.SwanlingTaskSet.html)`.task`,
     /// indicating which task this is.
     pub task_index: usize,
     /// An optional name for the task.
@@ -624,15 +626,15 @@ pub struct GooseTaskMetricAggregate {
     /// Total number of times task has failed.
     pub fail_count: usize,
 }
-impl GooseTaskMetricAggregate {
-    /// Create a new GooseTaskMetricAggregate.
+impl SwanlingTaskMetricAggregate {
+    /// Create a new SwanlingTaskMetricAggregate.
     pub(crate) fn new(
         taskset_index: usize,
         taskset_name: &str,
         task_index: usize,
         task_name: &str,
     ) -> Self {
-        GooseTaskMetricAggregate {
+        SwanlingTaskMetricAggregate {
             taskset_index,
             taskset_name: taskset_name.to_string(),
             task_index,
@@ -698,36 +700,36 @@ impl GooseTaskMetricAggregate {
     }
 }
 
-/// All metrics optionally collected during a Goose load test.
+/// All metrics optionally collected during a Swanling load test.
 ///
-/// By default, Goose collects metrics during a load test in a `GooseMetrics` object
+/// By default, Swanling collects metrics during a load test in a `SwanlingMetrics` object
 /// that is returned by
-/// [`GooseAttack::execute()`](../struct.GooseAttack.html#method.execute) when a load
+/// [`SwanlingAttack::execute()`](../struct.SwanlingAttack.html#method.execute) when a load
 /// test finishes.
 ///
 /// # Example
 /// ```rust
-/// use goose::prelude::*;
+/// use swanling::prelude::*;
 ///
-/// fn main() -> Result<(), GooseError> {
-///     let goose_metrics: GooseMetrics = GooseAttack::initialize()?
+/// fn main() -> Result<(), SwanlingError> {
+///     let swanling_metrics: SwanlingMetrics = SwanlingAttack::initialize()?
 ///         .register_taskset(taskset!("ExampleUsers")
 ///             .register_task(task!(example_task))
 ///         )
 ///         // Set a default host so the load test will start.
-///         .set_default(GooseDefault::Host, "http://localhost/")?
+///         .set_default(SwanlingDefault::Host, "http://localhost/")?
 ///         // Set a default run time so this test runs to completion.
-///         .set_default(GooseDefault::RunTime, 1)?
+///         .set_default(SwanlingDefault::RunTime, 1)?
 ///         .execute()?;
 ///
-///     // It is now possible to do something with the metrics collected by Goose.
+///     // It is now possible to do something with the metrics collected by Swanling.
 ///     // For now, we'll just pretty-print the entire object.
-///     println!("{:#?}", goose_metrics);
+///     println!("{:#?}", swanling_metrics);
 ///
 ///     /**
 ///     // For example:
 ///     $ cargo run -- -H http://example.com -v -u1 -t1
-///     GooseMetrics {
+///     SwanlingMetrics {
 ///         hash: 0,
 ///         started: Some(
 ///             2021-06-15T09:32:49.888147+02:00,
@@ -735,7 +737,7 @@ impl GooseTaskMetricAggregate {
 ///         duration: 1,
 ///         users: 1,
 ///         requests: {
-///             "GET /": GooseRequestMetricAggregate {
+///             "GET /": SwanlingRequestMetricAggregate {
 ///                 path: "/",
 ///                 method: Get,
 ///                 response_times: {
@@ -756,7 +758,7 @@ impl GooseTaskMetricAggregate {
 ///         },
 ///         tasks: [
 ///             [
-///                 GooseTaskMetricAggregate {
+///                 SwanlingTaskMetricAggregate {
 ///                     taskset_index: 0,
 ///                     taskset_name: "ExampleUsers",
 ///                     task_index: 0,
@@ -777,7 +779,7 @@ impl GooseTaskMetricAggregate {
 ///             ],
 ///         ],
 ///         errors: {
-///             "503 Service Unavailable: /.GET./": GooseErrorMetric {
+///             "503 Service Unavailable: /.GET./": SwanlingErrorMetric {
 ///                 method: Get,
 ///                 name: "/",
 ///                 error: "503 Service Unavailable: /",
@@ -793,14 +795,14 @@ impl GooseTaskMetricAggregate {
 ///     Ok(())
 /// }
 ///
-/// async fn example_task(user: &GooseUser) -> GooseTaskResult {
-///     let _goose = user.get("/").await?;
+/// async fn example_task(user: &SwanlingUser) -> SwanlingTaskResult {
+///     let _swanling = user.get("/").await?;
 ///
 ///     Ok(())
 /// }
 /// ```
 #[derive(Clone, Debug, Default)]
-pub struct GooseMetrics {
+pub struct SwanlingMetrics {
     /// A hash of the load test, primarily used to validate all Workers in a Regatta
     /// are running the same load test.
     pub hash: u64,
@@ -816,22 +818,22 @@ pub struct GooseMetrics {
     /// Tracks details about each request made during the load test.
     ///
     /// Can be disabled with the `--no-metrics` run-time option, or with
-    /// [GooseDefault::NoMetrics](../enum.GooseDefault.html#variant.NoMetrics).
-    pub requests: GooseRequestMetrics,
+    /// [SwanlingDefault::NoMetrics](../enum.SwanlingDefault.html#variant.NoMetrics).
+    pub requests: SwanlingRequestMetrics,
     /// Tracks details about each task that is invoked during the load test.
     ///
     /// Can be disabled with either the `--no-task-metrics` or `--no-metrics` run-time options,
     /// or with either the
-    /// [GooseDefault::NoTaskMetrics](../enum.GooseDefault.html#variant.NoTaskMetrics) or
-    /// [GooseDefault::NoMetrics](../enum.GooseDefault.html#variant.NoMetrics).
-    pub tasks: GooseTaskMetrics,
+    /// [SwanlingDefault::NoTaskMetrics](../enum.SwanlingDefault.html#variant.NoTaskMetrics) or
+    /// [SwanlingDefault::NoMetrics](../enum.SwanlingDefault.html#variant.NoMetrics).
+    pub tasks: SwanlingTaskMetrics,
     /// Tracks and counts each time an error is detected during the load test.
     ///
     /// Can be disabled with either the `--no-error-summary` or `--no-metrics` run-time options,
     /// or with either the
-    /// [GooseDefault::NoErrorSummary](../enum.GooseDefault.html#variant.NoErrorSummary) or
-    /// [GooseDefault::NoMetrics](../enum.GooseDefault.html#variant.NoMetrics).
-    pub errors: GooseErrorMetrics,
+    /// [SwanlingDefault::NoErrorSummary](../enum.SwanlingDefault.html#variant.NoErrorSummary) or
+    /// [SwanlingDefault::NoMetrics](../enum.SwanlingDefault.html#variant.NoMetrics).
+    pub errors: SwanlingErrorMetrics,
     /// Flag indicating whether or not these are the final metrics, used to determine
     /// which metrics should be displayed. Defaults to false.
     pub(crate) final_metrics: bool,
@@ -841,19 +843,19 @@ pub struct GooseMetrics {
     /// Workers, otherwise true.
     pub(crate) display_metrics: bool,
 }
-impl GooseMetrics {
+impl SwanlingMetrics {
     /// Initialize the task_metrics vector.
     pub(crate) fn initialize_task_metrics(
         &mut self,
-        task_sets: &[GooseTaskSet],
-        config: &GooseConfiguration,
+        task_sets: &[SwanlingTaskSet],
+        config: &SwanlingConfiguration,
     ) {
         self.tasks = Vec::new();
         if !config.no_metrics && !config.no_task_metrics {
             for task_set in task_sets {
                 let mut task_vector = Vec::new();
                 for task in &task_set.tasks {
-                    task_vector.push(GooseTaskMetricAggregate::new(
+                    task_vector.push(SwanlingTaskMetricAggregate::new(
                         task_set.task_sets_index,
                         &task_set.name,
                         task.tasks_index,
@@ -869,25 +871,25 @@ impl GooseMetrics {
     ///
     /// # Example
     /// ```rust
-    /// use goose::prelude::*;
+    /// use swanling::prelude::*;
     ///
-    /// fn main() -> Result<(), GooseError> {
-    ///     GooseAttack::initialize()?
+    /// fn main() -> Result<(), SwanlingError> {
+    ///     SwanlingAttack::initialize()?
     ///         .register_taskset(taskset!("ExampleUsers")
     ///             .register_task(task!(example_task))
     ///         )
     ///         // Set a default host so the load test will start.
-    ///         .set_default(GooseDefault::Host, "http://localhost/")?
+    ///         .set_default(SwanlingDefault::Host, "http://localhost/")?
     ///         // Set a default run time so this test runs to completion.
-    ///         .set_default(GooseDefault::RunTime, 1)?
+    ///         .set_default(SwanlingDefault::RunTime, 1)?
     ///         .execute()?
     ///         .print();
     ///
     ///     Ok(())
     /// }
     ///
-    /// async fn example_task(user: &GooseUser) -> GooseTaskResult {
-    ///     let _goose = user.get("/").await?;
+    /// async fn example_task(user: &SwanlingUser) -> SwanlingTaskResult {
+    ///     let _swanling = user.get("/").await?;
     ///
     ///     Ok(())
     /// }
@@ -901,7 +903,7 @@ impl GooseMetrics {
 
     /// Displays metrics while a load test is running.
     ///
-    /// This function is invoked one time immediately after all GooseUsers are
+    /// This function is invoked one time immediately after all SwanlingUsers are
     /// started, unless the `--no-reset-metrics` run-time option is enabled. It
     /// is invoked at regular intervals if the `--running-metrics` run-time
     /// option is enabled.
@@ -919,8 +921,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of requests and fails.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_requests(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // If there's nothing to display, exit immediately.
         if self.requests.is_empty() {
@@ -1046,8 +1048,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of tasks.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_tasks(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // If there's nothing to display, exit immediately.
         if self.tasks.is_empty() || !self.display_metrics {
@@ -1198,8 +1200,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of task times.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_task_times(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // If there's nothing to display, exit immediately.
         if self.tasks.is_empty() || !self.display_metrics {
@@ -1316,8 +1318,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of response times.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_response_times(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // If there's nothing to display, exit immediately.
         if self.requests.is_empty() {
@@ -1550,8 +1552,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of slowest response times within several percentiles.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_percentiles(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Only include percentiles when displaying the final metrics report.
         if !self.final_metrics {
@@ -1891,8 +1893,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of response status codes.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_status_codes(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // If there's nothing to display, exit immediately.
         if !self.display_status_codes {
@@ -1934,8 +1936,8 @@ impl GooseMetrics {
 
     /// Optionally prepares a table of errors.
     ///
-    /// This function is invoked by `GooseMetrics::print()` and
-    /// `GooseMetrics::print_running()`.
+    /// This function is invoked by `SwanlingMetrics::print()` and
+    /// `SwanlingMetrics::print_running()`.
     pub(crate) fn fmt_errors(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Only include errors when displaying the final metrics report, and if there are
         // errors to display.
@@ -1975,13 +1977,13 @@ impl GooseMetrics {
         Ok(())
     }
 }
-impl Serialize for GooseMetrics {
-    // GooseMetrics serialization can't be derived because of the started field.
+impl Serialize for SwanlingMetrics {
+    // SwanlingMetrics serialization can't be derived because of the started field.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut s = serializer.serialize_struct("GooseMetrics", 10)?;
+        let mut s = serializer.serialize_struct("SwanlingMetrics", 10)?;
         s.serialize_field("hash", &self.hash)?;
         // Convert started field to a unix timestamp.
         let timestamp;
@@ -2004,7 +2006,7 @@ impl Serialize for GooseMetrics {
 }
 
 /// Implement format trait to allow displaying metrics.
-impl fmt::Display for GooseMetrics {
+impl fmt::Display for SwanlingMetrics {
     // Implement display of metrics with `{}` marker.
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         // Formats from zero to six tables of data, depending on what data is contained
@@ -2021,18 +2023,18 @@ impl fmt::Display for GooseMetrics {
 
 /// For tracking and counting requests made during a load test.
 ///
-/// The request that Goose is making. User threads send this data to the parent thread
+/// The request that Swanling is making. User threads send this data to the parent thread
 /// when metrics are enabled. This request object must be provided to calls to
-/// [`set_success`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.set_success)
+/// [`set_success`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.set_success)
 /// or
-/// [`set_failure`](https://docs.rs/goose/*/goose/goose/struct.GooseUser.html#method.set_failure)
-/// so Goose knows which request is being updated.
+/// [`set_failure`](https://docs.rs/swanling/*/swanling/swanling/struct.SwanlingUser.html#method.set_failure)
+/// so Swanling knows which request is being updated.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GooseErrorMetric {
+pub struct SwanlingErrorMetric {
     /// How many milliseconds the load test has been running.
     pub elapsed: u64,
     /// The method that was used (ie, Get, Post, etc).
-    pub method: GooseMethod,
+    pub method: SwanlingMethod,
     /// The optional name of the request.
     pub name: String,
     /// The full URL that was requested.
@@ -2045,7 +2047,7 @@ pub struct GooseErrorMetric {
     pub response_time: u64,
     /// The HTTP response code (optional).
     pub status_code: u16,
-    /// Which GooseUser thread processed the request.
+    /// Which SwanlingUser thread processed the request.
     pub user: usize,
     /// The error caused by this request.
     pub error: String,
@@ -2056,22 +2058,22 @@ pub struct GooseErrorMetric {
 /// When a load test completes, by default it will include a summary of all errors that
 /// were detected during the load test. Multiple errors that share the same request method,
 /// the same request name, and the same error text are contained within a single
-/// GooseErrorMetric object, with `occurrences` indicating how many times this error was
+/// SwanlingErrorMetric object, with `occurrences` indicating how many times this error was
 /// seen.
 ///
-/// Individual `GooseErrorMetric`s are stored within a
-/// [`GooseErrorMetrics`](./type.GooseErrorMetrics.html) `BTreeMap` with a string key of
+/// Individual `SwanlingErrorMetric`s are stored within a
+/// [`SwanlingErrorMetrics`](./type.SwanlingErrorMetrics.html) `BTreeMap` with a string key of
 /// `error.method.name`. The `BTreeMap` is found in the `errors` field of what is returned
-/// by [`GooseAttack::execute()`](../struct.GooseAttack.html#method.execute) when a load
+/// by [`SwanlingAttack::execute()`](../struct.SwanlingAttack.html#method.execute) when a load
 /// test finishes.
 ///
 /// Can be disabled with the `--no-error-summary` run-time option, or with
-/// [GooseDefault::NoErrorSummary](../enum.GooseDefault.html#variant.NoErrorSummary).
+/// [SwanlingDefault::NoErrorSummary](../enum.SwanlingDefault.html#variant.NoErrorSummary).
 ///
 /// # Example
 /// In this example, requests to load the front page are failing:
 /// ```text
-/// GooseErrorMetric {
+/// SwanlingErrorMetric {
 ///     method: Get,
 ///     name: "(Anon) front page",
 ///     error: "503 Service Unavailable: /",
@@ -2079,9 +2081,9 @@ pub struct GooseErrorMetric {
 /// }
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub struct GooseErrorMetricAggregate {
+pub struct SwanlingErrorMetricAggregate {
     /// The method that resulted in an error.
-    pub method: GooseMethod,
+    pub method: SwanlingMethod,
     /// The optional name of the request.
     pub name: String,
     /// The error string.
@@ -2089,9 +2091,9 @@ pub struct GooseErrorMetricAggregate {
     /// A counter reflecting how many times this error occurred.
     pub occurrences: usize,
 }
-impl GooseErrorMetricAggregate {
-    pub(crate) fn new(method: GooseMethod, name: String, error: String) -> Self {
-        GooseErrorMetricAggregate {
+impl SwanlingErrorMetricAggregate {
+    pub(crate) fn new(method: SwanlingMethod, name: String, error: String) -> Self {
+        SwanlingErrorMetricAggregate {
             method,
             name,
             error,
@@ -2100,32 +2102,32 @@ impl GooseErrorMetricAggregate {
     }
 }
 
-impl GooseAttack {
+impl SwanlingAttack {
     // If metrics are enabled, synchronize metrics from child threads to the parent. If
     // flush is true all metrics will be received regardless of how long it takes. If
     // flush is false, metrics will only be received for up to 400 ms before exiting to
     // continue on the next call to this function.
     pub(crate) async fn sync_metrics(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
         flush: bool,
-    ) -> Result<(), GooseError> {
+    ) -> Result<(), SwanlingError> {
         if !self.configuration.no_metrics {
             // Check if we're displaying running metrics.
             if let Some(running_metrics) = self.configuration.running_metrics {
                 if self.attack_mode != AttackMode::Worker
                     && util::timer_expired(
-                        goose_attack_run_state.running_metrics_timer,
+                        swanling_attack_run_state.running_metrics_timer,
                         running_metrics,
                     )
                 {
-                    goose_attack_run_state.running_metrics_timer = std::time::Instant::now();
-                    goose_attack_run_state.display_running_metrics = true;
+                    swanling_attack_run_state.running_metrics_timer = std::time::Instant::now();
+                    swanling_attack_run_state.display_running_metrics = true;
                 }
             }
 
             // Load messages from user threads until the receiver queue is empty.
-            let received_message = self.receive_metrics(goose_attack_run_state, flush).await?;
+            let received_message = self.receive_metrics(swanling_attack_run_state, flush).await?;
 
             // As worker, push metrics up to manager.
             if self.attack_mode == AttackMode::Worker && received_message {
@@ -2133,15 +2135,15 @@ impl GooseAttack {
                 {
                     // Push metrics to manager process.
                     if !worker::push_metrics_to_manager(
-                        &goose_attack_run_state.socket.clone().unwrap(),
+                        &swanling_attack_run_state.socket.clone().unwrap(),
                         vec![
                             GaggleMetrics::Requests(self.metrics.requests.clone()),
                             GaggleMetrics::Tasks(self.metrics.tasks.clone()),
                         ],
                         true,
                     ) {
-                        // GooseUserCommand::Exit received, cancel.
-                        goose_attack_run_state
+                        // SwanlingUserCommand::Exit received, cancel.
+                        swanling_attack_run_state
                             .canceled
                             .store(true, std::sync::atomic::Ordering::SeqCst);
                     }
@@ -2154,8 +2156,8 @@ impl GooseAttack {
         }
 
         // If enabled, display running metrics after sync
-        if goose_attack_run_state.display_running_metrics {
-            goose_attack_run_state.display_running_metrics = false;
+        if swanling_attack_run_state.display_running_metrics {
+            swanling_attack_run_state.display_running_metrics = false;
             self.update_duration();
             self.metrics.print_running();
         }
@@ -2163,25 +2165,25 @@ impl GooseAttack {
         Ok(())
     }
 
-    // When the [`GooseAttack`](./struct.GooseAttack.html) goes from the `Starting`
+    // When the [`SwanlingAttack`](./struct.SwanlingAttack.html) goes from the `Starting`
     // phase to the `Running` phase, optionally flush metrics.
     pub(crate) async fn reset_metrics(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         // Flush metrics collected prior to all user threads running
-        if !goose_attack_run_state.all_users_spawned {
+        if !swanling_attack_run_state.all_users_spawned {
             // Receive metrics before resetting them.
-            self.sync_metrics(goose_attack_run_state, true).await?;
+            self.sync_metrics(swanling_attack_run_state, true).await?;
 
-            goose_attack_run_state.all_users_spawned = true;
+            swanling_attack_run_state.all_users_spawned = true;
             let users = self.configuration.users.unwrap();
             if !self.configuration.no_reset_metrics {
                 // Display the running metrics collected so far, before resetting them.
                 self.update_duration();
                 self.metrics.print_running();
                 // Reset running_metrics_timer.
-                goose_attack_run_state.running_metrics_timer = std::time::Instant::now();
+                swanling_attack_run_state.running_metrics_timer = std::time::Instant::now();
 
                 if self.metrics.display_metrics {
                     // Users is required here so unwrap() is safe.
@@ -2214,14 +2216,14 @@ impl GooseAttack {
         Ok(())
     }
 
-    // Store `GooseRequestMetric` in a `GooseRequestMetricAggregate` within the
-    // `GooseMetrics.requests` `HashMap`, merging if already existing, or creating new.
+    // Store `SwanlingRequestMetric` in a `SwanlingRequestMetricAggregate` within the
+    // `SwanlingMetrics.requests` `HashMap`, merging if already existing, or creating new.
     // Also writes it to the request_file if enabled.
-    async fn record_request_metric(&mut self, request_metric: &GooseRequestMetric) {
+    async fn record_request_metric(&mut self, request_metric: &SwanlingRequestMetric) {
         let key = format!("{} {}", request_metric.method, request_metric.name);
         let mut merge_request = match self.metrics.requests.get(&key) {
             Some(m) => m.clone(),
-            None => GooseRequestMetricAggregate::new(
+            None => SwanlingRequestMetricAggregate::new(
                 &request_metric.name,
                 request_metric.method.clone(),
                 0,
@@ -2257,17 +2259,17 @@ impl GooseAttack {
         self.metrics.requests.insert(key, merge_request);
     }
 
-    // Receive metrics from [`GooseUser`](./goose/struct.GooseUser.html) threads. If flush
+    // Receive metrics from [`SwanlingUser`](./swanling/struct.SwanlingUser.html) threads. If flush
     // is true all metrics will be received regardless of how long it takes. If flush is
     // false, metrics will only be received for up to 400 ms before exiting to continue on
     // the next call to this function.
     pub(crate) async fn receive_metrics(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
         flush: bool,
-    ) -> Result<bool, GooseError> {
+    ) -> Result<bool, SwanlingError> {
         let mut received_message = false;
-        let mut message = goose_attack_run_state.metrics_rx.try_recv();
+        let mut message = swanling_attack_run_state.metrics_rx.try_recv();
 
         // Main loop wakes up every 500ms, so don't spend more than 400ms receiving metrics.
         let receive_timeout = 400;
@@ -2276,10 +2278,10 @@ impl GooseAttack {
         while message.is_ok() {
             received_message = true;
             match message.unwrap() {
-                GooseMetric::Request(request_metric) => {
+                SwanlingMetric::Request(request_metric) => {
                     // If there was an error, store it.
                     if !request_metric.error.is_empty() {
-                        self.record_error(&request_metric, goose_attack_run_state);
+                        self.record_error(&request_metric, swanling_attack_run_state);
                     }
 
                     // If coordinated_omission_elapsed is non-zero, this was a statistically
@@ -2289,7 +2291,7 @@ impl GooseAttack {
                         && request_metric.user_cadence > 0
                     {
                         // Build a statistically generated coordinated_omissiom metric starting
-                        // with the metric that was sent by the affected GooseUser.
+                        // with the metric that was sent by the affected SwanlingUser.
                         let mut co_metric = request_metric.clone();
 
                         // Use a signed integer as this value can drop below zero.
@@ -2309,12 +2311,12 @@ impl GooseAttack {
                         }
                     // Otherwise this is an actual request, record it normally.
                     } else {
-                        // Merge the `GooseRequestMetric` into a `GooseRequestMetricAggregate` in
-                        // `GooseMetrics.requests`, and write to the requests log if enabled.
+                        // Merge the `SwanlingRequestMetric` into a `SwanlingRequestMetricAggregate` in
+                        // `SwanlingMetrics.requests`, and write to the requests log if enabled.
                         self.record_request_metric(&request_metric).await;
                     }
                 }
-                GooseMetric::Task(raw_task) => {
+                SwanlingMetric::Task(raw_task) => {
                     // Store a new metric.
                     self.metrics.tasks[raw_task.taskset_index][raw_task.task_index]
                         .set_time(raw_task.run_time, raw_task.success);
@@ -2324,7 +2326,7 @@ impl GooseAttack {
             if !flush && util::ms_timer_expired(receive_started, receive_timeout) {
                 break;
             }
-            message = goose_attack_run_state.metrics_rx.try_recv();
+            message = swanling_attack_run_state.metrics_rx.try_recv();
         }
 
         Ok(received_message)
@@ -2333,16 +2335,16 @@ impl GooseAttack {
     /// Update error metrics.
     pub(crate) fn record_error(
         &mut self,
-        raw_request: &GooseRequestMetric,
-        goose_attack_run_state: &mut GooseAttackRunState,
+        raw_request: &SwanlingRequestMetric,
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
     ) {
-        // If error-file is enabled, convert the raw request to a GooseErrorMetric and send it
+        // If error-file is enabled, convert the raw request to a SwanlingErrorMetric and send it
         // to the logger thread.
         if !self.configuration.error_log.is_empty() {
-            if let Some(logger) = goose_attack_run_state.all_threads_logger_tx.as_ref() {
+            if let Some(logger) = swanling_attack_run_state.all_threads_logger_tx.as_ref() {
                 // This is a best effort logger attempt, if the logger has alrady shut down it
                 // will fail which we ignore.
-                let _ = logger.send(Some(GooseLog::Error(GooseErrorMetric {
+                let _ = logger.send(Some(SwanlingLog::Error(SwanlingErrorMetric {
                     elapsed: raw_request.elapsed,
                     method: raw_request.method.clone(),
                     name: raw_request.name.clone(),
@@ -2372,7 +2374,7 @@ impl GooseAttack {
             // We've seen this error before.
             Some(m) => m.clone(),
             // First time we've seen this error.
-            None => GooseErrorMetricAggregate::new(
+            None => SwanlingErrorMetricAggregate::new(
                 raw_request.method.clone(),
                 raw_request.name.to_string(),
                 raw_request.error.to_string(),
@@ -2394,10 +2396,10 @@ impl GooseAttack {
     // Write an HTML-formatted report, if enabled.
     pub(crate) async fn write_html_report(
         &mut self,
-        goose_attack_run_state: &mut GooseAttackRunState,
-    ) -> Result<(), GooseError> {
+        swanling_attack_run_state: &mut SwanlingAttackRunState,
+    ) -> Result<(), SwanlingError> {
         // Only write the report if enabled.
-        if let Some(report_file) = goose_attack_run_state.report_file.as_mut() {
+        if let Some(report_file) = swanling_attack_run_state.report_file.as_mut() {
             // Prepare report summary variables.
             let started = self.metrics.started.unwrap();
             let start_time = started.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -2803,7 +2805,7 @@ impl GooseAttack {
                 &start_time,
                 &end_time,
                 &host,
-                report::GooseReportTemplates {
+                report::SwanlingReportTemplates {
                     raw_requests_template: &raw_requests_rows.join("\n"),
                     raw_responses_template: &raw_responses_rows.join("\n"),
                     co_requests_template: &co_requests_template,
@@ -2816,7 +2818,7 @@ impl GooseAttack {
 
             // Write the report to file.
             if let Err(e) = report_file.write(report.as_ref()).await {
-                return Err(GooseError::InvalidOption {
+                return Err(SwanlingError::InvalidOption {
                     option: "--report-file".to_string(),
                     value: self.get_report_file_path().unwrap(),
                     detail: format!("Failed to create report file: {}", e),
@@ -3063,10 +3065,10 @@ mod test {
     }
 
     #[test]
-    fn goose_raw_request() {
+    fn swanling_raw_request() {
         const PATH: &str = "http://127.0.0.1/";
-        let mut raw_request = GooseRequestMetric::new(GooseMethod::Get, "/", PATH, 0, 0);
-        assert_eq!(raw_request.method, GooseMethod::Get);
+        let mut raw_request = SwanlingRequestMetric::new(SwanlingMethod::Get, "/", PATH, 0, 0);
+        assert_eq!(raw_request.method, SwanlingMethod::Get);
         assert_eq!(raw_request.name, "/".to_string());
         assert_eq!(raw_request.url, PATH.to_string());
         assert_eq!(raw_request.response_time, 0);
@@ -3076,7 +3078,7 @@ mod test {
 
         let response_time = 123;
         raw_request.set_response_time(response_time);
-        assert_eq!(raw_request.method, GooseMethod::Get);
+        assert_eq!(raw_request.method, SwanlingMethod::Get);
         assert_eq!(raw_request.name, "/".to_string());
         assert_eq!(raw_request.url, PATH.to_string());
         assert_eq!(raw_request.response_time, response_time as u64);
@@ -3086,7 +3088,7 @@ mod test {
 
         let status_code = http::StatusCode::OK;
         raw_request.set_status_code(Some(status_code));
-        assert_eq!(raw_request.method, GooseMethod::Get);
+        assert_eq!(raw_request.method, SwanlingMethod::Get);
         assert_eq!(raw_request.name, "/".to_string());
         assert_eq!(raw_request.url, PATH.to_string());
         assert_eq!(raw_request.response_time, response_time as u64);
@@ -3096,10 +3098,10 @@ mod test {
     }
 
     #[test]
-    fn goose_request() {
-        let mut request = GooseRequestMetricAggregate::new("/", GooseMethod::Get, 0);
+    fn swanling_request() {
+        let mut request = SwanlingRequestMetricAggregate::new("/", SwanlingMethod::Get, 0);
         assert_eq!(request.path, "/".to_string());
-        assert_eq!(request.method, GooseMethod::Get);
+        assert_eq!(request.method, SwanlingMethod::Get);
         assert_eq!(request.raw_data.times.len(), 0);
         assert_eq!(request.raw_data.minimum_time, 0);
         assert_eq!(request.raw_data.maximum_time, 0);
@@ -3125,7 +3127,7 @@ mod test {
         assert_eq!(request.raw_data.counter, 1);
         // Nothing else changes.
         assert_eq!(request.path, "/".to_string());
-        assert_eq!(request.method, GooseMethod::Get);
+        assert_eq!(request.method, SwanlingMethod::Get);
         assert_eq!(request.status_code_counts.len(), 0);
         assert_eq!(request.success_count, 0);
         assert_eq!(request.fail_count, 0);
@@ -3146,7 +3148,7 @@ mod test {
         assert_eq!(request.raw_data.counter, 2);
         // Nothing else changes.
         assert_eq!(request.path, "/".to_string());
-        assert_eq!(request.method, GooseMethod::Get);
+        assert_eq!(request.method, SwanlingMethod::Get);
         assert_eq!(request.status_code_counts.len(), 0);
         assert_eq!(request.success_count, 0);
         assert_eq!(request.fail_count, 0);

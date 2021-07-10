@@ -3,7 +3,7 @@ use tokio::time;
 use crate::util;
 
 /// This throttle thread limits the maximum number of requests that can be made across
-/// all GooseUser threads. When enabled, GooseUser threads must add a token to the
+/// all SwanlingUser threads. When enabled, SwanlingUser threads must add a token to the
 /// bounded channel before making a request, and this thread limits how frequently
 /// tokens are removed thereby throttling how fast requests can be made. It is an
 /// implementation of the leaky bucket algorithm as a queue: instead of leaking the

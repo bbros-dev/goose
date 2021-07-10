@@ -8,22 +8,22 @@ use url::Url;
 
 const EMPTY_ARGS: Vec<&str> = vec![];
 
-use crate::goose::{GooseUser, GooseUserCommand};
-use crate::manager::GooseUserInitializer;
-use crate::metrics::{GooseErrorMetrics, GooseRequestMetrics, GooseTaskMetrics};
-use crate::{get_worker_id, AttackMode, GooseAttack, GooseConfiguration, WORKER_ID};
+use crate::swanling::{SwanlingUser, SwanlingUserCommand};
+use crate::manager::SwanlingUserInitializer;
+use crate::metrics::{SwanlingErrorMetrics, SwanlingRequestMetrics, SwanlingTaskMetrics};
+use crate::{get_worker_id, AttackMode, SwanlingAttack, SwanlingConfiguration, WORKER_ID};
 
 /// Workers send GaggleMetrics to the Manager process to be aggregated together.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GaggleMetrics {
     /// Load test hash, used to ensure all Workers are running the same load test.
     WorkerInit(u64),
-    /// Goose request metrics.
-    Requests(GooseRequestMetrics),
-    /// Goose task metrics.
-    Tasks(GooseTaskMetrics),
-    /// Goose error metrics.
-    Errors(GooseErrorMetrics),
+    /// Swanling request metrics.
+    Requests(SwanlingRequestMetrics),
+    /// Swanling task metrics.
+    Tasks(SwanlingTaskMetrics),
+    /// Swanling error metrics.
+    Errors(SwanlingErrorMetrics),
 }
 
 // If pipe closes unexpectedly, panic.
@@ -49,11 +49,11 @@ pub fn register_shutdown_pipe_handler(manager: &Socket) {
         .expect("failed to set up new pipe handler");
 }
 
-pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
+pub(crate) async fn worker_main(swanling_attack: &SwanlingAttack) -> SwanlingAttack {
     // Creates a TCP address.
     let address = format!(
         "tcp://{}:{}",
-        goose_attack.configuration.manager_host, goose_attack.configuration.manager_port
+        swanling_attack.configuration.manager_host, swanling_attack.configuration.manager_port
     );
     info!("worker connecting to manager at {}", &address);
 
@@ -93,13 +93,13 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
     // Send manager the hash of the load test we are ready to run.
     push_metrics_to_manager(
         &manager,
-        vec![GaggleMetrics::WorkerInit(goose_attack.metrics.hash)],
+        vec![GaggleMetrics::WorkerInit(swanling_attack.metrics.hash)],
         false,
     );
 
-    let mut config: GooseConfiguration = GooseConfiguration::parse_args_default(&EMPTY_ARGS)
+    let mut config: SwanlingConfiguration = SwanlingConfiguration::parse_args_default(&EMPTY_ARGS)
         .expect("failed to generate default configuration");
-    let mut weighted_users: Vec<GooseUser> = Vec::new();
+    let mut weighted_users: Vec<SwanlingUser> = Vec::new();
     let mut run_time: usize = 0;
 
     // Wait for the manager to send user parameters.
@@ -109,18 +109,18 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
         .map_err(|error| eprintln!("{:?}", error))
         .expect("error receiving manager message");
 
-    let initializers: Vec<GooseUserInitializer> = match serde_cbor::from_reader(msg.as_slice()) {
+    let initializers: Vec<SwanlingUserInitializer> = match serde_cbor::from_reader(msg.as_slice()) {
         Ok(i) => i,
         Err(_) => {
-            let command: GooseUserCommand = match serde_cbor::from_reader(msg.as_slice()) {
+            let command: SwanlingUserCommand = match serde_cbor::from_reader(msg.as_slice()) {
                 Ok(c) => c,
                 Err(e) => {
                     panic!("invalid message received: {}", e);
                 }
             };
             match command {
-                GooseUserCommand::Exit => {
-                    panic!("unexpected GooseUserCommand::Exit from manager during startup");
+                SwanlingUserCommand::Exit => {
+                    panic!("unexpected SwanlingUserCommand::Exit from manager during startup");
                 }
                 other => {
                     panic!("unknown command from manager: {:?}", other);
@@ -136,13 +136,13 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
         if worker_id == 0 {
             worker_id = initializer.worker_id;
         }
-        let user = GooseUser::new(
+        let user = SwanlingUser::new(
             initializer.task_sets_index,
             Url::parse(&initializer.base_url).unwrap(),
             initializer.min_wait,
             initializer.max_wait,
             &initializer.config,
-            goose_attack.metrics.hash,
+            swanling_attack.metrics.hash,
         )
         .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
         .expect("failed to create socket");
@@ -166,10 +166,10 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
 
     // Wait for the manager to send go-ahead to start the load test.
     loop {
-        // Push metrics to manager to force a reply, waiting for GooseUserCommand::Run.
+        // Push metrics to manager to force a reply, waiting for SwanlingUserCommand::Run.
         push_metrics_to_manager(
             &manager,
-            vec![GaggleMetrics::WorkerInit(goose_attack.metrics.hash)],
+            vec![GaggleMetrics::WorkerInit(swanling_attack.metrics.hash)],
             false,
         );
         let msg = manager
@@ -177,17 +177,17 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
             .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
             .expect("error receiving manager message");
 
-        let command: GooseUserCommand = serde_cbor::from_reader(msg.as_slice())
+        let command: SwanlingUserCommand = serde_cbor::from_reader(msg.as_slice())
             .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
             .expect("invalid message received");
 
         match command {
             // Break out of loop and start the load test.
-            GooseUserCommand::Run => break,
+            SwanlingUserCommand::Run => break,
             // Exit worker process immediately.
-            GooseUserCommand::Exit => {
+            SwanlingUserCommand::Exit => {
                 warn!(
-                    "[{}] received GooseUserCommand::Exit command from manager",
+                    "[{}] received SwanlingUserCommand::Exit command from manager",
                     get_worker_id()
                 );
                 std::process::exit(0);
@@ -210,49 +210,49 @@ pub(crate) async fn worker_main(goose_attack: &GooseAttack) -> GooseAttack {
         "[{}] entering gaggle mode, starting load test",
         get_worker_id()
     );
-    let mut worker_goose_attack = GooseAttack::initialize_with_config(config.clone())
+    let mut worker_swanling_attack = SwanlingAttack::initialize_with_config(config.clone())
         .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
-        .expect("failed to launch GooseAttack");
+        .expect("failed to launch SwanlingAttack");
 
-    worker_goose_attack.started = Some(time::Instant::now());
-    worker_goose_attack.task_sets = goose_attack.task_sets.clone();
+    worker_swanling_attack.started = Some(time::Instant::now());
+    worker_swanling_attack.task_sets = swanling_attack.task_sets.clone();
     // Use the run_time from the Manager so Worker can shut down in a timely manner.
-    worker_goose_attack.run_time = run_time;
-    worker_goose_attack.weighted_users = weighted_users;
+    worker_swanling_attack.run_time = run_time;
+    worker_swanling_attack.weighted_users = weighted_users;
     // This is a Worker instance, not a Manager instance.
-    worker_goose_attack.configuration.manager = false;
-    worker_goose_attack.configuration.worker = true;
+    worker_swanling_attack.configuration.manager = false;
+    worker_swanling_attack.configuration.worker = true;
     // The request_log option is configured on the Worker.
-    worker_goose_attack.configuration.request_log =
-        goose_attack.configuration.request_log.to_string();
+    worker_swanling_attack.configuration.request_log =
+        swanling_attack.configuration.request_log.to_string();
     // The request_format option is configured on the Worker.
-    worker_goose_attack.configuration.request_format =
-        goose_attack.configuration.request_format.clone();
+    worker_swanling_attack.configuration.request_format =
+        swanling_attack.configuration.request_format.clone();
     // The task_log option is configured on the Worker.
-    worker_goose_attack.configuration.task_log = goose_attack.configuration.task_log.to_string();
+    worker_swanling_attack.configuration.task_log = swanling_attack.configuration.task_log.to_string();
     // The task_format option is configured on the Worker.
-    worker_goose_attack.configuration.task_format = goose_attack.configuration.task_format.clone();
+    worker_swanling_attack.configuration.task_format = swanling_attack.configuration.task_format.clone();
     // The error_log option is configured on the Worker.
-    worker_goose_attack.configuration.error_log = goose_attack.configuration.error_log.to_string();
+    worker_swanling_attack.configuration.error_log = swanling_attack.configuration.error_log.to_string();
     // The error_format option is configured on the Worker.
-    worker_goose_attack.configuration.error_format =
-        goose_attack.configuration.error_format.clone();
+    worker_swanling_attack.configuration.error_format =
+        swanling_attack.configuration.error_format.clone();
     // The debug_log option is configured on the Worker.
-    worker_goose_attack.configuration.debug_log = goose_attack.configuration.debug_log.to_string();
+    worker_swanling_attack.configuration.debug_log = swanling_attack.configuration.debug_log.to_string();
     // The debug_format option is configured on the Worker.
-    worker_goose_attack.configuration.debug_format =
-        goose_attack.configuration.debug_format.clone();
+    worker_swanling_attack.configuration.debug_format =
+        swanling_attack.configuration.debug_format.clone();
     // The throttle_requests option is set on the Worker.
-    worker_goose_attack.configuration.throttle_requests =
-        goose_attack.configuration.throttle_requests;
-    worker_goose_attack.attack_mode = AttackMode::Worker;
-    worker_goose_attack.defaults = goose_attack.defaults.clone();
+    worker_swanling_attack.configuration.throttle_requests =
+        swanling_attack.configuration.throttle_requests;
+    worker_swanling_attack.attack_mode = AttackMode::Worker;
+    worker_swanling_attack.defaults = swanling_attack.defaults.clone();
 
-    worker_goose_attack
+    worker_swanling_attack
         .start_attack(Some(manager))
         .await
         .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
-        .expect("failed to launch GooseAttack")
+        .expect("failed to launch SwanlingAttack")
 }
 
 // Push metrics to manager.
@@ -284,13 +284,13 @@ pub fn push_metrics_to_manager(
             .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
             .expect("error receiving manager message");
 
-        let command: GooseUserCommand = serde_cbor::from_reader(msg.as_slice())
+        let command: SwanlingUserCommand = serde_cbor::from_reader(msg.as_slice())
             .map_err(|error| eprintln!("{:?} worker_id({})", error, get_worker_id()))
             .expect("invalid message");
 
-        if command == GooseUserCommand::Exit {
+        if command == SwanlingUserCommand::Exit {
             info!(
-                "[{}] received GooseUserCommand::Exit command from manager",
+                "[{}] received SwanlingUserCommand::Exit command from manager",
                 get_worker_id()
             );
             // Shutting down, register shutdown pipe handler.

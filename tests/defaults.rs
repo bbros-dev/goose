@@ -3,8 +3,8 @@ use serial_test::serial;
 
 mod common;
 
-use goose::logger::GooseLogFormat;
-use goose::prelude::*;
+use swanling::logger::SwanlingLogFormat;
+use swanling::prelude::*;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -21,30 +21,30 @@ const HATCH_RATE: &str = "10";
 const LOG_LEVEL: usize = 0;
 const REQUEST_LOG: &str = "request-test.log";
 const DEBUG_LOG: &str = "debug-test.log";
-const LOG_FORMAT: GooseLogFormat = GooseLogFormat::Raw;
+const LOG_FORMAT: SwanlingLogFormat = SwanlingLogFormat::Raw;
 const THROTTLE_REQUESTS: usize = 10;
 const EXPECT_WORKERS: usize = 2;
 
 // Can't be tested:
-// - GooseDefault::LogFile (logger can only be configured once)
-// - GooseDefault::Verbose (logger can only be configured once)
-// - GooseDefault::LogLevel (can't validate due to logger limitation)
+// - SwanlingDefault::LogFile (logger can only be configured once)
+// - SwanlingDefault::Verbose (logger can only be configured once)
+// - SwanlingDefault::LogLevel (can't validate due to logger limitation)
 
 // Needs followup:
-// - GooseDefault::NoMetrics:
+// - SwanlingDefault::NoMetrics:
 //     Gaggles depend on metrics, when disabled load test does not shut down clearly.
-// - GooseDefault::StickyFollow
+// - SwanlingDefault::StickyFollow
 //     Needs more complex tests
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
@@ -66,7 +66,7 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 
 // Helper to confirm all variations generate appropriate results.
 fn validate_test(
-    goose_metrics: GooseMetrics,
+    swanling_metrics: SwanlingMetrics,
     mock_endpoints: &[MockRef],
     requests_files: &[String],
     debug_files: &[String],
@@ -76,16 +76,16 @@ fn validate_test(
     assert!(mock_endpoints[INDEX_KEY].hits() > 0);
     assert!(mock_endpoints[ABOUT_KEY].hits() > 0);
 
-    let index_metrics = goose_metrics
+    let index_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", INDEX_PATH))
         .unwrap();
-    let about_metrics = goose_metrics
+    let about_metrics = swanling_metrics
         .requests
         .get(&format!("GET {}", ABOUT_PATH))
         .unwrap();
 
-    // Confirm that Goose and the server saw the same number of page loads.
+    // Confirm that Swanling and the server saw the same number of page loads.
     mock_endpoints[INDEX_KEY].assert_hits(index_metrics.raw_data.counter);
     mock_endpoints[INDEX_KEY].assert_hits(index_metrics.success_count);
     mock_endpoints[ABOUT_KEY].assert_hits(about_metrics.raw_data.counter);
@@ -98,10 +98,10 @@ fn validate_test(
     assert!(!about_metrics.status_code_counts.is_empty());
 
     // Confirm that we did not track task metrics.
-    assert!(goose_metrics.tasks.is_empty());
+    assert!(swanling_metrics.tasks.is_empty());
 
-    // Verify that Goose started the correct number of users.
-    assert!(goose_metrics.users == USERS);
+    // Verify that Swanling started the correct number of users.
+    assert!(swanling_metrics.users == USERS);
 
     // Verify that the metrics file was created and has the correct number of lines.
     let mut metrics_lines = 0;
@@ -117,9 +117,9 @@ fn validate_test(
         assert!(common::file_length(debug_file) == 0);
     }
 
-    // Requests are made while GooseUsers are hatched, and then for run_time seconds.
+    // Requests are made while SwanlingUsers are hatched, and then for run_time seconds.
     // Verify that the test ran as long as it was supposed to.
-    assert!(goose_metrics.duration == RUN_TIME);
+    assert!(swanling_metrics.duration == RUN_TIME);
 
     // Be sure there were no more requests made than the throttle should allow.
     // In the case of a gaggle, there's multiple processes running with the same
@@ -159,52 +159,52 @@ fn test_defaults() {
     config.hatch_rate = None;
     let host = std::mem::take(&mut config.host);
 
-    let goose_metrics = crate::GooseAttack::initialize_with_config(config)
+    let swanling_metrics = crate::SwanlingAttack::initialize_with_config(config)
         .unwrap()
         .register_taskset(taskset!("Index").register_task(task!(get_index)))
         .register_taskset(taskset!("About").register_task(task!(get_about)))
         // Start at least two users, required to run both TaskSets.
-        .set_default(GooseDefault::Host, host.as_str())
+        .set_default(SwanlingDefault::Host, host.as_str())
         .unwrap()
-        .set_default(GooseDefault::Users, USERS)
+        .set_default(SwanlingDefault::Users, USERS)
         .unwrap()
-        .set_default(GooseDefault::RunTime, RUN_TIME)
+        .set_default(SwanlingDefault::RunTime, RUN_TIME)
         .unwrap()
-        .set_default(GooseDefault::HatchRate, HATCH_RATE)
+        .set_default(SwanlingDefault::HatchRate, HATCH_RATE)
         .unwrap()
-        .set_default(GooseDefault::LogLevel, LOG_LEVEL)
+        .set_default(SwanlingDefault::LogLevel, LOG_LEVEL)
         .unwrap()
-        .set_default(GooseDefault::RequestLog, request_log.as_str())
+        .set_default(SwanlingDefault::RequestLog, request_log.as_str())
         .unwrap()
-        .set_default(GooseDefault::RequestFormat, LOG_FORMAT)
+        .set_default(SwanlingDefault::RequestFormat, LOG_FORMAT)
         .unwrap()
-        .set_default(GooseDefault::DebugLog, debug_log.as_str())
+        .set_default(SwanlingDefault::DebugLog, debug_log.as_str())
         .unwrap()
-        .set_default(GooseDefault::DebugFormat, LOG_FORMAT)
+        .set_default(SwanlingDefault::DebugFormat, LOG_FORMAT)
         .unwrap()
-        .set_default(GooseDefault::NoDebugBody, true)
+        .set_default(SwanlingDefault::NoDebugBody, true)
         .unwrap()
-        .set_default(GooseDefault::ThrottleRequests, THROTTLE_REQUESTS)
+        .set_default(SwanlingDefault::ThrottleRequests, THROTTLE_REQUESTS)
         .unwrap()
-        .set_default(GooseDefault::StatusCodes, true)
+        .set_default(SwanlingDefault::StatusCodes, true)
         .unwrap()
         .set_default(
-            GooseDefault::CoordinatedOmissionMitigation,
-            GooseCoordinatedOmissionMitigation::Disabled,
+            SwanlingDefault::CoordinatedOmissionMitigation,
+            SwanlingCoordinatedOmissionMitigation::Disabled,
         )
         .unwrap()
-        .set_default(GooseDefault::RunningMetrics, 0)
+        .set_default(SwanlingDefault::RunningMetrics, 0)
         .unwrap()
-        .set_default(GooseDefault::NoTaskMetrics, true)
+        .set_default(SwanlingDefault::NoTaskMetrics, true)
         .unwrap()
-        .set_default(GooseDefault::NoResetMetrics, true)
+        .set_default(SwanlingDefault::NoResetMetrics, true)
         .unwrap()
-        .set_default(GooseDefault::StickyFollow, true)
+        .set_default(SwanlingDefault::StickyFollow, true)
         .unwrap()
         .execute()
         .unwrap();
 
-    validate_test(goose_metrics, &mock_endpoints, &[request_log], &[debug_log]);
+    validate_test(swanling_metrics, &mock_endpoints, &[request_log], &[debug_log]);
 }
 
 #[test]
@@ -248,29 +248,29 @@ fn test_defaults_gaggle() {
         let worker_request_log = request_log.clone() + &i.to_string();
         let worker_debug_log = debug_log.clone() + &i.to_string();
         worker_handles.push(std::thread::spawn(move || {
-            let _ = crate::GooseAttack::initialize_with_config(worker_configuration)
+            let _ = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset!("Index").register_task(task!(get_index)))
                 .register_taskset(taskset!("About").register_task(task!(get_about)))
                 // Start at least two users, required to run both TaskSets.
-                .set_default(GooseDefault::ThrottleRequests, THROTTLE_REQUESTS)
+                .set_default(SwanlingDefault::ThrottleRequests, THROTTLE_REQUESTS)
                 .unwrap()
-                .set_default(GooseDefault::DebugLog, worker_debug_log.as_str())
+                .set_default(SwanlingDefault::DebugLog, worker_debug_log.as_str())
                 .unwrap()
-                .set_default(GooseDefault::DebugFormat, LOG_FORMAT)
+                .set_default(SwanlingDefault::DebugFormat, LOG_FORMAT)
                 .unwrap()
-                .set_default(GooseDefault::NoDebugBody, true)
+                .set_default(SwanlingDefault::NoDebugBody, true)
                 .unwrap()
-                .set_default(GooseDefault::RequestLog, worker_request_log.as_str())
+                .set_default(SwanlingDefault::RequestLog, worker_request_log.as_str())
                 .unwrap()
-                .set_default(GooseDefault::RequestFormat, LOG_FORMAT)
+                .set_default(SwanlingDefault::RequestFormat, LOG_FORMAT)
                 .unwrap()
                 // Worker configuration using defaults instead of run-time options.
-                .set_default(GooseDefault::Worker, true)
+                .set_default(SwanlingDefault::Worker, true)
                 .unwrap()
-                .set_default(GooseDefault::ManagerHost, HOST)
+                .set_default(SwanlingDefault::ManagerHost, HOST)
                 .unwrap()
-                .set_default(GooseDefault::ManagerPort, PORT)
+                .set_default(SwanlingDefault::ManagerPort, PORT)
                 .unwrap()
                 .execute()
                 .unwrap();
@@ -278,43 +278,43 @@ fn test_defaults_gaggle() {
     }
 
     // Start manager instance in current thread and run a distributed load test.
-    let goose_metrics = crate::GooseAttack::initialize_with_config(configuration)
+    let swanling_metrics = crate::SwanlingAttack::initialize_with_config(configuration)
         .unwrap()
         // Alter the name of the task set so NoHashCheck is required for load test to run.
         .register_taskset(taskset!("FooIndex").register_task(task!(get_index)))
         .register_taskset(taskset!("About").register_task(task!(get_about)))
         // Start at least two users, required to run both TaskSets.
-        .set_default(GooseDefault::Host, host.as_str())
+        .set_default(SwanlingDefault::Host, host.as_str())
         .unwrap()
-        .set_default(GooseDefault::Users, USERS)
+        .set_default(SwanlingDefault::Users, USERS)
         .unwrap()
-        .set_default(GooseDefault::RunTime, RUN_TIME)
+        .set_default(SwanlingDefault::RunTime, RUN_TIME)
         .unwrap()
-        .set_default(GooseDefault::HatchRate, HATCH_RATE)
+        .set_default(SwanlingDefault::HatchRate, HATCH_RATE)
         .unwrap()
         .set_default(
-            GooseDefault::CoordinatedOmissionMitigation,
-            GooseCoordinatedOmissionMitigation::Disabled,
+            SwanlingDefault::CoordinatedOmissionMitigation,
+            SwanlingCoordinatedOmissionMitigation::Disabled,
         )
         .unwrap()
-        .set_default(GooseDefault::StatusCodes, true)
+        .set_default(SwanlingDefault::StatusCodes, true)
         .unwrap()
-        .set_default(GooseDefault::RunningMetrics, 0)
+        .set_default(SwanlingDefault::RunningMetrics, 0)
         .unwrap()
-        .set_default(GooseDefault::NoTaskMetrics, true)
+        .set_default(SwanlingDefault::NoTaskMetrics, true)
         .unwrap()
-        .set_default(GooseDefault::StickyFollow, true)
+        .set_default(SwanlingDefault::StickyFollow, true)
         .unwrap()
         // Manager configuration using defaults instead of run-time options.
-        .set_default(GooseDefault::Manager, true)
+        .set_default(SwanlingDefault::Manager, true)
         .unwrap()
-        .set_default(GooseDefault::ExpectWorkers, EXPECT_WORKERS)
+        .set_default(SwanlingDefault::ExpectWorkers, EXPECT_WORKERS)
         .unwrap()
-        .set_default(GooseDefault::NoHashCheck, true)
+        .set_default(SwanlingDefault::NoHashCheck, true)
         .unwrap()
-        .set_default(GooseDefault::ManagerBindHost, HOST)
+        .set_default(SwanlingDefault::ManagerBindHost, HOST)
         .unwrap()
-        .set_default(GooseDefault::ManagerBindPort, PORT)
+        .set_default(SwanlingDefault::ManagerBindPort, PORT)
         .unwrap()
         .execute()
         .unwrap();
@@ -332,7 +332,7 @@ fn test_defaults_gaggle() {
         let file = debug_log.to_string() + &i.to_string();
         debug_logs.push(file);
     }
-    validate_test(goose_metrics, &mock_endpoints, &request_logs, &debug_logs);
+    validate_test(swanling_metrics, &mock_endpoints, &request_logs, &debug_logs);
 }
 
 #[test]
@@ -379,7 +379,7 @@ fn test_no_defaults() {
         ],
     );
 
-    let goose_metrics = crate::GooseAttack::initialize_with_config(config)
+    let swanling_metrics = crate::SwanlingAttack::initialize_with_config(config)
         .unwrap()
         .register_taskset(taskset!("Index").register_task(task!(get_index)))
         .register_taskset(taskset!("About").register_task(task!(get_about)))
@@ -387,7 +387,7 @@ fn test_no_defaults() {
         .unwrap();
 
     validate_test(
-        goose_metrics,
+        swanling_metrics,
         &mock_endpoints,
         &[requests_file],
         &[debug_file],
@@ -446,7 +446,7 @@ fn test_no_defaults_gaggle() {
         );
         println!("{:#?}", worker_configuration);
         worker_handles.push(std::thread::spawn(move || {
-            let _ = crate::GooseAttack::initialize_with_config(worker_configuration)
+            let _ = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset!("Index").register_task(task!(get_index)))
                 .register_taskset(taskset!("About").register_task(task!(get_about)))
@@ -480,7 +480,7 @@ fn test_no_defaults_gaggle() {
         ],
     );
 
-    let goose_metrics = crate::GooseAttack::initialize_with_config(manager_configuration)
+    let swanling_metrics = crate::SwanlingAttack::initialize_with_config(manager_configuration)
         .unwrap()
         .register_taskset(taskset!("Index").register_task(task!(get_index)))
         .register_taskset(taskset!("About").register_task(task!(get_about)))
@@ -501,7 +501,7 @@ fn test_no_defaults_gaggle() {
         debug_files.push(file);
     }
     validate_test(
-        goose_metrics,
+        swanling_metrics,
         &mock_endpoints,
         &requests_files,
         &debug_files,
@@ -523,18 +523,18 @@ fn test_defaults_no_metrics() {
     config.run_time = "".to_string();
     config.hatch_rate = None;
 
-    let goose_metrics = crate::GooseAttack::initialize_with_config(config)
+    let swanling_metrics = crate::SwanlingAttack::initialize_with_config(config)
         .unwrap()
         .register_taskset(taskset!("Index").register_task(task!(get_index)))
         .register_taskset(taskset!("About").register_task(task!(get_about)))
         // Start at least two users, required to run both TaskSets.
-        .set_default(GooseDefault::Users, USERS)
+        .set_default(SwanlingDefault::Users, USERS)
         .unwrap()
-        .set_default(GooseDefault::RunTime, RUN_TIME)
+        .set_default(SwanlingDefault::RunTime, RUN_TIME)
         .unwrap()
-        .set_default(GooseDefault::HatchRate, HATCH_RATE)
+        .set_default(SwanlingDefault::HatchRate, HATCH_RATE)
         .unwrap()
-        .set_default(GooseDefault::NoMetrics, true)
+        .set_default(SwanlingDefault::NoMetrics, true)
         .unwrap()
         .execute()
         .unwrap();
@@ -544,8 +544,8 @@ fn test_defaults_no_metrics() {
     assert!(mock_endpoints[ABOUT_KEY].hits() > 0);
 
     // Confirm that we did not track metrics.
-    assert!(goose_metrics.requests.is_empty());
-    assert!(goose_metrics.tasks.is_empty());
-    assert!(goose_metrics.users == USERS);
-    assert!(goose_metrics.duration == RUN_TIME);
+    assert!(swanling_metrics.requests.is_empty());
+    assert!(swanling_metrics.tasks.is_empty());
+    assert!(swanling_metrics.users == USERS);
+    assert!(swanling_metrics.duration == RUN_TIME);
 }
