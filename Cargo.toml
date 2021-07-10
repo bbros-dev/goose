@@ -1,14 +1,14 @@
 [package]
-name = "goose"
-version = "0.12.1-dev"
-authors = ["Jeremy Andrews <jeremy@tag1consulting.com>"]
+name = "swanling"
+version = "0.1.0-dev"
+authors = ["Begley Brothers Inc <begleybrothers@gmail.com>"]
 edition = "2018"
-description = "A load testing framework inspired by Locust."
-homepage = "https://tag1.com/goose"
-documentation = "https://docs.rs/goose/"
-repository = "https://github.com/tag1consulting/goose"
+description = "A load testing and benchmarking framework inspired by Locust and Drill."
+homepage = "https://swanling.io"
+documentation = "https://swanling.io"
+repository = "https://github.com/begleybrothers/swanling"
 readme = "README.md"
-keywords = ["loadtesting", "performance", "web", "framework", "tool"]
+keywords = ["loadtest", "benchmark", "web", "microservice", "framework", "tool"]
 license = "Apache-2.0"
 
 [dependencies]
