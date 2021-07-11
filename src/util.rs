@@ -1,4 +1,4 @@
-//! Utility functions used by Goose, and available when writing load tests.
+//! Utility functions used by Swanling, and available when writing load tests.
 
 use regex::Regex;
 use std::cmp::{max, min};
@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::time;
 use url::Url;
 
-use crate::GooseError;
+use crate::SwanlingError;
 
 /// Parse a string representing a time span and return the number of seconds.
 ///
@@ -21,7 +21,7 @@ use crate::GooseError;
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // 1 hour 2 minutes and 3 seconds is 3,723 seconds.
 /// assert_eq!(util::parse_timespan("1h2m3s"), 3_723);
@@ -73,7 +73,7 @@ pub fn parse_timespan(time_str: &str) -> usize {
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// async fn loop_with_delay() {
 ///     loop {
@@ -114,7 +114,7 @@ pub async fn sleep_minus_drift(
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // 1 and any other integer are only divisible by 1.
 /// assert_eq!(util::gcd(1, 100), 1);
@@ -172,7 +172,7 @@ pub fn standard_deviation(raw_average: f32, co_average: f32) -> f32 {
 /// of the integer on the right. For example (5, 1) indicates that the integer "5" is
 /// included 1 time.
 ///
-/// The function requires three parameters that Goose already has while building the
+/// The function requires three parameters that Swanling already has while building the
 /// BTreeMap: the total occurences of all integers, the smallest integer, and the largest
 /// integer in the list: while this could be calculate by the function, the goal is to make
 /// this function as fast as possible as it runs during load tests.
@@ -186,7 +186,7 @@ pub fn standard_deviation(raw_average: f32, co_average: f32) -> f32 {
 /// # Example
 /// ```rust
 /// use std::collections::BTreeMap;
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // In this first example, we add one instance of three different integers.
 /// let mut btree: BTreeMap<usize, usize> = BTreeMap::new();
@@ -241,7 +241,7 @@ pub fn median(
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // All but 7 characters are truncated, with ".." appended.
 /// assert_eq!(util::truncate_string("this is a long string", 9), "this is..");
@@ -270,7 +270,7 @@ pub fn truncate_string(str_to_truncate: &str, max_length: u64) -> String {
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// let started = std::time::Instant::now();
 /// let mut counter = 0;
@@ -307,7 +307,7 @@ pub fn timer_expired(started: time::Instant, run_time: usize) -> bool {
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// let started = std::time::Instant::now();
 /// let mut counter = 0;
@@ -337,7 +337,7 @@ pub fn ms_timer_expired(started: time::Instant, elapsed: usize) -> bool {
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // No decimal returns a proper float.
 /// assert_eq!(util::get_hatch_rate(Some("1".to_string())), 1.0);
@@ -374,7 +374,7 @@ pub fn get_hatch_rate(hatch_rate: Option<String>) -> f32 {
 ///
 /// # Example
 /// ```rust
-/// use goose::util;
+/// use swanling::util;
 ///
 /// // Hostname is a valid URL.
 /// assert_eq!(util::is_valid_host("http://localhost/").is_ok(), true);
@@ -388,8 +388,8 @@ pub fn get_hatch_rate(hatch_rate: Option<String>) -> f32 {
 /// // Protocol is required
 /// assert_eq!(util::is_valid_host("example.com/").is_ok(), false);
 /// ```
-pub fn is_valid_host(host: &str) -> Result<bool, GooseError> {
-    Url::parse(host).map_err(|parse_error| GooseError::InvalidHost {
+pub fn is_valid_host(host: &str) -> Result<bool, SwanlingError> {
+    Url::parse(host).map_err(|parse_error| SwanlingError::InvalidHost {
         host: host.to_string(),
         detail: "Invalid host.".to_string(),
         parse_error,

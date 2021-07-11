@@ -3,7 +3,7 @@ mod common;
 mod english;
 mod spanish;
 
-use goose::prelude::*;
+use swanling::prelude::*;
 
 use crate::admin::*;
 use crate::english::*;
@@ -12,8 +12,8 @@ use crate::spanish::*;
 /// Defines the actual load test. Each task set simulates a type of user.
 ///  - Anonymous English user: loads the English version of all pages
 ///  - Anonymous Spanish user: loads the Spanish version of all pages
-fn main() -> Result<(), GooseError> {
-    let _goose_metrics = GooseAttack::initialize()?
+fn main() -> Result<(), SwanlingError> {
+    let _swanling_metrics = SwanlingAttack::initialize()?
         .register_taskset(
             taskset!("Anonymous English user")
                 .set_weight(40)?
@@ -80,7 +80,7 @@ fn main() -> Result<(), GooseError> {
                         .set_weight(2)?,
                 ),
         )
-        .set_default(GooseDefault::Host, "https://drupal-9.ddev.site/")?
+        .set_default(SwanlingDefault::Host, "https://drupal-9.ddev.site/")?
         .execute()?
         .print();
 

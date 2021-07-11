@@ -3,15 +3,15 @@ use std::sync::atomic::Ordering;
 use std::time;
 
 use crate::get_worker_id;
-use crate::goose::{GooseTaskFunction, GooseTaskSet, GooseUser, GooseUserCommand};
-use crate::logger::GooseLog;
-use crate::metrics::{GooseMetric, GooseTaskMetric};
+use crate::logger::SwanlingLog;
+use crate::metrics::{SwanlingMetric, SwanlingTaskMetric};
+use crate::swanling::{SwanlingTaskFunction, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand};
 
 pub(crate) async fn user_main(
     thread_number: usize,
-    thread_task_set: GooseTaskSet,
-    thread_user: GooseUser,
-    thread_receiver: flume::Receiver<GooseUserCommand>,
+    thread_task_set: SwanlingTaskSet,
+    thread_user: SwanlingUser,
+    thread_receiver: flume::Receiver<SwanlingUserCommand>,
     worker: bool,
 ) {
     if worker {
@@ -53,7 +53,7 @@ pub(crate) async fn user_main(
             position = 0;
             thread_user.position.store(position, Ordering::SeqCst);
 
-            // Tracks the time it takes to loop through all GooseTasks when Coordinated Omission
+            // Tracks the time it takes to loop through all SwanlingTasks when Coordinated Omission
             // Mitigation is enabled.
             thread_user.update_request_cadence(thread_number).await;
 
@@ -92,11 +92,11 @@ pub(crate) async fn user_main(
                     while message.is_ok() {
                         match message.unwrap() {
                             // Time to exit, break out of launch_tasks loop.
-                            GooseUserCommand::Exit => {
+                            SwanlingUserCommand::Exit => {
                                 break 'launch_tasks;
                             }
                             command => {
-                                debug!("ignoring unexpected GooseUserCommand: {:?}", command);
+                                debug!("ignoring unexpected SwanlingUserCommand: {:?}", command);
                             }
                         }
                         message = thread_receiver.try_recv();
@@ -116,7 +116,7 @@ pub(crate) async fn user_main(
                         in_sleep_loop = false;
                     }
                 }
-                // Track how much time the GooseUser sleeps during this loop through all GooseTasks,
+                // Track how much time the SwanlingUser sleeps during this loop through all SwanlingTasks,
                 // used by Coordinated Omission Mitigation.
                 thread_user.slept.fetch_add(
                     (time::Instant::now() - sleep_timer).as_millis() as u64,
@@ -165,13 +165,13 @@ pub(crate) async fn user_main(
 
 // Invoke the task function, collecting task metrics.
 async fn invoke_task_function(
-    function: &GooseTaskFunction,
-    thread_user: &GooseUser,
+    function: &SwanlingTaskFunction,
+    thread_user: &SwanlingUser,
     thread_task_index: usize,
     thread_task_name: &str,
-) -> Result<(), flume::SendError<Option<GooseLog>>> {
+) -> Result<(), flume::SendError<Option<SwanlingLog>>> {
     let started = time::Instant::now();
-    let mut raw_task = GooseTaskMetric::new(
+    let mut raw_task = SwanlingTaskMetric::new(
         thread_user.started.elapsed().as_millis(),
         thread_user.task_sets_index,
         thread_task_index,
@@ -189,14 +189,14 @@ async fn invoke_task_function(
     // If tasks-file is enabled, send a copy of the raw task metric to the logger thread.
     if !thread_user.config.task_log.is_empty() {
         if let Some(logger) = thread_user.logger.as_ref() {
-            logger.send(Some(GooseLog::Task(raw_task.clone())))?;
+            logger.send(Some(SwanlingLog::Task(raw_task.clone())))?;
         }
     }
 
     // Otherwise send metrics to parent.
     if let Some(parent) = thread_user.channel_to_parent.clone() {
         // Best effort metrics.
-        let _ = parent.send(GooseMetric::Task(raw_task));
+        let _ = parent.send(SwanlingMetric::Task(raw_task));
     }
 
     Ok(())

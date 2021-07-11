@@ -4,7 +4,7 @@ use std::fmt;
 
 mod common;
 
-use goose::prelude::*;
+use swanling::prelude::*;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -54,22 +54,22 @@ impl fmt::Display for TestType {
 }
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_error(user: &GooseUser) -> GooseTaskResult {
-    let mut goose = user.get(ERROR_PATH).await?;
+pub async fn get_error(user: &SwanlingUser) -> SwanlingTaskResult {
+    let mut swanling = user.get(ERROR_PATH).await?;
 
-    if let Ok(r) = goose.response {
+    if let Ok(r) = swanling.response {
         let headers = &r.headers().clone();
         let status_code = r.status();
         if !status_code.is_success() {
             return user.set_failure(
                 "loaded /error and got non-200 message",
-                &mut goose.request,
+                &mut swanling.request,
                 Some(headers),
                 None,
             );
@@ -95,7 +95,7 @@ fn setup_mock_server_endpoints(server: &MockServer) -> Vec<MockRef> {
 }
 
 // Returns the appropriate taskset, start_task and stop_task needed to build these tests.
-fn get_tasks() -> GooseTaskSet {
+fn get_tasks() -> SwanlingTaskSet {
     taskset!("LoadTest")
         .register_task(task!(get_index))
         .register_task(task!(get_error))
@@ -103,7 +103,7 @@ fn get_tasks() -> GooseTaskSet {
 
 // Helper to confirm all variations generate appropriate results.
 fn validate_test(
-    goose_metrics: GooseMetrics,
+    swanling_metrics: SwanlingMetrics,
     mock_endpoints: &[MockRef],
     test_type: &TestType,
     log_files: &LogFiles,
@@ -115,7 +115,7 @@ fn validate_test(
     assert!(mock_endpoints[ERROR_KEY].hits() > 0);
 
     // Confirm that the test duration was correct.
-    assert!(goose_metrics.duration == 2);
+    assert!(swanling_metrics.duration == 2);
 
     match test_type {
         TestType::Debug => {
@@ -257,8 +257,8 @@ fn run_standalone_test(test_type: TestType, format: &str) {
     configuration_flags.extend(vec!["--users", "4", "--hatch-rate", "4", "--run-time", "2"]);
     let configuration = common::build_configuration(&server, configuration_flags);
 
-    // Run the Goose Attack.
-    let goose_metrics = common::run_load_test(
+    // Run the Swanling Attack.
+    let swanling_metrics = common::run_load_test(
         common::build_load_test(configuration, &get_tasks(), None, None),
         None,
     );
@@ -270,7 +270,7 @@ fn run_standalone_test(test_type: TestType, format: &str) {
         debug_logs: &[debug_log.to_string()],
     };
 
-    validate_test(goose_metrics, &mock_endpoints, &test_type, &log_files);
+    validate_test(swanling_metrics, &mock_endpoints, &test_type, &log_files);
 
     common::cleanup_files(vec![&request_log, &task_log, &error_log, &debug_log]);
 }
@@ -354,12 +354,12 @@ fn run_gaggle_test(test_type: TestType, format: &str) {
             ],
         };
         let worker_configuration = common::build_configuration(&server, worker_configuration_flags);
-        let worker_goose_attack =
+        let worker_swanling_attack =
             common::build_load_test(worker_configuration.clone(), &get_tasks(), None, None);
         // Start worker instance of the load test.
         worker_handles.push(std::thread::spawn(move || {
             // Run the load test as configured.
-            common::run_load_test(worker_goose_attack, None);
+            common::run_load_test(worker_swanling_attack, None);
         }));
     }
 
@@ -379,11 +379,11 @@ fn run_gaggle_test(test_type: TestType, format: &str) {
     );
 
     // Build the load test for the Manager.
-    let manager_goose_attack =
+    let manager_swanling_attack =
         common::build_load_test(manager_configuration, &get_tasks(), None, None);
 
-    // Run the Goose Attack.
-    let goose_metrics = common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    let swanling_metrics = common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     let log_files = LogFiles {
         request_logs: &requests_files,
@@ -392,7 +392,7 @@ fn run_gaggle_test(test_type: TestType, format: &str) {
         debug_logs: &debug_files,
     };
 
-    validate_test(goose_metrics, &mock_endpoints, &test_type, &log_files);
+    validate_test(swanling_metrics, &mock_endpoints, &test_type, &log_files);
 
     for file in requests_files {
         common::cleanup_files(vec![&file]);

@@ -1,4 +1,4 @@
-//! Goose complete load test example.
+//! Swanling complete load test example.
 //!
 //! ## License
 //!
@@ -16,16 +16,16 @@
 //! See the License for the specific language governing permissions and
 //! limitations under the License.
 
-use goose::prelude::*;
+use swanling::prelude::*;
 
-fn main() -> Result<(), GooseError> {
-    GooseAttack::initialize()?
+fn main() -> Result<(), SwanlingError> {
+    SwanlingAttack::initialize()?
         // We only create the "TheInternetUser" taskset.
         .register_taskset(
             taskset!("TheInternetUser")
-                // Load when the Goose load test first starts.
+                // Load when the Swanling load test first starts.
                 .register_task(task!(website_login).set_on_start())
-                // These tasks repeat, until the Goose load test ends.
+                // These tasks repeat, until the Swanling load test ends.
                 .register_task(task!(website_slow))
                 .register_task(task!(website_redirect)),
         )
@@ -38,25 +38,25 @@ fn main() -> Result<(), GooseError> {
 /// Demonstrates how to log in when a user starts.
 /// This task is set as an on_start task when registering it above.
 /// This means it only runs when the "user" thread starts.
-async fn website_login(user: &GooseUser) -> GooseTaskResult {
-    let request_builder = user.goose_post("/login").await?;
+async fn website_login(user: &SwanlingUser) -> SwanlingTaskResult {
+    let request_builder = user.swanling_post("/login").await?;
     // https://docs.rs/reqwest/*/reqwest/blocking/struct.RequestBuilder.html#method.form
     let params = [("username", "tomsmith"), ("password", "SuperSecretPassword!")];
-    let _goose = user.goose_send(request_builder.form(&params), None).await?;
+    let _swanling = user.swanling_send(request_builder.form(&params), None).await?;
 
     Ok(())
 }
 
 /// A task to load the slow resources page.
-async fn website_slow(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get("/slow").await?;
+async fn website_slow(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get("/slow").await?;
 
     Ok(())
 }
 
 /// A task to load the redirect page.
-async fn website_redirect(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get("/redirect").await?;
+async fn website_redirect(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get("/redirect").await?;
 
     Ok(())
 }

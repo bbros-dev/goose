@@ -1,4 +1,4 @@
-use goose::prelude::*;
+use swanling::prelude::*;
 
 use crate::common;
 
@@ -6,7 +6,7 @@ use rand::seq::SliceRandom;
 use std::env;
 
 /// Log into the website.
-pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
+pub async fn log_in(user: &SwanlingUser) -> SwanlingTaskResult {
     // Use ADMIN_USERNAME= to set custom admin username.
     let admin_username = match env::var("ADMIN_USERNAME") {
         Ok(username) => username,
@@ -19,14 +19,14 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
     };
 
     // Load the log in page.
-    let mut goose = user.get("/en/user/login").await?;
+    let mut swanling = user.get("/en/user/login").await?;
 
     // We can't invoke common::validate_and_load_static_assets as while it's important
     // to validate the page and load static elements, we then need to extract form elements
     // from the HTML of the page. So we duplicate some of the logic, enhancing it for form
     // processing.
     let mut logged_in_user;
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -36,8 +36,8 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
                     let title = "Log in";
                     if !common::valid_title(&html, title) {
                         return user.set_failure(
-                            &format!("{}: title not found: {}", &goose.request.url, title),
-                            &mut goose.request,
+                            &format!("{}: title not found: {}", &swanling.request.url, title),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -51,8 +51,8 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
                     let form_build_id = common::get_form_value(&html, "form_build_id");
                     if form_build_id.is_none() {
                         return user.set_failure(
-                            &format!("{}: no form_build_id on page", goose.request.url),
-                            &mut goose.request,
+                            &format!("{}: no form_build_id on page", swanling.request.url),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -66,8 +66,10 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
                         ("form_id", &"user_login_form".to_string()),
                         ("op", &"Log+in".to_string()),
                     ];
-                    let request_builder = user.goose_post("/en/user/login").await?;
-                    logged_in_user = user.goose_send(request_builder.form(&params), None).await?;
+                    let request_builder = user.swanling_post("/en/user/login").await?;
+                    logged_in_user = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await?;
 
                     // A successful log in is redirected.
                     if !logged_in_user.request.redirected {
@@ -84,8 +86,8 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -94,8 +96,8 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -108,20 +110,20 @@ pub async fn log_in(user: &GooseUser) -> GooseTaskResult {
 }
 
 /// Load and edit a random article.
-pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
+pub async fn edit_article(user: &SwanlingUser) -> SwanlingTaskResult {
     // First, load a random article.
     let nodes = common::get_nodes(&common::ContentType::Article);
     let article = nodes.choose(&mut rand::thread_rng());
-    let goose = user.get(article.unwrap().url_en).await?;
-    common::validate_and_load_static_assets(user, goose, article.unwrap().title_en).await?;
+    let swanling = user.get(article.unwrap().url_en).await?;
+    common::validate_and_load_static_assets(user, swanling, article.unwrap().title_en).await?;
 
     // Next, load the edit link for the chosen article.
-    let mut goose = user
+    let mut swanling = user
         .get(&format!("/en/node/{}/edit", article.unwrap().nid))
         .await?;
 
     let mut saved_article;
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -131,8 +133,8 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
                     let title = "Edit Article";
                     if !common::valid_title(&html, title) {
                         return user.set_failure(
-                            &format!("{}: title not found: {}", &goose.request.url, title),
-                            &mut goose.request,
+                            &format!("{}: title not found: {}", &swanling.request.url, title),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -146,8 +148,8 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
                     let form_build_id = common::get_form_value(&html, "form_build_id");
                     if form_build_id.is_none() {
                         return user.set_failure(
-                            &format!("{}: no form_build_id on page", goose.request.url),
-                            &mut goose.request,
+                            &format!("{}: no form_build_id on page", swanling.request.url),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -155,8 +157,8 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
                     let form_token = common::get_form_value(&html, "form_token");
                     if form_token.is_none() {
                         return user.set_failure(
-                            &format!("{}: no form_token on page", goose.request.url),
-                            &mut goose.request,
+                            &format!("{}: no form_token on page", swanling.request.url),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -170,9 +172,11 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
                         ("op", &"Save (this translation)".to_string()),
                     ];
                     let request_builder = user
-                        .goose_post(&format!("/en/node/{}/edit", article.unwrap().nid))
+                        .swanling_post(&format!("/en/node/{}/edit", article.unwrap().nid))
                         .await?;
-                    saved_article = user.goose_send(request_builder.form(&params), None).await?;
+                    saved_article = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await?;
 
                     // A successful node save is redirected.
                     if !saved_article.request.redirected {
@@ -186,8 +190,8 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -196,8 +200,8 @@ pub async fn edit_article(user: &GooseUser) -> GooseTaskResult {
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );

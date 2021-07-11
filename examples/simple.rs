@@ -1,4 +1,4 @@
-//! Simple Goose load test example. Duplicates the simple example on the
+//! Simple Swanling load test example. Duplicates the simple example on the
 //! Locust project page (https://locust.io/).
 //!
 //! ## License
@@ -17,10 +17,10 @@
 //! See the License for the specific language governing permissions and
 //! limitations under the License.
 
-use goose::prelude::*;
+use swanling::prelude::*;
 
-fn main() -> Result<(), GooseError> {
-    GooseAttack::initialize()?
+fn main() -> Result<(), SwanlingError> {
+    SwanlingAttack::initialize()?
         // In this example, we only create a single taskset, named "WebsiteUser".
         .register_taskset(
             taskset!("WebsiteUser")
@@ -41,25 +41,27 @@ fn main() -> Result<(), GooseError> {
 /// Demonstrates how to log in when a user starts. We flag this task as an
 /// on_start task when registering it above. This means it only runs one time
 /// per user, when the user thread first starts.
-async fn website_login(user: &GooseUser) -> GooseTaskResult {
-    let request_builder = user.goose_post("/login").await?;
+async fn website_login(user: &SwanlingUser) -> SwanlingTaskResult {
+    let request_builder = user.swanling_post("/login").await?;
     // https://docs.rs/reqwest/*/reqwest/blocking/struct.RequestBuilder.html#method.form
     let params = [("username", "test_user"), ("password", "")];
-    let _goose = user.goose_send(request_builder.form(&params), None).await?;
+    let _swanling = user
+        .swanling_send(request_builder.form(&params), None)
+        .await?;
 
     Ok(())
 }
 
 /// A very simple task that simply loads the front page.
-async fn website_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get("/").await?;
+async fn website_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get("/").await?;
 
     Ok(())
 }
 
 /// A very simple task that simply loads the about page.
-async fn website_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get("/about/").await?;
+async fn website_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get("/about/").await?;
 
     Ok(())
 }

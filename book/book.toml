@@ -1,7 +1,7 @@
 [book]
-title = "The Goose Book"
+title = "The Swanling Book"
 authors = ["Jeremy Andrews"]
-description = "Load testing framework, inspired by Locust, implemented with Rust."
+description = "HTTP Load testing framework. Inspired by Locust and Drill. Implemented with Rust."
 language = "en"
 
 [rust]

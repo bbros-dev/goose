@@ -22,13 +22,13 @@
 //! See the License for the specific language governing permissions and
 //! limitations under the License.
 
-use goose::prelude::*;
+use swanling::prelude::*;
 
 use rand::Rng;
 use regex::Regex;
 
-fn main() -> Result<(), GooseError> {
-    GooseAttack::initialize()?
+fn main() -> Result<(), SwanlingError> {
+    SwanlingAttack::initialize()?
         .register_taskset(
             taskset!("AnonBrowsingUser")
                 .set_weight(4)?
@@ -84,10 +84,10 @@ fn main() -> Result<(), GooseError> {
 }
 
 /// View the front page.
-async fn drupal_loadtest_front_page(user: &GooseUser) -> GooseTaskResult {
-    let mut goose = user.get("/").await?;
+async fn drupal_loadtest_front_page(user: &SwanlingUser) -> SwanlingTaskResult {
+    let mut swanling = user.get("/").await?;
 
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -110,7 +110,7 @@ async fn drupal_loadtest_front_page(user: &GooseUser) -> GooseTaskResult {
                     // be displayed to stdout if `-v` is enabled when running the load test.
                     return user.set_failure(
                         &format!("front_page: failed to parse page: {}", e),
-                        &mut goose.request,
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -122,7 +122,7 @@ async fn drupal_loadtest_front_page(user: &GooseUser) -> GooseTaskResult {
             // be displayed to stdout if `-v` is enabled when running the load test.
             return user.set_failure(
                 &format!("front_page: no response from server: {}", e),
-                &mut goose.request,
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -133,26 +133,26 @@ async fn drupal_loadtest_front_page(user: &GooseUser) -> GooseTaskResult {
 }
 
 /// View a node from 1 to 10,000, created by preptest.sh.
-async fn drupal_loadtest_node_page(user: &GooseUser) -> GooseTaskResult {
+async fn drupal_loadtest_node_page(user: &SwanlingUser) -> SwanlingTaskResult {
     let nid = rand::thread_rng().gen_range(1..10_000);
-    let _goose = user.get(format!("/node/{}", &nid).as_str()).await?;
+    let _swanling = user.get(format!("/node/{}", &nid).as_str()).await?;
 
     Ok(())
 }
 
 /// View a profile from 2 to 5,001, created by preptest.sh.
-async fn drupal_loadtest_profile_page(user: &GooseUser) -> GooseTaskResult {
+async fn drupal_loadtest_profile_page(user: &SwanlingUser) -> SwanlingTaskResult {
     let uid = rand::thread_rng().gen_range(2..5_001);
-    let _goose = user.get(format!("/user/{}", &uid).as_str()).await?;
+    let _swanling = user.get(format!("/user/{}", &uid).as_str()).await?;
 
     Ok(())
 }
 
 /// Log in.
-async fn drupal_loadtest_login(user: &GooseUser) -> GooseTaskResult {
-    let mut goose = user.get("/user").await?;
+async fn drupal_loadtest_login(user: &SwanlingUser) -> SwanlingTaskResult {
+    let mut swanling = user.get("/user").await?;
 
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -166,7 +166,7 @@ async fn drupal_loadtest_login(user: &GooseUser) -> GooseTaskResult {
                             // be displayed to stdout if `-v` is enabled when running the load test.
                             return user.set_failure(
                                 "login: no form_build_id on page: /user page",
-                                &mut goose.request,
+                                &mut swanling.request,
                                 Some(&headers),
                                 Some(&html),
                             );
@@ -183,8 +183,10 @@ async fn drupal_loadtest_login(user: &GooseUser) -> GooseTaskResult {
                         ("form_id", "user_login"),
                         ("op", "Log+in"),
                     ];
-                    let request_builder = user.goose_post("/user").await?;
-                    let _goose = user.goose_send(request_builder.form(&params), None).await;
+                    let request_builder = user.swanling_post("/user").await?;
+                    let _swanling = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await;
                     // @TODO: verify that we actually logged in.
                 }
                 Err(e) => {
@@ -192,20 +194,20 @@ async fn drupal_loadtest_login(user: &GooseUser) -> GooseTaskResult {
                     // be displayed to stdout if `-v` is enabled when running the load test.
                     return user.set_failure(
                         &format!("login: unexpected error when loading /user page: {}", e),
-                        &mut goose.request,
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
                 }
             }
         }
-        // Goose will catch this error.
+        // Swanling will catch this error.
         Err(e) => {
             // This will automatically get written to the error log if enabled, and will
             // be displayed to stdout if `-v` is enabled when running the load test.
             return user.set_failure(
                 &format!("login: no response from server: {}", e),
-                &mut goose.request,
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -216,14 +218,14 @@ async fn drupal_loadtest_login(user: &GooseUser) -> GooseTaskResult {
 }
 
 /// Post a comment.
-async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
+async fn drupal_loadtest_post_comment(user: &SwanlingUser) -> SwanlingTaskResult {
     let nid: i32 = rand::thread_rng().gen_range(1..10_000);
     let node_path = format!("node/{}", &nid);
     let comment_path = format!("/comment/reply/{}", &nid);
 
-    let mut goose = user.get(&node_path).await?;
+    let mut swanling = user.get(&node_path).await?;
 
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -238,7 +240,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                             // be displayed to stdout if `-v` is enabled when running the load test.
                             return user.set_failure(
                                 &format!("post_comment: no form_build_id found on {}", &node_path),
-                                &mut goose.request,
+                                &mut swanling.request,
                                 Some(&headers),
                                 Some(&html),
                             );
@@ -253,7 +255,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                             // be displayed to stdout if `-v` is enabled when running the load test.
                             return user.set_failure(
                                 &format!("post_comment: no form_token found on {}", &node_path),
-                                &mut goose.request,
+                                &mut swanling.request,
                                 Some(&headers),
                                 Some(&html),
                             );
@@ -268,7 +270,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                             // be displayed to stdout if `-v` is enabled when running the load test.
                             return user.set_failure(
                                 &format!("post_comment: no form_id found on {}", &node_path),
-                                &mut goose.request,
+                                &mut swanling.request,
                                 Some(&headers),
                                 Some(&html),
                             );
@@ -282,7 +284,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                             "form_id: {}, form_build_id: {}, form_token: {}",
                             &form_id[1], &form_build_id[1], &form_token[1]
                         ),
-                        Some(&goose.request),
+                        Some(&swanling.request),
                         Some(&headers),
                         Some(&html),
                     );
@@ -300,11 +302,13 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                     ];
 
                     // Post the comment.
-                    let request_builder = user.goose_post(&comment_path).await?;
-                    let mut goose = user.goose_send(request_builder.form(&params), None).await?;
+                    let request_builder = user.swanling_post(&comment_path).await?;
+                    let mut swanling = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await?;
 
                     // Verify that the comment posted.
-                    match goose.response {
+                    match swanling.response {
                         Ok(response) => {
                             // Copy the headers so we have them for logging if there are errors.
                             let headers = &response.headers().clone();
@@ -315,7 +319,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                                         // be displayed to stdout if `-v` is enabled when running the load test.
                                         return user.set_failure(
                                             &format!("post_comment: no comment showed up after posting to {}", &comment_path),
-                                            &mut goose.request,
+                                            &mut swanling.request,
                                             Some(&headers),
                                             Some(&html),
                                         );
@@ -329,7 +333,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                                             "post_comment: unexpected error when posting to {}: {}",
                                             &comment_path, e
                                         ),
-                                        &mut goose.request,
+                                        &mut swanling.request,
                                         Some(&headers),
                                         None,
                                     );
@@ -344,7 +348,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                                     "post_comment: no response when posting to {}: {}",
                                     &comment_path, e
                                 ),
-                                &mut goose.request,
+                                &mut swanling.request,
                                 None,
                                 None,
                             );
@@ -356,7 +360,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                     // be displayed to stdout if `-v` is enabled when running the load test.
                     return user.set_failure(
                         &format!("post_comment: no text when loading {}: {}", &node_path, e),
-                        &mut goose.request,
+                        &mut swanling.request,
                         None,
                         None,
                     );
@@ -371,7 +375,7 @@ async fn drupal_loadtest_post_comment(user: &GooseUser) -> GooseTaskResult {
                     "post_comment: no response when loading {}: {}",
                     &node_path, e
                 ),
-                &mut goose.request,
+                &mut swanling.request,
                 None,
                 None,
             );

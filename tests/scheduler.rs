@@ -4,8 +4,8 @@ use tokio::time::{sleep, Duration};
 
 mod common;
 
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const ONE_PATH: &str = "/one";
@@ -37,8 +37,8 @@ enum TestType {
 }
 
 // Test task.
-pub async fn one_with_delay(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ONE_PATH).await?;
+pub async fn one_with_delay(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ONE_PATH).await?;
 
     // "Run out the clock" on the load test when this function runs. Sleep for
     // the total duration the test is to run plus 1 second to be sure no
@@ -49,8 +49,8 @@ pub async fn one_with_delay(user: &GooseUser) -> GooseTaskResult {
 }
 
 // Test task.
-pub async fn two_with_delay(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(TWO_PATH).await?;
+pub async fn two_with_delay(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(TWO_PATH).await?;
 
     // "Run out the clock" on the load test when this function runs. Sleep for
     // the total duration the test is to run plus 1 second to be sure no
@@ -61,22 +61,22 @@ pub async fn two_with_delay(user: &GooseUser) -> GooseTaskResult {
 }
 
 // Test task.
-pub async fn three(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(THREE_PATH).await?;
+pub async fn three(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(THREE_PATH).await?;
 
     Ok(())
 }
 
 // Used as a test_start() function, which always runs one time.
-pub async fn start_one(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(START_ONE_PATH).await?;
+pub async fn start_one(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(START_ONE_PATH).await?;
 
     Ok(())
 }
 
 // Used as a test_stop() function, which always runs one time.
-pub async fn stop_one(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(STOP_ONE_PATH).await?;
+pub async fn stop_one(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(STOP_ONE_PATH).await?;
 
     Ok(())
 }
@@ -117,7 +117,7 @@ fn common_build_configuration(
     server: &MockServer,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         common::build_configuration(
             &server,
@@ -153,7 +153,7 @@ fn common_build_configuration(
 }
 
 // Helper to confirm all variations generate appropriate results.
-fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoints: &[MockRef]) {
+fn validate_test(test_type: &TestType, scheduler: &SwanlingScheduler, mock_endpoints: &[MockRef]) {
     // START_ONE_PATH is loaded one and only one time on all variations.
     mock_endpoints[START_ONE_KEY].assert_hits(1);
 
@@ -161,19 +161,19 @@ fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoint
         TestType::TaskSets => {
             // Now validate scheduler-specific counters.
             match scheduler {
-                GooseScheduler::RoundRobin => {
+                SwanlingScheduler::RoundRobin => {
                     // We launch an equal number of each task set, so we call both endpoints
                     // an equal number of times.
                     mock_endpoints[TWO_KEY].assert_hits(mock_endpoints[ONE_KEY].hits());
                     mock_endpoints[ONE_KEY].assert_hits(USERS / 2);
                 }
-                GooseScheduler::Serial => {
+                SwanlingScheduler::Serial => {
                     // As we only launch as many users as the weight of the first task set, we only
                     // call the first endpoint, never the second endpoint.
                     mock_endpoints[ONE_KEY].assert_hits(USERS);
                     mock_endpoints[TWO_KEY].assert_hits(0);
                 }
-                GooseScheduler::Random => {
+                SwanlingScheduler::Random => {
                     // When scheduling task sets randomly, we don't know how many of each will get
                     // launched, but we do now that added together they will equal the total number
                     // of users.
@@ -186,7 +186,7 @@ fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoint
         TestType::Tasks => {
             // Now validate scheduler-specific counters.
             match scheduler {
-                GooseScheduler::RoundRobin => {
+                SwanlingScheduler::RoundRobin => {
                     // Tests are allocated round robin THREE, TWO, ONE. There's no delay
                     // in THREE, so the test runs THREE and TWO which then times things out
                     // and prevents ONE from running.
@@ -194,7 +194,7 @@ fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoint
                     mock_endpoints[TWO_KEY].assert_hits(USERS);
                     mock_endpoints[THREE_KEY].assert_hits(USERS);
                 }
-                GooseScheduler::Serial => {
+                SwanlingScheduler::Serial => {
                     // Tests are allocated sequentally THREE, TWO, ONE. There's no delay
                     // in THREE and it has a weight of 2, so the test runs THREE twice and
                     // TWO which then times things out and prevents ONE from running.
@@ -202,7 +202,7 @@ fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoint
                     mock_endpoints[TWO_KEY].assert_hits(USERS);
                     mock_endpoints[THREE_KEY].assert_hits(USERS * 2);
                 }
-                GooseScheduler::Random => {
+                SwanlingScheduler::Random => {
                     // When scheduling task sets randomly, we don't know how many of each will get
                     // launched, but we do now that added together they will equal the total number
                     // of users (THREE_KEY isn't counted as there's no delay).
@@ -219,7 +219,7 @@ fn validate_test(test_type: &TestType, scheduler: &GooseScheduler, mock_endpoint
 }
 
 // Returns the appropriate taskset, start_task and stop_task needed to build these tests.
-fn get_tasksets() -> (GooseTaskSet, GooseTaskSet, GooseTask, GooseTask) {
+fn get_tasksets() -> (SwanlingTaskSet, SwanlingTaskSet, SwanlingTask, SwanlingTask) {
     (
         taskset!("TaskSetOne")
             .register_task(task!(one_with_delay))
@@ -237,8 +237,8 @@ fn get_tasksets() -> (GooseTaskSet, GooseTaskSet, GooseTask, GooseTask) {
     )
 }
 
-// Returns a single GooseTaskSet with two GooseTasks, a start_task, and a stop_task.
-fn get_tasks() -> (GooseTaskSet, GooseTask, GooseTask) {
+// Returns a single SwanlingTaskSet with two SwanlingTasks, a start_task, and a stop_task.
+fn get_tasks() -> (SwanlingTaskSet, SwanlingTask, SwanlingTask) {
     (
         taskset!("TaskSet")
             .register_task(task!(three).set_weight(USERS * 2).unwrap())
@@ -252,7 +252,7 @@ fn get_tasks() -> (GooseTaskSet, GooseTask, GooseTask) {
 }
 
 // Helper to run all standalone tests.
-fn run_standalone_test(test_type: &TestType, scheduler: &GooseScheduler) {
+fn run_standalone_test(test_type: &TestType, scheduler: &SwanlingScheduler) {
     // Start the mock server.
     let server = MockServer::start();
 
@@ -262,13 +262,13 @@ fn run_standalone_test(test_type: &TestType, scheduler: &GooseScheduler) {
     // Build common configuration.
     let configuration = common_build_configuration(&server, None, None);
 
-    let goose_attack;
+    let swanling_attack;
     match test_type {
         TestType::TaskSets => {
             // Get the tasksets, start and stop tasks to build a load test.
             let (taskset1, taskset2, start_task, stop_task) = get_tasksets();
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(configuration)
                 .unwrap()
                 .register_taskset(taskset1)
                 .register_taskset(taskset2)
@@ -280,7 +280,7 @@ fn run_standalone_test(test_type: &TestType, scheduler: &GooseScheduler) {
             // Get the taskset, start and stop tasks to build a load test.
             let (taskset1, start_task, stop_task) = get_tasks();
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(configuration)
                 .unwrap()
                 .register_taskset(taskset1)
                 .test_start(start_task)
@@ -289,15 +289,15 @@ fn run_standalone_test(test_type: &TestType, scheduler: &GooseScheduler) {
         }
     }
 
-    // Run the Goose Attack.
-    common::run_load_test(goose_attack, None);
+    // Run the Swanling Attack.
+    common::run_load_test(swanling_attack, None);
 
     // Confirm the load test ran correctly.
     validate_test(test_type, &scheduler, &mock_endpoints);
 }
 
 // Helper to run all gaggle tests.
-fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
+fn run_gaggle_test(test_type: &TestType, scheduler: &SwanlingScheduler) {
     // Start the mock server.
     let server = MockServer::start();
 
@@ -307,13 +307,13 @@ fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
     // Build common configuration.
     let worker_configuration = common_build_configuration(&server, Some(true), None);
 
-    let goose_attack;
+    let swanling_attack;
     match test_type {
         TestType::TaskSets => {
             // Get the tasksets, start and stop tasks to build a load test.
             let (taskset1, taskset2, start_task, stop_task) = get_tasksets();
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(worker_configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset1)
                 .register_taskset(taskset2)
@@ -325,7 +325,7 @@ fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
             // Get the taskset, start and stop tasks to build a load test.
             let (taskset1, start_task, stop_task) = get_tasks();
             // Set up the common base configuration.
-            goose_attack = crate::GooseAttack::initialize_with_config(worker_configuration)
+            swanling_attack = crate::SwanlingAttack::initialize_with_config(worker_configuration)
                 .unwrap()
                 .register_taskset(taskset1)
                 .test_start(start_task)
@@ -335,19 +335,19 @@ fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
     }
 
     // Workers launched in own threads, store thread handles.
-    let worker_handles = common::launch_gaggle_workers(goose_attack, EXPECT_WORKERS);
+    let worker_handles = common::launch_gaggle_workers(swanling_attack, EXPECT_WORKERS);
 
     // Build Manager configuration.
     let manager_configuration = common_build_configuration(&server, None, Some(EXPECT_WORKERS));
 
-    let manager_goose_attack;
+    let manager_swanling_attack;
     match test_type {
         TestType::TaskSets => {
             // Get the tasksets, start and stop tasks to build a load test.
             let (taskset1, taskset2, start_task, stop_task) = get_tasksets();
             // Build the load test for the Manager.
-            manager_goose_attack =
-                crate::GooseAttack::initialize_with_config(manager_configuration)
+            manager_swanling_attack =
+                crate::SwanlingAttack::initialize_with_config(manager_configuration)
                     .unwrap()
                     .register_taskset(taskset1)
                     .register_taskset(taskset2)
@@ -359,8 +359,8 @@ fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
             // Get the taskset, start and stop tasks to build a load test.
             let (taskset1, start_task, stop_task) = get_tasks();
             // Build the load test for the Manager.
-            manager_goose_attack =
-                crate::GooseAttack::initialize_with_config(manager_configuration)
+            manager_swanling_attack =
+                crate::SwanlingAttack::initialize_with_config(manager_configuration)
                     .unwrap()
                     .register_taskset(taskset1)
                     .test_start(start_task)
@@ -369,81 +369,81 @@ fn run_gaggle_test(test_type: &TestType, scheduler: &GooseScheduler) {
         }
     }
 
-    // Run the Goose Attack.
-    common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm the load test ran correctly.
     validate_test(test_type, &scheduler, &mock_endpoints);
 }
 
 #[test]
-// Load test with multiple tasks allocating GooseTaskSets in round robin order.
+// Load test with multiple tasks allocating SwanlingTaskSets in round robin order.
 fn test_round_robin_taskset() {
-    run_standalone_test(&TestType::TaskSets, &GooseScheduler::RoundRobin);
+    run_standalone_test(&TestType::TaskSets, &SwanlingScheduler::RoundRobin);
 }
 
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Load test with multiple tasks allocating GooseTaskSets in round robin order, in
+// Load test with multiple tasks allocating SwanlingTaskSets in round robin order, in
 // Regatta mode.
 fn test_round_robin_taskset_gaggle() {
-    run_gaggle_test(&TestType::TaskSets, &GooseScheduler::RoundRobin);
+    run_gaggle_test(&TestType::TaskSets, &SwanlingScheduler::RoundRobin);
 }
 
 #[test]
-// Load test with multiple GooseTasks allocated in round robin order.
+// Load test with multiple SwanlingTasks allocated in round robin order.
 fn test_round_robin_task() {
-    run_standalone_test(&TestType::Tasks, &GooseScheduler::RoundRobin);
+    run_standalone_test(&TestType::Tasks, &SwanlingScheduler::RoundRobin);
 }
 
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Load test with multiple GooseTasks allocated in round robin order, in
+// Load test with multiple SwanlingTasks allocated in round robin order, in
 // Regatta mode.
 fn test_round_robin_task_gaggle() {
-    run_gaggle_test(&TestType::Tasks, &GooseScheduler::RoundRobin);
+    run_gaggle_test(&TestType::Tasks, &SwanlingScheduler::RoundRobin);
 }
 
 #[test]
-// Load test with multiple tasks allocating GooseTaskSets in serial order.
+// Load test with multiple tasks allocating SwanlingTaskSets in serial order.
 fn test_serial_taskset() {
-    run_standalone_test(&TestType::TaskSets, &GooseScheduler::Serial);
+    run_standalone_test(&TestType::TaskSets, &SwanlingScheduler::Serial);
 }
 
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Load test with multiple tasks allocating GooseTaskSets in serial order, in
+// Load test with multiple tasks allocating SwanlingTaskSets in serial order, in
 // Regatta mode.
 fn test_serial_taskset_gaggle() {
-    run_gaggle_test(&TestType::TaskSets, &GooseScheduler::Serial);
+    run_gaggle_test(&TestType::TaskSets, &SwanlingScheduler::Serial);
 }
 
 #[test]
-// Load test with multiple GooseTasks allocated in serial order.
+// Load test with multiple SwanlingTasks allocated in serial order.
 fn test_serial_tasks() {
-    run_standalone_test(&TestType::Tasks, &GooseScheduler::Serial);
+    run_standalone_test(&TestType::Tasks, &SwanlingScheduler::Serial);
 }
 
 #[test]
-// Load test with multiple tasks allocating GooseTaskSets in random order.
+// Load test with multiple tasks allocating SwanlingTaskSets in random order.
 fn test_random_taskset() {
-    run_standalone_test(&TestType::TaskSets, &GooseScheduler::Random);
+    run_standalone_test(&TestType::TaskSets, &SwanlingScheduler::Random);
 }
 
 #[test]
 #[cfg_attr(not(feature = "gaggle"), ignore)]
 #[serial]
-// Load test with multiple tasks allocating GooseTaskSets in random order, in
+// Load test with multiple tasks allocating SwanlingTaskSets in random order, in
 // Regatta mode.
 fn test_random_taskset_gaggle() {
-    run_gaggle_test(&TestType::TaskSets, &GooseScheduler::Random);
+    run_gaggle_test(&TestType::TaskSets, &SwanlingScheduler::Random);
 }
 
 #[test]
-// Load test with multiple tasks allocating GooseTaskSets in random order.
+// Load test with multiple tasks allocating SwanlingTaskSets in random order.
 fn test_random_tasks() {
-    run_standalone_test(&TestType::Tasks, &GooseScheduler::Random);
+    run_standalone_test(&TestType::Tasks, &SwanlingScheduler::Random);
 }

@@ -9,7 +9,7 @@ use serde::Serialize;
 
 /// The following templates are necessary to build an html-formatted summary report.
 #[derive(Debug)]
-pub struct GooseReportTemplates<'a> {
+pub struct SwanlingReportTemplates<'a> {
     pub raw_requests_template: &'a str,
     pub raw_responses_template: &'a str,
     pub co_requests_template: &'a str,
@@ -393,7 +393,7 @@ pub fn errors_template(error_rows: &str) -> String {
 }
 
 /// Build an individual error row in the html report.
-pub fn error_row(error: &metrics::GooseErrorMetricAggregate) -> String {
+pub fn error_row(error: &metrics::SwanlingErrorMetricAggregate) -> String {
     format!(
         r#"<tr>
         <td>{occurrences}</td>
@@ -409,13 +409,13 @@ pub fn build_report(
     start_time: &str,
     end_time: &str,
     host: &str,
-    templates: GooseReportTemplates,
+    templates: SwanlingReportTemplates,
 ) -> String {
     format!(
         r#"<!DOCTYPE html>
 <html>
 <head>
-    <title>Goose Attack Report</title>
+    <title>Swanling Attack Report</title>
     <style>
         .container {{
             width: 1000px;
@@ -473,7 +473,7 @@ pub fn build_report(
 </head>
 <body>
     <div class="container">
-        <h1>Goose Attack Report</h1>
+        <h1>Swanling Attack Report</h1>
 
         <div class="info">
             <p>During: <span>{start_time} - {end_time}</span></p>

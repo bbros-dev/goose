@@ -1,5 +1,5 @@
-use goose::goose::GooseResponse;
-use goose::prelude::*;
+use swanling::prelude::*;
+use swanling::swanling::SwanlingResponse;
 
 use rand::prelude::IteratorRandom;
 use rand::seq::SliceRandom;
@@ -422,7 +422,7 @@ pub fn valid_title(html: &str, title: &str) -> bool {
 
 /// Finds all local static elements on the page and loads them asynchronously.
 /// This default profile only has local assets, so we can use simple patterns.
-pub async fn load_static_elements(user: &GooseUser, html: &str) {
+pub async fn load_static_elements(user: &SwanlingUser, html: &str) {
     // Use a regular expression to find all src=<foo> in the HTML, where foo
     // is the URL to image and js assets.
     // @TODO: parse HTML5 srcset= also
@@ -450,11 +450,11 @@ pub async fn load_static_elements(user: &GooseUser, html: &str) {
 /// Validate the HTML response, confirming the expected title was returned, then load
 /// all static assets found on the page.
 pub async fn validate_and_load_static_assets(
-    user: &GooseUser,
-    mut goose: GooseResponse,
+    user: &SwanlingUser,
+    mut swanling: SwanlingResponse,
     title: &str,
-) -> GooseTaskResult {
-    match goose.response {
+) -> SwanlingTaskResult {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -462,8 +462,8 @@ pub async fn validate_and_load_static_assets(
                 Ok(html) => {
                     if !valid_title(&html, &title) {
                         return user.set_failure(
-                            &format!("{}: title not found: {}", goose.request.url, title),
-                            &mut goose.request,
+                            &format!("{}: title not found: {}", swanling.request.url, title),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -473,8 +473,8 @@ pub async fn validate_and_load_static_assets(
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -483,8 +483,8 @@ pub async fn validate_and_load_static_assets(
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -502,20 +502,20 @@ pub fn get_form_value(html: &str, name: &str) -> Option<String> {
 
 /// Anonymously load the contact form and POST feedback. The english boolean flag indicates
 /// whether to load the English form or the Spanish form.
-pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTaskResult {
+pub async fn anonymous_contact_form(user: &SwanlingUser, english: bool) -> SwanlingTaskResult {
     let contact_form_url = if english {
         "/en/contact"
     } else {
         "/es/contact"
     };
-    let mut goose = user.get(contact_form_url).await?;
+    let mut swanling = user.get(contact_form_url).await?;
 
     // We can't invoke common::validate_and_load_static_assets as while it's important
     // to validate the page and load static elements, we then need to extra form elements
     // from the HTML of the page. So we duplicate some of the logic, enhancing it for form
     // processing.
     let contact_form;
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -529,8 +529,8 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
                     };
                     if !valid_title(&html, title) {
                         return user.set_failure(
-                            &format!("{}: title not found: {}", goose.request.url, title),
-                            &mut goose.request,
+                            &format!("{}: title not found: {}", swanling.request.url, title),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -544,8 +544,8 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
                     let form_build_id = get_form_value(&html, "form_build_id");
                     if form_build_id.is_none() {
                         return user.set_failure(
-                            &format!("{}: no form_build_id on page", goose.request.url),
-                            &mut goose.request,
+                            &format!("{}: no form_build_id on page", swanling.request.url),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -565,13 +565,15 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
                         ("form_id", "contact_message_feedback_form"),
                         ("op", "Send+message"),
                     ];
-                    let request_builder = user.goose_post(contact_form_url).await?;
-                    contact_form = user.goose_send(request_builder.form(&params), None).await?;
+                    let request_builder = user.swanling_post(contact_form_url).await?;
+                    contact_form = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await?;
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -580,8 +582,8 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -614,8 +616,8 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -624,8 +626,8 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -637,13 +639,13 @@ pub async fn anonymous_contact_form(user: &GooseUser, english: bool) -> GooseTas
 
 /// Load the search page and perform a search using one word from one of the node titles
 /// on the site.
-pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
+pub async fn search(user: &SwanlingUser, english: bool) -> SwanlingTaskResult {
     let search_form_url = if english {
         "/en/search/node"
     } else {
         "/es/search/node"
     };
-    let mut goose = user.get(search_form_url).await?;
+    let mut swanling = user.get(search_form_url).await?;
 
     // We can't invoke common::validate_and_load_static_assets as while it's important
     // to validate the page and load static elements, we then need to extra form elements
@@ -651,7 +653,7 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
     // processing.
     let search_phrase;
     let mut search_form;
-    match goose.response {
+    match swanling.response {
         Ok(response) => {
             // Copy the headers so we have them for logging if there are errors.
             let headers = &response.headers().clone();
@@ -661,8 +663,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                     let title = if english { "Search" } else { "Buscar" };
                     if !valid_title(&html, title) {
                         return user.set_failure(
-                            &format!("{}: title not found: {}", goose.request.url, title),
-                            &mut goose.request,
+                            &format!("{}: title not found: {}", swanling.request.url, title),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -676,8 +678,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                     let form_build_id = get_form_value(&html, "form_build_id");
                     if form_build_id.is_none() {
                         return user.set_failure(
-                            &format!("{}: no form_build_id on page", goose.request.url),
-                            &mut goose.request,
+                            &format!("{}: no form_build_id on page", swanling.request.url),
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -694,8 +696,10 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                         ("form_id", "search_form"),
                         ("op", "Search"),
                     ];
-                    let request_builder = user.goose_post(search_form_url).await?;
-                    search_form = user.goose_send(request_builder.form(&params), None).await?;
+                    let request_builder = user.swanling_post(search_form_url).await?;
+                    search_form = user
+                        .swanling_send(request_builder.form(&params), None)
+                        .await?;
 
                     // A successful search is redirected.
                     if !search_form.request.redirected {
@@ -709,8 +713,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -719,8 +723,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );
@@ -737,9 +741,9 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                         return user.set_failure(
                             &format!(
                                 "{}: search terms ({}) not on page",
-                                goose.request.url, &search_phrase
+                                swanling.request.url, &search_phrase
                             ),
-                            &mut goose.request,
+                            &mut swanling.request,
                             Some(&headers),
                             Some(&html),
                         );
@@ -750,8 +754,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
                 }
                 Err(e) => {
                     return user.set_failure(
-                        &format!("{}: failed to parse page: {}", goose.request.url, e),
-                        &mut goose.request,
+                        &format!("{}: failed to parse page: {}", swanling.request.url, e),
+                        &mut swanling.request,
                         Some(&headers),
                         None,
                     );
@@ -760,8 +764,8 @@ pub async fn search(user: &GooseUser, english: bool) -> GooseTaskResult {
         }
         Err(e) => {
             return user.set_failure(
-                &format!("{}: no response from server: {}", goose.request.url, e),
-                &mut goose.request,
+                &format!("{}: no response from server: {}", swanling.request.url, e),
+                &mut swanling.request,
                 None,
                 None,
             );

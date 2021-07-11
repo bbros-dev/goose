@@ -3,9 +3,9 @@ use serial_test::serial;
 
 mod common;
 
-use goose::goose::GooseTaskSet;
-use goose::prelude::*;
-use goose::GooseConfiguration;
+use swanling::prelude::*;
+use swanling::swanling::SwanlingTaskSet;
+use swanling::SwanlingConfiguration;
 
 // Paths used in load tests performed during these tests.
 const INDEX_PATH: &str = "/";
@@ -43,30 +43,30 @@ enum TestType {
 }
 
 // Test task.
-pub async fn get_index(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(INDEX_PATH).await?;
+pub async fn get_index(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(INDEX_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_about(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(ABOUT_PATH).await?;
+pub async fn get_about(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(ABOUT_PATH).await?;
     Ok(())
 }
 
 // Test task.
-pub async fn get_redirect(user: &GooseUser) -> GooseTaskResult {
+pub async fn get_redirect(user: &SwanlingUser) -> SwanlingTaskResult {
     // Load REDIRECT_PATH and follow redirects to ABOUT_PATH.
-    let mut goose = user.get(REDIRECT_PATH).await?;
+    let mut swanling = user.get(REDIRECT_PATH).await?;
 
-    if let Ok(r) = goose.response {
+    if let Ok(r) = swanling.response {
         match r.text().await {
             Ok(html) => {
                 // Confirm that we followed redirects and loaded the about page.
                 if !html.contains("about page") {
                     return user.set_failure(
                         "about page body wrong",
-                        &mut goose.request,
+                        &mut swanling.request,
                         None,
                         None,
                     );
@@ -75,7 +75,7 @@ pub async fn get_redirect(user: &GooseUser) -> GooseTaskResult {
             Err(e) => {
                 return user.set_failure(
                     format!("unexpected error parsing about page: {}", e).as_str(),
-                    &mut goose.request,
+                    &mut swanling.request,
                     None,
                     None,
                 );
@@ -86,8 +86,8 @@ pub async fn get_redirect(user: &GooseUser) -> GooseTaskResult {
 }
 
 // Test task.
-pub async fn get_domain_redirect(user: &GooseUser) -> GooseTaskResult {
-    let _goose = user.get(REDIRECT_PATH).await?;
+pub async fn get_domain_redirect(user: &SwanlingUser) -> SwanlingTaskResult {
+    let _swanling = user.get(REDIRECT_PATH).await?;
     Ok(())
 }
 
@@ -168,7 +168,7 @@ fn common_build_configuration(
     sticky: bool,
     worker: Option<bool>,
     manager: Option<usize>,
-) -> GooseConfiguration {
+) -> SwanlingConfiguration {
     if let Some(expect_workers) = manager {
         if sticky {
             common::build_configuration(
@@ -255,14 +255,14 @@ fn validate_redirect(test_type: &TestType, mock_endpoints: &[MockRef]) {
             assert!(mock_endpoints[SERVER1_REDIRECT_KEY].hits() > 0);
             assert!(mock_endpoints[SERVER1_ABOUT_KEY].hits() > 0);
 
-            // GooseUsers are redirected to Server2 correctly.
+            // SwanlingUsers are redirected to Server2 correctly.
             assert!(mock_endpoints[SERVER2_INDEX_KEY].hits() > 0);
 
-            // GooseUsers do not stick to Server2 and load the other page.
+            // SwanlingUsers do not stick to Server2 and load the other page.
             mock_endpoints[SERVER2_ABOUT_KEY].assert_hits(0);
         }
         TestType::Sticky => {
-            // Each GooseUser loads the redirect on Server1 one time.
+            // Each SwanlingUser loads the redirect on Server1 one time.
             println!(
                 "SERVER1_REDIRECT: {}, USERS: {}",
                 mock_endpoints[SERVER1_REDIRECT_KEY].hits(),
@@ -284,7 +284,7 @@ fn validate_redirect(test_type: &TestType, mock_endpoints: &[MockRef]) {
             mock_endpoints[SERVER1_INDEX_KEY].assert_hits(0);
             mock_endpoints[SERVER1_ABOUT_KEY].assert_hits(0);
 
-            // All GooseUsers go on to load pages on Server2.
+            // All SwanlingUsers go on to load pages on Server2.
             assert!(mock_endpoints[SERVER2_INDEX_KEY].hits() > 0);
             assert!(mock_endpoints[SERVER2_ABOUT_KEY].hits() > 0);
         }
@@ -292,7 +292,7 @@ fn validate_redirect(test_type: &TestType, mock_endpoints: &[MockRef]) {
 }
 
 // Returns the appropriate taskset needed to build these tests.
-fn get_tasks(test_type: &TestType) -> GooseTaskSet {
+fn get_tasks(test_type: &TestType) -> SwanlingTaskSet {
     match test_type {
         TestType::Chain => {
             taskset!("LoadTest")
@@ -330,7 +330,7 @@ fn run_standalone_test(test_type: TestType) {
     };
     let configuration = common_build_configuration(&server1, sticky, None, None);
 
-    // Run the Goose Attack.
+    // Run the Swanling Attack.
     common::run_load_test(
         common::build_load_test(configuration, &get_tasks(&test_type), None, None),
         None,
@@ -357,22 +357,22 @@ fn run_gaggle_test(test_type: TestType) {
     let worker_configuration = common_build_configuration(&server1, sticky, Some(true), None);
 
     // Build the load test for the Workers.
-    let worker_goose_attack =
+    let worker_swanling_attack =
         common::build_load_test(worker_configuration, &get_tasks(&test_type), None, None);
 
     // Workers launched in own threads, store thread handles.
-    let worker_handles = common::launch_gaggle_workers(worker_goose_attack, EXPECT_WORKERS);
+    let worker_handles = common::launch_gaggle_workers(worker_swanling_attack, EXPECT_WORKERS);
 
     // Build Manager configuration.
     let manager_configuration =
         common_build_configuration(&server1, sticky, None, Some(EXPECT_WORKERS));
 
     // Build the load test for the Workers.
-    let manager_goose_attack =
+    let manager_swanling_attack =
         common::build_load_test(manager_configuration, &get_tasks(&test_type), None, None);
 
-    // Run the Goose Attack.
-    common::run_load_test(manager_goose_attack, Some(worker_handles));
+    // Run the Swanling Attack.
+    common::run_load_test(manager_swanling_attack, Some(worker_handles));
 
     // Confirm that the load test was actually redirected.
     validate_redirect(&test_type, &mock_endpoints);
