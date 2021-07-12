@@ -1,7 +1,7 @@
 [book]
 title = "The Swanling Book"
 authors = ["Jeremy Andrews"]
-description = "HTTP Load testing framework. Inspired by Locust and Drill. Implemented with Rust."
+description = "HTTP Load testing framework. Inspired by Locust and Taurus. Implemented with Rust."
 language = "en"
 
 [rust]
