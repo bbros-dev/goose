@@ -14,7 +14,7 @@ metadata:
 spec:
   containers:
     - command:
-        - /usr/local/bin/gti
+        - /usr/local/bin/sti
         - --worker
         - --manager-host gaggle.int
         - --log-file /001-swanling.log
@@ -28,7 +28,7 @@ spec:
           value: podman
         - name: HOSTNAME
           value: 001-swanling
-      image: localhost/gti:latest
+      image: localhost/sti:latest
       name: 001-swanling.int
       ports:
         - containerPort: 5000
@@ -52,7 +52,7 @@ spec:
           name: home-hedge-src-swanling-examples-the-internet-report-001-swanling.html
       workingDir: /
     - command:
-        - /usr/local/bin/gti
+        - /usr/local/bin/sti
         - --worker
         - --manager-host gaggle.int
         - --log-file /002-swanling.log
@@ -66,7 +66,7 @@ spec:
           value: podman
         - name: HOSTNAME
           value: 002-swanling
-      image: localhost/gti:latest
+      image: localhost/sti:latest
       name: 002-swanling.int
       resources: {}
       securityContext:
@@ -133,7 +133,7 @@ spec:
         seLinuxOptions: {}
       workingDir: /app
     - command:
-        - /usr/local/bin/gti
+        - /usr/local/bin/sti
         - --manager
         - --expect-workers 2
         - --host http://the-internet.int:5000
@@ -148,7 +148,7 @@ spec:
           value: podman
         - name: HOSTNAME
           value: gaggle
-      image: localhost/gti:latest
+      image: localhost/sti:latest
       name: gaggle.int
       resources: {}
       securityContext:

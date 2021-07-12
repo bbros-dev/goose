@@ -24,7 +24,7 @@ RUN echo "deb http://ftp.debian.org/debian buster-backports main" | tee /etc/apt
 # Reference:
 # - https://github.com/rust-lang/cargo/issues/2644
 #
-RUN echo "fn main() {println!(\"if you see this, the build broke\")}" > /usr/src/yelgeb/gti.rs
+RUN echo "fn main() {println!(\"if you see this, the build broke\")}" > /usr/src/yelgeb/sti.rs
 
 ## Cache Build Dependencies
 #
@@ -37,16 +37,16 @@ RUN cargo build --release
 # With all dependencies built and cached we can build the application without
 # having to wait for all dependencies to be rebuilt on each change.
 #
-RUN rm -f target/release/deps/gti*
-COPY gti.rs /usr/src/yelgeb/gti.rs
+RUN rm -f target/release/deps/sti*
+COPY sti.rs /usr/src/yelgeb/sti.rs
 RUN cargo build --release
 
-RUN chown yelgeb:yelgeb /usr/src/yelgeb/target/release/gti
-RUN chmod a+x /usr/src/yelgeb/target/release/gti
+RUN chown yelgeb:yelgeb /usr/src/yelgeb/target/release/sti
+RUN chmod a+x /usr/src/yelgeb/target/release/sti
 
 FROM scratch
 
-COPY --from=debian-build /usr/src/yelgeb/target/release/gti /usr/local/bin/gti
+COPY --from=debian-build /usr/src/yelgeb/target/release/sti /usr/local/bin/sti
 # Chore: Bring along linked libraries.
 COPY --from=debian-build /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib/x86_64-linux-gnu/libssl.so.1.1
 COPY --from=debian-build /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
@@ -65,6 +65,6 @@ COPY --from=debian-build /lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 
-ENTRYPOINT ["/usr/local/bin/gti"]
+ENTRYPOINT ["/usr/local/bin/sti"]
 
 CMD ["--list"]

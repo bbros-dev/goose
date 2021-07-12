@@ -33,11 +33,11 @@ items:
     spec:
       containers:
         - command:
-            - /usr/local/bin/gti --worker --manager-host 172.33.0.5 --log-file /001-swanling.log --report-file /001-swanling.html
+            - /usr/local/bin/sti --worker --manager-host 172.33.0.5 --log-file /001-swanling.log --report-file /001-swanling.html
           env:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-          image: gti
+          image: sti
           name: 001-swanling
           resources: {}
           volumeMounts:
@@ -82,11 +82,11 @@ items:
     spec:
       containers:
         - command:
-            - /usr/local/bin/gti --worker --manager-host 172.33.0.5 --log-file /002-swanling.log --report-file /002-swanling.html
+            - /usr/local/bin/sti --worker --manager-host 172.33.0.5 --log-file /002-swanling.log --report-file /002-swanling.html
           env:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-          image: gti
+          image: sti
           name: 002-swanling
           resources: {}
           volumeMounts:
@@ -117,13 +117,13 @@ items:
     spec:
       containers:
         - command:
-            - /usr/local/bin/gti --manager --expect-workers --host http://172.33.0.2:5000 --log-file /gaggle.log --report-file /gaggle.html
+            - /usr/local/bin/sti --manager --expect-workers --host http://172.33.0.2:5000 --log-file /gaggle.log --report-file /gaggle.html
             - sleep 3s
-            - /usr/local/bin/gti --worker --manager-host 172.33.0.5 --log-file /003-swanling.log --report-file /003-swanling.html
+            - /usr/local/bin/sti --worker --manager-host 172.33.0.5 --log-file /003-swanling.log --report-file /003-swanling.html
           env:
             - name: PATH
               value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-          image: gti
+          image: sti
           name: gaggle
           resources: {}
           volumeMounts:

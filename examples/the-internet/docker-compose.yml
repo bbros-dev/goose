@@ -14,16 +14,16 @@ services:
       int:
         - the-internet
   gaggle.int:
-    image: gti
+    image: sti
     container_name: gaggle.int
     hostname: gaggle
     domainname: int
     depends_on:
       - the-internet
     entrypoint:
-      - /usr/local/bin/gti --manager --expect-workers --host http://the-internet.int:5000 --log-file /gaggle.log --report-file /gaggle.html
+      - /usr/local/bin/sti --manager --expect-workers --host http://the-internet.int:5000 --log-file /gaggle.log --report-file /gaggle.html
       - sleep 3s
-      - /usr/local/bin/gti --worker --manager-host gaggle.int --log-file /003-swanling.log --report-file /003-swanling.html
+      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /003-swanling.log --report-file /003-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure
@@ -36,14 +36,14 @@ services:
       int:
         - gaggle
   001-swanling.int:
-    image: gti
+    image: sti
     container_name: 001-swanling.int
     hostname: 001-swanling
     domainname: int
     depends_on:
       - gaggle
     entrypoint:
-      - /usr/local/bin/gti --worker --manager-host gaggle.int --log-file /001-swanling.log --report-file /001-swanling.html
+      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /001-swanling.log --report-file /001-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure
@@ -54,14 +54,14 @@ services:
       int:
         - 001-swanling
   002-swanling.int:
-    image: gti
+    image: sti
     container_name: 002-swanling.int
     hostname: 002-swanling
     domainname: int
     depends_on:
       - 001-swanling
     entrypoint:
-      - /usr/local/bin/gti --worker --manager-host gaggle.int --log-file /002-swanling.log --report-file /002-swanling.html
+      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /002-swanling.log --report-file /002-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure
