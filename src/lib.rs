@@ -1,11 +1,9 @@
 //! # Swanling
 //!
-//! Have you ever been attacked by a swanling?
-//!
 //! Swanling is a load testing framework inspired by [Locust](https://locust.io/).
 //! User behavior is defined with standard Rust code.
 //!
-//! Swanling load tests, called Swanling Attacks, are built by creating an application
+//! Swanling load tests, called Swanling regattas, are built by creating an application
 //! with Cargo, and declaring a dependency on the Swanling library.
 //!
 //! Swanling uses [`reqwest`](https://docs.rs/reqwest/) to provide a convenient HTTP
@@ -4549,7 +4547,7 @@ mod test {
         let expect_workers: usize = 5;
         let manager_bind_host = "127.0.0.1".to_string();
         let manager_bind_port: usize = 1221;
-        let manager_host = "127.0.0.1".to_string();
+        let manager_host = "localhost".to_string();
         let manager_port: usize = 1221;
 
         let swanling_attack = SwanlingAttack::initialize()

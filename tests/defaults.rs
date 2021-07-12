@@ -122,7 +122,7 @@ fn validate_test(
     assert!(swanling_metrics.duration == RUN_TIME);
 
     // Be sure there were no more requests made than the throttle should allow.
-    // In the case of a gaggle, there's multiple processes running with the same
+    // In the case of a regatta, there's multiple processes running with the same
     // throttle.
     let number_of_processes = requests_files.len();
     assert!(metrics_lines <= (RUN_TIME + 1) * THROTTLE_REQUESTS * number_of_processes);
@@ -213,13 +213,13 @@ fn test_defaults() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Configure load test with set_default, run as Regatta.
-fn test_defaults_gaggle() {
+fn test_defaults_regatta() {
     // Multiple tests run together, so set a unique name.
-    let request_log = "gaggle-defaults".to_string() + REQUEST_LOG;
-    let debug_log = "gaggle-defaults".to_string() + DEBUG_LOG;
+    let request_log = "regatta-defaults".to_string() + REQUEST_LOG;
+    let debug_log = "regatta-defaults".to_string() + DEBUG_LOG;
 
     // Be sure there's no files left over from an earlier test.
     for i in 0..EXPECT_WORKERS {
@@ -405,12 +405,12 @@ fn test_no_defaults() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Configure load test with run time options (not with defaults), run as Regatta.
-fn test_no_defaults_gaggle() {
-    let requests_file = "gaggle-nodefaults".to_string() + REQUEST_LOG;
-    let debug_file = "gaggle-nodefaults".to_string() + DEBUG_LOG;
+fn test_no_defaults_regatta() {
+    let requests_file = "regatta-nodefaults".to_string() + REQUEST_LOG;
+    let debug_file = "regatta-nodefaults".to_string() + DEBUG_LOG;
 
     // Be sure there's no files left over from an earlier test.
     for i in 0..EXPECT_WORKERS {
