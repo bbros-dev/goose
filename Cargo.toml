@@ -1,15 +1,23 @@
 [package]
 name = "swanling"
-version = "0.0.0"
-authors = ["Begley Brothers Inc <begleybrothers@gmail.com>"]
+# When releasing to crates.io:
+# - Remove path dependencies
+# - Update html_root_url.
+# - Update doc url
+#   - Cargo.toml
+#   - README.md
+# - Update CHANGELOG.md.
+# - Create "vX.X.X" git tag.
+version = "0.1.0-dev"
+authors = ["Begley Brothers Inc <begley.brothers@gmail.com>"]
 edition = "2018"
-description = "A load testing and benchmarking framework inspired by Locust and Drill."
+description = "HTTP loadtest and benchmark framework inspired by Locust and Taurus."
 homepage = "https://swanling.io"
 documentation = "https://swanling.io"
 repository = "https://github.com/begleybrothers/swanling"
 readme = "README.md"
-categories = ["Simulation"]
-keywords = ["loadtest", "benchmark", "web", "microservice", "framework", "tool"]
+categories = ["asynchronous", "simulation"]
+keywords = ["loadtest", "benchmark", "web", "microservice", "framework"]
 license = "Apache-2.0"
 
 [dependencies]
@@ -55,7 +63,7 @@ nng = { version = "1.0", optional = true }
 
 [features]
 default = ["reqwest/default-tls"]
-gaggle = ["nng"]
+regatta = ["nng"]
 rustls-tls = ["reqwest/rustls-tls", "tokio-tungstenite/rustls-tls"]
 
 [build-dependencies]
