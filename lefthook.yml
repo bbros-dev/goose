@@ -1,0 +1,60 @@
+# EXAMPLE USAGE
+# Refer for explanation to following link:
+# https://github.com/Arkweid/lefthook/blob/master/docs/full_guide.md
+#
+# pre-push:
+#   commands:
+#     packages-audit:
+#       tags: frontend security
+#       run: yarn audit
+#     gems-audit:
+#       tags: backend security
+#       run: bundle audit
+#
+# post-push:
+#   scripts:
+#     # Validate commands can inspect current state - expect S3 bucket
+#     # Rather run validate in the context of Atlantis readiness checks.
+#     "terragrunt_validate":
+#       runner: bash
+#     "terraform_validate":
+#       runner: bash
+#
+
+# pre-commit:
+#   parallel: false
+#   scripts:
+#     "cargo_spellcheck":
+#       runner: bash
+#     "cargo_docs":
+#       runner: bash
+#     "mdbook_docs":
+#       runner: bash
+#     "paths_files":
+#       runner: bash
+
+#   commands:
+#     eslint:
+#       glob: "*.{js,ts}"
+#       run: yarn eslint {staged_files}
+#     rubocop:
+#       tags: backend style
+#       glob: "*.rb"
+#       exclude: "application.rb|routes.rb"
+#       run: bundle exec rubocop --force-exclusion {all_files}
+#     govet:
+#       tags: backend style
+#       files: git ls-files -m
+#       glob: "*.go"
+#       run: go vet {files}
+#   scripts:
+#     "hello.js":
+#       runner: node
+#     "any.go":
+#       runner: go run
+
+# pre-push:
+#   parallel: false
+#   scripts:
+#     "git_subrepos":
+#       runner: bash
