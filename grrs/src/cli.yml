@@ -1,0 +1,19 @@
+name: grrs
+version: "1.0"
+author: Begley Brothers Inc. <begley.brothers@gmail.com>
+about: HTTP load-test and benchmark framework.
+args:
+  - path:
+      help: Sets a custom config file
+      required: true
+      index: 2
+      takes_value: false
+  - pattern:
+      help: Sets a custom config file
+      required: true
+      index: 1
+      takes_value: false
+  - verbose:
+      short: v
+      multiple: true
+      help: Sets the level of output verbosity
