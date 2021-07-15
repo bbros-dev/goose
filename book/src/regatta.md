@@ -32,3 +32,8 @@ Using those assumptions, Swanling provides several features that ease configurat
 - (   4) [raft-rs (2)](https://github.com/simple-raft-rs/raft-rs)
 - ( 183) [riteraft](https://github.com/ritelabs/riteraft)
 - (  19) [Replicated State Machine](https://github.com/opaugam/rsm)
+
+<!--
+References
+- https://www.alexgarrett.tech/blog/article/observer-pattern-in-rust/
+- https://github.com/najamelan/pharos/tree/master -->

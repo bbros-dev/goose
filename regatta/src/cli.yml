@@ -1,4 +1,4 @@
-name: grrs
+name: regatta
 version: "1.0"
 author: Begley Brothers Inc. <begley.brothers@gmail.com>
 about: HTTP load-test and benchmark framework.

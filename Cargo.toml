@@ -20,6 +20,9 @@ categories = ["asynchronous", "simulation"]
 keywords = ["loadtest", "benchmark", "web", "microservice", "framework"]
 license = "Apache-2.0"
 
+[workspace]
+members = ["regatta"]
+
 [dependencies]
 async-trait = "0.1"
 chrono = "0.4"

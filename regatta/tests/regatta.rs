@@ -6,7 +6,7 @@ use tempfile::NamedTempFile;
 
 #[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("grrs")?;
+    let mut cmd = Command::cargo_bin("regatta")?;
 
     cmd.arg("foobar").arg("test/file/doesnt/exist");
     cmd.assert()
@@ -21,19 +21,19 @@ fn find_content_in_file() -> Result<(), Box<dyn std::error::Error>> {
     let mut file = NamedTempFile::new()?;
     writeln!(file, "A test\nActual content\nMore content\nAnother test")?;
 
-    let mut cmd = Command::cargo_bin("grrs")?;
+    let mut cmd = Command::cargo_bin("regatta")?;
     cmd.arg("test").arg(file.path());
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("test\nAnother test"));
 
     Ok(())
-}#[test]
+}
+#[test]
 fn find_empty_str_in_file() -> Result<(), Box<dyn std::error::Error>> {
     let mut file = NamedTempFile::new()?;
     writeln!(file, "A test\nActual content\nMore content\nAnother test")?;
-
-    let mut cmd = Command::cargo_bin("grrs")?;
+    let mut cmd = Command::cargo_bin("regatta")?;
     cmd.arg("").arg(file.path());
     cmd.assert()
         .failure()
