@@ -10,7 +10,8 @@ use std::io::{self};
 use std::string::ToString;
 
 use std::{thread, time};
-use tokio::time::sleep;
+
+use tokio::time::{sleep, Duration};
 
 use thiserror::Error;
 
@@ -81,7 +82,8 @@ pub async fn run() -> Result<(), anyhow::Error> {
 
     let pb = setup_progress_spinner()?;
 
-    thread::sleep(time::Duration::from_secs(5));
+    // Tokio sleep
+    sleep(Duration::from_millis(5_000)).await;
 
     find_matches(&content, &args.pattern, handle).with_context(|| {
         format!(
