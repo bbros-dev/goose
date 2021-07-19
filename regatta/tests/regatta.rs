@@ -11,7 +11,7 @@ fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("foobar").arg("test/file/doesnt/exist");
     cmd.assert()
         .failure()
-        .stderr(predicate::str::contains("No such file or directory"));
+        .stderr(predicate::str::contains("Error: could not read file `\"test/file/doesnt/exist\"`"));
 
     Ok(())
 }

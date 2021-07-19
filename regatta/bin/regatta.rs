@@ -45,7 +45,7 @@ async fn main() -> Result<(), Error> {
     let signals_task = tokio::spawn(handle_signals(signals));
 
     // Execute your main program logic
-    regatta::run()?;
+    regatta::run().await?;
 
     // Terminate the signal stream.
     handle.close();

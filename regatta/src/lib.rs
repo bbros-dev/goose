@@ -10,6 +10,7 @@ use std::io::{self};
 use std::string::ToString;
 
 use std::{thread, time};
+use tokio::time::sleep;
 
 use thiserror::Error;
 
@@ -68,16 +69,17 @@ impl CliArgs {
 }
 
 // Run the CLI code. This is called by main()
-pub fn run() -> Result<(), anyhow::Error> {
+pub async fn run() -> Result<(), anyhow::Error> {
     env_logger::init();
     let args = CliArgs::new()?;
 
     let stdout = io::stdout();
     let handle = io::BufWriter::new(stdout.lock());
-    let content = std::fs::read_to_string(&args.path)
-        .with_context(|| format!("could not read file `{:?}`", &args.path))?;
+    let content = tokio::fs::read_to_string(&args.path)
+        .await
+        .map_err(|e| anyhow!("could not read file `{:?}`", &args.path))?;
 
-    let pb  = setup_progress_spinner()?;
+    let pb = setup_progress_spinner()?;
 
     thread::sleep(time::Duration::from_secs(5));
 
@@ -89,7 +91,7 @@ pub fn run() -> Result<(), anyhow::Error> {
     })?;
 
     // Mark the progress bar as finished.
-    pb.finish();
+    pb.finish_with_message("Done.");
     Ok(())
 }
 
@@ -136,8 +138,7 @@ pub fn find_matches(
 ) -> Result<(), anyhow::Error> {
     for line in content.lines() {
         if line.contains(pattern) {
-            writeln!(writer, "{}", line)
-                .with_context(|| format!("Writing match result to stdout: {}", line))?;
+            writeln!(writer, "{}", line)?;
         }
     }
     Ok(())
