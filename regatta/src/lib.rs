@@ -77,7 +77,7 @@ pub fn run() -> Result<(), anyhow::Error> {
     let content = std::fs::read_to_string(&args.path)
         .with_context(|| format!("could not read file `{:?}`", &args.path))?;
 
-    setup_progress_spinner();
+    let pb  = setup_progress_spinner()?;
 
     thread::sleep(time::Duration::from_secs(5));
 
@@ -86,10 +86,14 @@ pub fn run() -> Result<(), anyhow::Error> {
             "Unable to find pattern {} in file {}",
             &args.pattern, &args.path
         )
-    })
+    })?;
+
+    // Mark the progress bar as finished.
+    pb.finish();
+    Ok(())
 }
 
-fn setup_progress_spinner() {
+fn setup_progress_spinner() -> Result<indicatif::ProgressBar, anyhow::Error> {
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(120);
     pb.set_style(
@@ -108,6 +112,7 @@ fn setup_progress_spinner() {
             .template("{spinner:.white} {msg}"),
     );
     pb.set_message("Inspecting...");
+    Ok(pb)
 }
 
 #[cfg(test)]
