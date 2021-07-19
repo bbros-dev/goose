@@ -29,6 +29,7 @@ fn find_content_in_file() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
 #[test]
 fn find_empty_str_in_file() -> Result<(), Box<dyn std::error::Error>> {
     let mut file = NamedTempFile::new()?;

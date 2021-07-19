@@ -8,7 +8,15 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::ffi::OsString;
 use std::io::{self};
 use std::string::ToString;
+
+use std::{thread, time};
+
 use thiserror::Error;
+
+// A succinct and useful guide to custom error handling:
+// https://kazlauskas.me/entries/errors.html
+// less succinct:
+// http://www.sheshbabu.com/posts/rust-error-handling/
 
 // An advantage of Rust is strongly typed applications.
 // To make that a reality, have an intermediate step between the matching
@@ -46,8 +54,10 @@ impl CliArgs {
             .expect("This can't be None, it is required.");
         // Validate inputs
         let valid_pattern = match pattern.is_empty() {
-            true => { bail!("Invalid pattern.") } ,
-            false => {pattern},
+            true => {
+                bail!("Invalid pattern.")
+            }
+            false => pattern,
         };
         Ok(CliArgs {
             path: path.to_string(),
@@ -68,6 +78,8 @@ pub fn run() -> Result<(), anyhow::Error> {
         .with_context(|| format!("could not read file `{:?}`", &args.path))?;
 
     setup_progress_spinner();
+
+    thread::sleep(time::Duration::from_secs(5));
 
     find_matches(&content, &args.pattern, handle).with_context(|| {
         format!(
