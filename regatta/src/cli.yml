@@ -3,6 +3,13 @@ version: "1.0"
 author: Begley Brothers Inc. <begley.brothers@gmail.com>
 about: HTTP load-test and benchmark framework.
 args:
+  - config:
+      short: c
+      long: config
+      value_name: FILE
+      help: Full path to a configuration file (YAML format)
+      required: false
+      takes_value: true
   - path:
       help: Sets a custom config file
       required: true

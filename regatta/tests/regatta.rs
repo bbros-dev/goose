@@ -5,6 +5,23 @@ use std::process::Command; // Run programs
 use tempfile::NamedTempFile;
 
 #[test]
+fn config_file_absent() -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = NamedTempFile::new()?;
+    writeln!(file, "A test\nActual content\nMore content\nAnother test")?;
+
+    let mut cmd = Command::cargo_bin("regatta")?;
+
+    cmd.arg("content")
+       .arg(file.path())
+       .arg("-c")
+       .arg("/over/the/rainbow");
+    cmd.assert()
+       .success();
+
+    Ok(())
+}
+
+#[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("regatta")?;
 

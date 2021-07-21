@@ -4,10 +4,13 @@ extern crate clap_verbosity_flag;
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::{App, Arg};
+// use config::*;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::collections::HashMap;
 use std::ffi::OsString;
 use std::io::{self};
 use std::string::ToString;
+use std::sync::RwLock;
 
 use std::{thread, time};
 
@@ -27,12 +30,13 @@ use thiserror::Error;
 // This isolates parsing logic, and the compiler helps everywhere else.
 #[derive(Debug, PartialEq)]
 pub struct CliArgs {
+    config_file: String,
     path: String,
     pattern: String,
     version: String,
 }
 
-// This is what structopt does.
+// This Struct is what structopt does.
 // It is done directly with clap to use the clap YAML file.
 // This pattern is extended from:
 // https://www.fpcomplete.com/rust/command-line-parsing-clap/
@@ -48,6 +52,15 @@ impl CliArgs {
         // CLI arguments
         let yaml = load_yaml!("cli.yml");
         let matches = App::from_yaml(yaml).get_matches_from_safe(args)?;
+
+        let cfg_file;
+        if matches.is_present("config") {
+            cfg_file = matches
+                .value_of("config")
+                .expect("This can't be None, it is present.");
+        } else {
+            cfg_file = "";
+        }
         let path = matches
             .value_of("path")
             .expect("This can't be None, it is required.");
@@ -62,12 +75,17 @@ impl CliArgs {
             false => pattern,
         };
         Ok(CliArgs {
+            config_file: cfg_file.to_string(),
             path: path.to_string(),
             pattern: valid_pattern.to_string(),
             version: crate_version!().to_string(),
         })
     }
 }
+
+// lazy_static! {
+//     static ref SETTINGS: RwLock<Config> = RwLock::new(Config::default());
+// }
 
 // Run the CLI code. This is called by main()
 pub async fn run() -> Result<(), anyhow::Error> {
@@ -76,6 +94,28 @@ pub async fn run() -> Result<(), anyhow::Error> {
 
     let stdout = io::stdout();
     let handle = io::BufWriter::new(stdout.lock());
+
+    // Set Regatta defaults.
+    let mut settings = config::Config::default();
+    settings.set_default("port", 5000)
+            .unwrap()
+            .set_default("index", 0)
+            .unwrap()
+            .set_default("vcr_file","")
+            .unwrap();
+
+    // When present, add in CliArgs config_file
+    if std::path::Path::new(&args.config_file).exists() {
+        settings
+            .merge(config::File::with_name(&args.config_file)).unwrap()
+            // Add in settings from the environment (with a prefix of SWANLING)
+            // e.g. `SWANLING_DEBUG=1 ./target/regatta` sets the `debug` key
+            .merge(config::Environment::with_prefix("SWANLING")).unwrap();
+    }
+    // Print out our settings (as a HashMap)
+    println!("{:?}",
+             settings.try_into::<HashMap<String, String>>().unwrap());
+
     let content = tokio::fs::read_to_string(&args.path)
         .await
         .map_err(|e| anyhow!("could not read file `{:?}`", &args.path))?;
