@@ -13,37 +13,37 @@ services:
     networks:
       int:
         - the-internet
-  gaggle.int:
+  regatta.int:
     image: sti
-    container_name: gaggle.int
-    hostname: gaggle
+    container_name: regatta.int
+    hostname: regatta
     domainname: int
     depends_on:
       - the-internet
     entrypoint:
-      - /usr/local/bin/sti --manager --expect-workers --host http://the-internet.int:5000 --log-file /gaggle.log --report-file /gaggle.html
+      - /usr/local/bin/sti --manager --expect-workers --host http://the-internet.int:5000 --log-file /regatta.log --report-file /regatta.html
       - sleep 3s
-      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /003-swanling.log --report-file /003-swanling.html
+      - /usr/local/bin/sti --worker --manager-host regatta.int --log-file /003-swanling.log --report-file /003-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure
     volumes:
-      - ./log/gaggle.log:/gaggle.log
-      - ./report/gaggle.html:/gaggle.html
+      - ./log/regatta.log:/regatta.log
+      - ./report/regatta.html:/regatta.html
       - ./log/003-swanling.log:/003-swanling.log
       - ./report/003-swanling.html:/003-swanling.html
     networks:
       int:
-        - gaggle
+        - regatta
   001-swanling.int:
     image: sti
     container_name: 001-swanling.int
     hostname: 001-swanling
     domainname: int
     depends_on:
-      - gaggle
+      - regatta
     entrypoint:
-      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /001-swanling.log --report-file /001-swanling.html
+      - /usr/local/bin/sti --worker --manager-host regatta.int --log-file /001-swanling.log --report-file /001-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure
@@ -61,7 +61,7 @@ services:
     depends_on:
       - 001-swanling
     entrypoint:
-      - /usr/local/bin/sti --worker --manager-host gaggle.int --log-file /002-swanling.log --report-file /002-swanling.html
+      - /usr/local/bin/sti --worker --manager-host regatta.int --log-file /002-swanling.log --report-file /002-swanling.html
     environment:
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
     restart: on-failure

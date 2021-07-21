@@ -16,7 +16,7 @@ spec:
     - command:
         - /usr/local/bin/sti
         - --worker
-        - --manager-host gaggle.int
+        - --manager-host regatta.int
         - --log-file /001-swanling.log
         - --report-file /001-swanling.html
       env:
@@ -54,7 +54,7 @@ spec:
     - command:
         - /usr/local/bin/sti
         - --worker
-        - --manager-host gaggle.int
+        - --manager-host regatta.int
         - --log-file /002-swanling.log
         - --report-file /002-swanling.html
       env:
@@ -137,8 +137,8 @@ spec:
         - --manager
         - --expect-workers 2
         - --host http://the-internet.int:5000
-        - --log-file /gaggle.log
-        - --report-file /gaggle.html
+        - --log-file /regatta.log
+        - --report-file /regatta.html
       env:
         - name: PATH
           value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
@@ -147,9 +147,9 @@ spec:
         - name: container
           value: podman
         - name: HOSTNAME
-          value: gaggle
+          value: regatta
       image: localhost/sti:latest
-      name: gaggle.int
+      name: regatta.int
       resources: {}
       securityContext:
         allowPrivilegeEscalation: true
@@ -162,10 +162,10 @@ spec:
         readOnlyRootFilesystem: false
         seLinuxOptions: {}
       volumeMounts:
-        - mountPath: /gaggle.log
-          name: home-hedge-src-swanling-examples-the-internet-log-gaggle.log
-        - mountPath: /gaggle.html
-          name: home-hedge-src-swanling-examples-the-internet-report-gaggle.html
+        - mountPath: /regatta.log
+          name: home-hedge-src-swanling-examples-the-internet-log-regatta.log
+        - mountPath: /regatta.html
+          name: home-hedge-src-swanling-examples-the-internet-report-regatta.html
         - mountPath: /003-swanling.log
           name: home-hedge-src-swanling-examples-the-internet-log-003-swanling.log
         - mountPath: /003-swanling.html
@@ -183,13 +183,13 @@ spec:
         type: File
       name: home-hedge-src-swanling-examples-the-internet-report-002-swanling.html
     - hostPath:
-        path: /home/hedge/src/swanling/examples/the-internet/log/gaggle.log
+        path: /home/hedge/src/swanling/examples/the-internet/log/regatta.log
         type: File
-      name: home-hedge-src-swanling-examples-the-internet-log-gaggle.log
+      name: home-hedge-src-swanling-examples-the-internet-log-regatta.log
     - hostPath:
-        path: /home/hedge/src/swanling/examples/the-internet/report/gaggle.html
+        path: /home/hedge/src/swanling/examples/the-internet/report/regatta.html
         type: File
-      name: home-hedge-src-swanling-examples-the-internet-report-gaggle.html
+      name: home-hedge-src-swanling-examples-the-internet-report-regatta.html
     - hostPath:
         path: /home/hedge/src/swanling/examples/the-internet/log/003-swanling.log
         type: File
