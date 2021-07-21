@@ -240,7 +240,7 @@ fn test_error_summary() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Confirm that errors show up in the summary when enabled, in Regatta mode.
 fn test_error_summary_gaggle() {
@@ -254,7 +254,7 @@ fn test_no_error_summary() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Confirm that errors do not show up in the summary when --no-error-summary is enabled,
 // in Regatta mode.

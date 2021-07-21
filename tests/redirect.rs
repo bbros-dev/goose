@@ -385,7 +385,7 @@ fn test_redirect() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Request a page that redirects multiple times with different redirect headers,
 // in Regatta mode.
@@ -402,7 +402,7 @@ fn test_domain_redirect() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Request a page that redirects to another domain, in Regatta mode.
 // Different domains are simulated with multiple mock servers running on different
@@ -420,7 +420,7 @@ fn test_sticky_domain_redirect() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Request a page that redirects to another domain with --sticky-follow enabled, in
 // Regatta mode.

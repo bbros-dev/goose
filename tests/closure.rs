@@ -287,8 +287,8 @@ fn test_single_taskset_closure() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
-// Spawn a gaggle of 1 manager and 2 workers each simulating one user. Run a load test,
+#[cfg_attr(not(feature = "regatta"), ignore)]
+// Spawn a regatta of 1 manager and 2 workers each simulating one user. Run a load test,
 // with a single task set containing two weighted tasks setup via closure. Validate
 // that weighting and metrics are correctly merged to the Manager.
 fn test_single_taskset_closure_gaggle() {

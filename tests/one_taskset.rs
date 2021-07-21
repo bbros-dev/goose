@@ -247,7 +247,7 @@ fn test_one_taskset() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Test a single task set with multiple weighted tasks, in Regatta mode.
 fn test_one_taskset_gaggle() {
@@ -263,7 +263,7 @@ fn test_one_taskset_reset_metrics() {
 /* @TODO: @FIXME: Swanling is not resetting metrics when running in Regatta mode.
  * Issue: https://github.com/begleybrothers/swanling/issues/193
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Test a single task set with multiple weighted tasks, enable --no-reset-metrics
 // in Regatta mode.

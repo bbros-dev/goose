@@ -351,7 +351,7 @@ fn test_not_sequenced() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks and no sequences defined, in Regatta mode.
 fn test_not_sequenced_gaggle() {
@@ -373,7 +373,7 @@ fn test_sequenced_sequential() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks and sequences defined, using the
 // round robin scheduler, in Regatta mode.
@@ -382,7 +382,7 @@ fn test_sequenced_round_robin_gaggle() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks and sequences defined, using the
 // sequential scheduler, in Regatta mode.

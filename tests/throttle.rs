@@ -221,7 +221,7 @@ fn test_throttle() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 // Enable throttle to confirm it limits the number of request per second, in
 // Regatta mode. Increase the throttle and confirm it increases the number of
 // requests per second, in Regatta mode.

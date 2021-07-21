@@ -296,7 +296,7 @@ fn run_standalone_test(test_type: &TestType, scheduler: &SwanlingScheduler) {
     validate_test(test_type, &scheduler, &mock_endpoints);
 }
 
-// Helper to run all gaggle tests.
+// Helper to run all regatta tests.
 fn run_gaggle_test(test_type: &TestType, scheduler: &SwanlingScheduler) {
     // Start the mock server.
     let server = MockServer::start();
@@ -383,7 +383,7 @@ fn test_round_robin_taskset() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating SwanlingTaskSets in round robin order, in
 // Regatta mode.
@@ -398,7 +398,7 @@ fn test_round_robin_task() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple SwanlingTasks allocated in round robin order, in
 // Regatta mode.
@@ -413,7 +413,7 @@ fn test_serial_taskset() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating SwanlingTaskSets in serial order, in
 // Regatta mode.
@@ -434,7 +434,7 @@ fn test_random_taskset() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 #[serial]
 // Load test with multiple tasks allocating SwanlingTaskSets in random order, in
 // Regatta mode.

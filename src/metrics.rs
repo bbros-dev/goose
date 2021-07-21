@@ -25,7 +25,7 @@ use crate::logger::SwanlingLog;
 use crate::report;
 use crate::swanling::{SwanlingMethod, SwanlingTaskSet};
 use crate::util;
-#[cfg(feature = "gaggle")]
+#[cfg(feature = "regatta")]
 use crate::worker::{self, GaggleMetrics};
 use crate::{
     AttackMode, SwanlingAttack, SwanlingAttackRunState, SwanlingConfiguration, SwanlingError,
@@ -2133,7 +2133,7 @@ impl SwanlingAttack {
 
             // As worker, push metrics up to manager.
             if self.attack_mode == AttackMode::Worker && received_message {
-                #[cfg(feature = "gaggle")]
+                #[cfg(feature = "regatta")]
                 {
                     // Push metrics to manager process.
                     if !worker::push_metrics_to_manager(

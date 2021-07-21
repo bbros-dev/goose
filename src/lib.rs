@@ -417,7 +417,7 @@ extern crate log;
 
 pub mod controller;
 pub mod logger;
-#[cfg(feature = "gaggle")]
+#[cfg(feature = "regatta")]
 mod manager;
 pub mod metrics;
 pub mod prelude;
@@ -426,13 +426,13 @@ pub mod swanling;
 mod throttle;
 mod user;
 pub mod util;
-#[cfg(feature = "gaggle")]
+#[cfg(feature = "regatta")]
 mod worker;
 
 use chrono::prelude::*;
 use gumdrop::Options;
 use lazy_static::lazy_static;
-#[cfg(feature = "gaggle")]
+#[cfg(feature = "regatta")]
 use nng::Socket;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -456,7 +456,7 @@ use crate::metrics::{SwanlingCoordinatedOmissionMitigation, SwanlingMetric, Swan
 use crate::swanling::{
     GaggleUser, SwanlingTask, SwanlingTaskSet, SwanlingUser, SwanlingUserCommand,
 };
-#[cfg(feature = "gaggle")]
+#[cfg(feature = "regatta")]
 use crate::worker::{register_shutdown_pipe_handler, GaggleMetrics};
 
 /// Constant defining Swanling's default port when running a Regatta.
@@ -468,7 +468,7 @@ const DEFAULT_TELNET_PORT: &str = "5116";
 /// Constant defining Swanling's default WebSocket Controller port.
 const DEFAULT_WEBSOCKET_PORT: &str = "5117";
 
-// WORKER_ID is only used when running a gaggle (a distributed load test).
+// WORKER_ID is only used when running a regatta (a distributed load test).
 lazy_static! {
     static ref WORKER_ID: AtomicUsize = AtomicUsize::new(0);
 }
@@ -490,7 +490,7 @@ pub fn get_worker_id() -> usize {
     WORKER_ID.load(Ordering::Relaxed)
 }
 
-#[cfg(not(feature = "gaggle"))]
+#[cfg(not(feature = "regatta"))]
 #[derive(Debug, Clone)]
 /// Socket used for coordinating a Regatta distributed load test.
 pub(crate) struct Socket {}
@@ -2228,7 +2228,7 @@ impl SwanlingAttack {
         Ok(())
     }
 
-    #[cfg(feature = "gaggle")]
+    #[cfg(feature = "regatta")]
     // Determine if `--no-hash-check` flag is enabled.
     fn set_no_hash_check(&mut self) -> Result<(), SwanlingError> {
         // Track how value gets set so we can return a meaningful error if necessary.
@@ -2702,7 +2702,7 @@ impl SwanlingAttack {
         self.set_sticky_follow()?;
 
         // Configure no_hash_check flag.
-        #[cfg(feature = "gaggle")]
+        #[cfg(feature = "regatta")]
         self.set_no_hash_check()?;
 
         // Confirm there's either a global host, or each task set has a host defined.
@@ -2726,32 +2726,32 @@ impl SwanlingAttack {
 
         // Start swanling in manager mode.
         if self.attack_mode == AttackMode::Manager {
-            #[cfg(feature = "gaggle")]
+            #[cfg(feature = "regatta")]
             {
                 let rt = Runtime::new().unwrap();
                 self = rt.block_on(manager::manager_main(self));
             }
 
-            #[cfg(not(feature = "gaggle"))]
+            #[cfg(not(feature = "regatta"))]
             {
                 return Err(SwanlingError::FeatureNotEnabled {
-                    feature: "gaggle".to_string(), detail: "Load test must be recompiled with `--features gaggle` to start in manager mode.".to_string()
+                    feature: "regatta".to_string(), detail: "Load test must be recompiled with `--features regatta` to start in manager mode.".to_string()
                 });
             }
         }
         // Start swanling in worker mode.
         else if self.attack_mode == AttackMode::Worker {
-            #[cfg(feature = "gaggle")]
+            #[cfg(feature = "regatta")]
             {
                 let rt = Runtime::new().unwrap();
                 self = rt.block_on(worker::worker_main(&self));
             }
 
-            #[cfg(not(feature = "gaggle"))]
+            #[cfg(not(feature = "regatta"))]
             {
                 return Err(SwanlingError::FeatureNotEnabled {
-                    feature: "gaggle".to_string(),
-                    detail: "Load test must be recompiled with `--features gaggle` to start in worker mode.".to_string(),
+                    feature: "regatta".to_string(),
+                    detail: "Load test must be recompiled with `--features regatta` to start in worker mode.".to_string(),
                 });
             }
         }
@@ -3294,7 +3294,7 @@ impl SwanlingAttack {
 
             // Load test is shutting down, update pipe handler so there is no panic
             // when the Manager goes away.
-            #[cfg(feature = "gaggle")]
+            #[cfg(feature = "regatta")]
             {
                 let manager = swanling_attack_run_state.socket.clone().unwrap();
                 register_shutdown_pipe_handler(&manager);
@@ -3354,7 +3354,7 @@ impl SwanlingAttack {
                 .await?;
         }
 
-        #[cfg(feature = "gaggle")]
+        #[cfg(feature = "regatta")]
         {
             // As worker, push metrics up to manager.
             if self.attack_mode == AttackMode::Worker {
@@ -3451,7 +3451,7 @@ impl SwanlingAttack {
         Ok(())
     }
 
-    // Called internally in local-mode and gaggle-mode.
+    // Called internally in local-mode and regatta-mode.
     async fn start_attack(
         mut self,
         socket: Option<Socket>,

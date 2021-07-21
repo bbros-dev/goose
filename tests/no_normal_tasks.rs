@@ -163,7 +163,7 @@ fn test_no_normal_tasks() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "gaggle"), ignore)]
+#[cfg_attr(not(feature = "regatta"), ignore)]
 // Test taskset with only on_start() and on_stop() tasks, in Regatta mode.
 fn test_no_normal_tasks_gaggle() {
     // Run load test with is_gaggle set to true.
