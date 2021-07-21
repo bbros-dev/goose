@@ -275,12 +275,12 @@ fn run_standalone_test(test_type: TestType, format: &str) {
     common::cleanup_files(vec![&request_log, &task_log, &error_log, &debug_log]);
 }
 
-// Helper to run all gaggle tests.
+// Helper to run all regatta tests.
 fn run_gaggle_test(test_type: TestType, format: &str) {
-    let requests_file = test_type.to_string() + "-gaggle-request-log." + format;
-    let tasks_file = test_type.to_string() + "-gaggle-task-log." + format;
-    let error_file = test_type.to_string() + "-gaggle-error-log." + format;
-    let debug_file = test_type.to_string() + "-gaggle-debug-log." + format;
+    let requests_file = test_type.to_string() + "-regatta-request-log." + format;
+    let tasks_file = test_type.to_string() + "-regatta-task-log." + format;
+    let error_file = test_type.to_string() + "-regatta-error-log." + format;
+    let debug_file = test_type.to_string() + "-regatta-debug-log." + format;
 
     let server = MockServer::start();
 

@@ -269,7 +269,7 @@ fn run_standalone_test(test_type: TestType) {
     validate_test(&test_type, &mock_endpoints);
 }
 
-// Helper to run all gaggle tests.
+// Helper to run all regatta tests.
 fn run_gaggle_test(test_type: TestType) {
     // Start the mock server.
     let server = MockServer::start();

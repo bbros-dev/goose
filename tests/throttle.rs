@@ -227,7 +227,7 @@ fn test_throttle() {
 // requests per second, in Regatta mode.
 fn test_throttle_gaggle() {
     // Multiple tests run together, so set a unique name.
-    let request_log = "gaggle-".to_string() + REQUEST_LOG;
+    let request_log = "regatta-".to_string() + REQUEST_LOG;
 
     // Start the mock server.
     let server = MockServer::start();

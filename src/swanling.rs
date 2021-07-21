@@ -757,7 +757,7 @@ impl GaggleUser {
         configuration: &SwanlingConfiguration,
         load_test_hash: u64,
     ) -> Self {
-        trace!("new gaggle user");
+        trace!("new regatta user");
         GaggleUser {
             task_sets_index,
             base_url: Arc::new(RwLock::new(base_url)),

@@ -503,7 +503,7 @@ pub(crate) async fn manager_main(mut swanling_attack: SwanlingAttack) -> Swanlin
                         if workers.len()
                             == swanling_attack.configuration.expect_workers.unwrap() as usize
                         {
-                            info!("gaggle distributed load test started");
+                            info!("regatta distributed load test started");
                             // Reset start time, the distributed load test is truly starting now.
                             started = time::Instant::now();
                             swanling_attack.started = Some(started);

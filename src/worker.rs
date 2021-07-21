@@ -207,7 +207,7 @@ pub(crate) async fn worker_main(swanling_attack: &SwanlingAttack) -> SwanlingAtt
 
     // Worker is officially starting the load test.
     info!(
-        "[{}] entering gaggle mode, starting load test",
+        "[{}] entering regatta mode, starting load test",
         get_worker_id()
     );
     let mut worker_swanling_attack = SwanlingAttack::initialize_with_config(config.clone())
