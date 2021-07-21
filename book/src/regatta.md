@@ -10,21 +10,39 @@
 [Regatta (noun)](https://dictionary.cambridge.org/dictionary/english/regatta)
 : a boat race or series of races.
 
-## Raft
+## Overview
 
-Swanling treats the problem of recording the results of distributed load testing as a distributed storage problem.  Holding that opinion, it is natural to consider building on the [Raft (PDF)](https://raft.github.io/raft.pdf) algorithm, a consensus algorithm for distributed systems.  While the Raft algorithm is relatively new, Diego Ongaro's Ph.D. [dissertation](https://github.com/ongardie/dissertation#readme) being awarded in 2014, there are [several implementations](https://raft.github.io/#implementations) and it has been widely adopted in distributed computing applications, e.g. Hashicorp's [Consul, Nomad and Vault](https://www.hashicorp.com/resources/raft-consul-consensus-protocol-explained) and Kubernetes [etcd](https://etcd.io/).
+Swanling treats the problem of recording the results of distributed load testing as a distributed storage problem.  Holding that opinion, it is natural to build on the [Raft (PDF)](https://raft.github.io/raft.pdf) algorithm, a consensus algorithm for distributed systems.
 
-## Network
+## Requirements
 
-By using Raft algorithm we simplify configuration and setup.  Of course the ability to send and receive data over a network is integral to the proper functionality of nodes within a Raft cluster.  Swanling assumes members of your cluster of virtual/physical machines, containers can exchange data with each other.  Swanling also assumes that DNS is used to resolve names to IP addresses.
+### Network
 
-Using those assumptions, Swanling provides several features that ease configuration and management:
+The ability to send and receive data over a network is integral to the proper functionality of nodes within a Raft cluster.  Swanling assumes the cluster of virtual machines, physical machines or containers can exchange data with each other.  Swanling also assumes that DNS is used to resolve names to IP addresses.
 
-- The regatta leader (hence followers) are elected automatically: No need to configure and track manager and worker nodes.
-- The regatta size dynamically grows and shrinks.
-- Within reason, data survives network outages and cluster members crashing or exiting the cluster.
+### Security
 
-### Libraries
+Swanling assumes all network traffic is across a secured, trusted, private network.
+There are no active plans alter this. While PR's are welcome, our current view is that network security is not trivial, and pseudo-security, or security theater creates more risks than it eliminates, while imposing real performance costs.
+
+## Features
+
+In addition to these requirements/assumptions, using the Raft algorithm further simplifies configuration and setup, and Swanling adopts several conventions that still further eases configuration and management.
+
+- Dynamic leadership: The `regatta` leader (hence followers) are elected automatically. There is no need to configure and track manager and worker nodes.
+- Dynamic regatta size: The `regatta` size can dynamically grow or shrink.
+- Distributed Storage: Within reason, data can survive network outages and cluster members crashing or exiting the cluster.
+- Configurable storage precision/size trade-offs: High Dynamic Range Histogram (HdrHistogram) provide storage that maintains a fixed (but not optimal) cost in both space and time.   The memory footprint depends solely on the dynamic range and precision chosen, not the number of data values.
+- Throughput and response distributions: Both distributions are recorded in HdrHistogram data structures.
+
+## Data persistence
+
+Data is persisted in memory, then synchronized among raft cluster members.
+Data is synchronized across the cluster a configurable number of seconds (`sync_interval`, default: 60 seconds).
+
+### Raft Libraries
+
+While the Raft algorithm is relatively new, Diego Ongaro's Ph.D. [dissertation](https://github.com/ongardie/dissertation#readme) being awarded in 2014, there are [several implementations](https://raft.github.io/#implementations) and it has been widely adopted in distributed computing applications, e.g. Hashicorp's [Consul, Nomad and Vault](https://www.hashicorp.com/resources/raft-consul-consensus-protocol-explained) and the Kubernetes [etcd](https://etcd.io/).
 
 - ( 626) [async-raft (was actix-raft)](https://github.com/async-raft/async-raft)
 - (  45) [lol](https://github.com/akiradeveloper/lol)

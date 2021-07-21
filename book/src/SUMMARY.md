@@ -18,7 +18,8 @@
 
 # Regatta
 
-- [Distributed Load Test](distributed-load-test.md)
+- [Description](regatta.md)
+- [CLI](cli.md)
 - [RustLS](rustls.md)
 
 # Developers

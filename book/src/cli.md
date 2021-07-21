@@ -8,13 +8,13 @@ It is strongly recommended that the same load test application be copied to all 
 
 Regatta support is a compile-time Cargo feature that must be enabled. Swanling uses the [`nng`](https://docs.rs/nng/) library to manage network connections, and compiling `nng` requires that `cmake` be available.
 
-The `gaggle` feature can be enabled from the command line by adding `--features gaggle` to your cargo command.
+The `regatta` feature can be enabled from the command line by adding `--features regatta` to your cargo command.
 
 When writing load test applications, you can default to compiling in the Regatta feature in the `dependencies` section of your `Cargo.toml`, for example:
 
 ```toml
 [dependencies]
-swanling = { version = "^0.12", features = ["gaggle"] }
+swanling = { version = "^0.12", features = ["regatta"] }
 ```
 
 ## Regatta Manager
@@ -22,20 +22,20 @@ swanling = { version = "^0.12", features = ["gaggle"] }
 To launch a Regatta, you first must start a Swanling application in Manager mode. All configuration happens in the Manager. To start, add the `--manager` flag and the `--expect-workers` flag, the latter necessary to tell the Manager process how many Worker processes it will be coordinating. For example:
 
 ```
-cargo run --features gaggle --example simple -- --manager --expect-workers 2 --host http://local.dev/ -v
+cargo run --features regatta --example simple -- --manager --expect-workers 2 --host http://local.dev/ -v
 ```
 
-This configures a Swanling Manager to listen on all interfaces on the default port (0.0.0.0:5115) for 2 Swanling Worker processes.
+This configures a Regatta leader to listen on all interfaces on the default port (0.0.0.0:5115) for 2 Regatta follower processes.
 
-## Regatta Worker
+## Regatta follower
 
-At this time, a Swanling process can be either a Manager or a Worker, not both. Therefor, it usually makes sense to launch your first Worker on the same server that the Manager is running on. If not otherwise configured, a Swanling Worker will try to connect to the Manager on the localhost. This can be done as follows:
+A Swanling process can be a raft leader or follower, not both. Leadership elections are determined by the raft protocol, and a `regatta` process/instance cannot be forced into leadership.  Therefore, you can start instances in any order on any machine or container. If not otherwise configured, a Regatta follower will try to connect to the leader on the localhost. This can be done as follows:
 
 ```
-cargo run --features gaggle --example simple -- --worker -v
+cargo run --features regatta --example simple -- --worker -v
 ```
 
-In our above example, we expected 2 Workers. The second Swanling process should be started on a different server. This will require telling it the host where the Swanling Manager process is running. For example:
+In our above example, we expected 2 Workers. The second Swanling process should be started on a different server. This will require telling it the host where the Regatta leader process is running. For example:
 
 ```
 cargo run --example simple -- --worker --manager-host 192.168.1.55 -v
@@ -55,8 +55,8 @@ The `--no-metrics`, `--only-summary`, `--no-reset-metrics`, `--status-codes`, an
 
 * `--manager-bind-host <manager-bind-host>`: configures the host that the Manager listens on. By default Swanling will listen on all interfaces, or `0.0.0.0`.
 * `--manager-bind-port <manager-bind-port>`: configures the port that the Manager listens on. By default Swanling will listen on port `5115`.
-* `--manager-host <manager-host>`: configures the host that the Worker will talk to the Manager on. By default, a Swanling Worker will connect to the localhost, or `127.0.0.1`. In a distributed load test, this must be set to the IP of the Swanling Manager.
-* `--manager-port <manager-port>`: configures the port that a Worker will talk to the Manager on. By default, a Swanling Worker will connect to port `5115`.
+* `--manager-host <manager-host>`: configures the host that the Worker will talk to the Manager on. By default, a Regatta follower will connect to the localhost, or `127.0.0.1`. In a distributed load test, this must be set to the IP of the Regatta leader.
+* `--manager-port <manager-port>`: configures the port that a Worker will talk to the Manager on. By default, a Regatta follower will connect to port `5115`.
 
 The `--users`, `--hatch-rate`, `--host`, and `--run-time` options must be set on the Manager. Workers inherit these options from the Manager.
 
