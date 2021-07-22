@@ -12,18 +12,22 @@
 
 ## Overview
 
-Swanling treats the problem of recording the results of distributed load testing as a distributed storage problem.  Holding that opinion, it is natural to build on the [Raft (PDF)](https://raft.github.io/raft.pdf) algorithm, a consensus algorithm for distributed systems.
+Swanling treats recording data about the requests and responses over the duration of distributed load test or benchmark, as a distributed storage problem in a peer to peer network.
+
+Holding those opinions, it is natural to build on the [Raft (PDF)](https://raft.github.io/raft.pdf) algorithm, a consensus algorithm for distributed systems, and the [libp2p] system, a modular system of protocols, specifications and libraries that enable the development of peer-to-peer network applications.
+
+Consequently, `regatta` is a peer-to-peer network CLI application, built using the Rust [Crate libp2p](https://crates.io/crates/libp2p) implementation of the [libp2p system](https://libp2p.io). Hence, Swanling uses [multi-cast DNS (mDNS)](https://docs.libp2p.io/reference/glossary/#mdns) to connect `regatta` peers.
 
 ## Requirements
 
 ### Network
 
-The ability to send and receive data over a network is integral to the proper functionality of nodes within a Raft cluster.  Swanling assumes the cluster of virtual machines, physical machines or containers can exchange data with each other.  Swanling also assumes that DNS is used to resolve names to IP addresses.
+The ability to send and receive data over a network is integral to the proper functionality of nodes within a peer-to-peer netwrok and a Raft cluster.  Swanling assumes the cluster of virtual machines, physical machines or containers can exchange data with each other - perioidcally, if not always.
 
 ### Security
 
-Swanling assumes all network traffic is across a secured, trusted, private network.
-There are no active plans alter this. While PR's are welcome, our current view is that network security is not trivial, and pseudo-security, or security theater creates more risks than it eliminates, while imposing real performance costs.
+Swanling assumes its network traffic is across a secured, trusted, private network.
+There are no active plans alter this. While PR's are welcome, our current view is that network security is not trivial, and pseudo-security, or security theater creates more risks than it eliminates, while imposing real performance costs. That being said the transport between Regatta processes/instances does use the [Noise protocol](https://noiseprotocol.org/) and public key cryptography as the basis of [peer identity](https://docs.libp2p.io/reference/glossary/#peerid).
 
 ## Features
 
