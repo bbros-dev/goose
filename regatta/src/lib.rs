@@ -1,3 +1,5 @@
+pub mod raft;
+
 #[macro_use]
 extern crate clap;
 extern crate clap_verbosity_flag;
