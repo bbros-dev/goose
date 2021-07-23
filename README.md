@@ -23,3 +23,4 @@ These features can be relied on in the current major release series (v0):
 - [User documentation](https://swanling.io)
 - [Developer documentation](https://docs.rs/swanling/)
 
+- [Learn Rust Resources](https://miguelraz.github.io/blog/juliatorust/)
