@@ -1,11 +1,13 @@
+// mod histogram;
 pub mod raft;
+pub mod tender;
 
 #[macro_use]
 extern crate clap;
 extern crate clap_verbosity_flag;
 
 use anyhow::{anyhow, bail, Context, Result};
-use clap::{App, Arg};
+use clap::App;
 // use config::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
@@ -99,24 +101,29 @@ pub async fn run() -> Result<(), anyhow::Error> {
 
     // Set Regatta defaults.
     let mut settings = config::Config::default();
-    settings.set_default("port", 5000)
-            .unwrap()
-            .set_default("index", 0)
-            .unwrap()
-            .set_default("vcr_file","")
-            .unwrap();
+    settings
+        .set_default("port", 5000)
+        .unwrap()
+        .set_default("index", 0)
+        .unwrap()
+        .set_default("vcr_file", "")
+        .unwrap();
 
     // When present, add in CliArgs config_file
     if std::path::Path::new(&args.config_file).exists() {
         settings
-            .merge(config::File::with_name(&args.config_file)).unwrap()
+            .merge(config::File::with_name(&args.config_file))
+            .unwrap()
             // Add in settings from the environment (with a prefix of SWANLING)
             // e.g. `SWANLING_DEBUG=1 ./target/regatta` sets the `debug` key
-            .merge(config::Environment::with_prefix("SWANLING")).unwrap();
+            .merge(config::Environment::with_prefix("SWANLING"))
+            .unwrap();
     }
     // Print out our settings (as a HashMap)
-    println!("{:?}",
-             settings.try_into::<HashMap<String, String>>().unwrap());
+    println!(
+        "{:?}",
+        settings.try_into::<HashMap<String, String>>().unwrap()
+    );
 
     let content = tokio::fs::read_to_string(&args.path)
         .await
