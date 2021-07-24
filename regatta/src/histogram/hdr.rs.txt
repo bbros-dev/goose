@@ -1,0 +1,96 @@
+use core::ops::Deref;
+use serde::{Serialize, Deserialize};
+use postcard::{from_bytes, to_vec};
+use heapless::Vec;
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct RefStruct<'a> {
+    bytes: &'a [u8],
+    str_s: &'a str,
+}
+let message = "hElLo";
+let bytes = [0x01, 0x10, 0x02, 0x20];
+let output: Vec<u8, 11> = to_vec(&RefStruct {
+    bytes: &bytes,
+    str_s: message,
+}).unwrap();
+
+assert_eq!(
+    &[0x04, 0x01, 0x10, 0x02, 0x20, 0x05, b'h', b'E', b'l', b'L', b'o',],
+    output.deref()
+);
+
+let out: RefStruct = from_bytes(output.deref()).unwrap();
+assert_eq!(
+    out,
+    RefStruct {
+        bytes: &bytes,
+        str_s: message,
+    }
+);
+
+// heapless example code
+use heapless::Vec; // fixed capacity `std::Vec`
+
+// on the stack
+let mut xs: Vec<u8, 8> = Vec::new(); // can hold up to 8 elements
+xs.push(42).unwrap();
+assert_eq!(xs.pop(), Some(42));
+
+// in a `static` variable
+static mut XS: Vec<u8, 8> = Vec::new();
+
+let xs = unsafe { &mut XS };
+
+xs.push(42);
+assert_eq!(xs.pop(), Some(42));
+
+// in the heap (though kind of pointless because no reallocation)
+let mut ys: Box<Vec<u8, 8>> = Box::new(Vec::new());
+ys.push(42).unwrap();
+assert_eq!(ys.pop(), Some(42));
+
+// HDRHistogram
+use hdrhistogram::Histogram;
+use hdrhistogram::serialization::{Deserializer, Serializer, V2Serializer};
+use std::io::Cursor;
+
+// Naturally, do real error handling instead of unwrap() everywhere
+
+let num_histograms = 4;
+let mut histograms = Vec::new();
+
+// Make some histograms
+for _ in 0..num_histograms {
+    let mut h = Histogram::<u64>::new_with_bounds(1, u64::max_value(), 3).unwrap();
+    h.record_n(42, 7).unwrap();
+    histograms.push(h);
+}
+
+let mut buf = Vec::new();
+let mut serializer = V2Serializer::new();
+
+// Save them to the buffer
+for h in histograms.iter() {
+    serializer.serialize(h, &mut buf).unwrap();
+}
+
+// Read them back out again
+let mut deserializer = Deserializer::new();
+let mut cursor = Cursor::new(&buf);
+
+let mut accumulator =
+    Histogram::<u64>::new_with_bounds(1, u64::max_value(), 3).unwrap();
+
+for _ in 0..num_histograms {
+    let h: Histogram<u64> = deserializer.deserialize(&mut cursor).unwrap();
+
+    // behold, they are restored as they were originally
+    assert_eq!(7, h.count_at(42));
+    assert_eq!(0, h.count_at(1000));
+
+    accumulator.add(h).unwrap();
+}
+
+// all the counts are there
+assert_eq!(num_histograms * 7, accumulator.count_at(42));
