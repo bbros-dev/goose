@@ -1,4 +1,5 @@
 // mod histogram;
+pub mod p2p;
 pub mod raft;
 pub mod tender;
 
