@@ -26,14 +26,13 @@ fn setup_cassette() {
     writeln!(&w, "A test\nActual content\nMore content\nAnother test").unwrap();
 }
 
-fn read_cassette() {
-    let csstt = "Done".to_string();
-    regatta::read_local_recipes();
+fn bench_read_cassette() {
+    regatta::p2p::cassette::read_local_recipes();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    setup_cassette();
-    c.bench_function("vcr read", |b| b.iter(|| read_cassette()));
+    // bench_setup_cassette();
+    c.bench_function("vcr-read", |b| b.iter(|| bench_read_cassette()));
     // c.bench_function("fib 20", |b| b.iter(|| fibonacci(black_box(20))));
 }
 
