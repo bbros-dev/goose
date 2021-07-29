@@ -2,6 +2,20 @@
 
 [Overview](overview.md)
 
+# Regatta
+
+- [Description](regatta.md)
+- [Configuration](regatta-config.md)
+- [CLI](regatta-cli.md)
+- [Example](regatta-example.md)
+
+# Tender
+
+- [Description](tender.md)
+- [Configuration](tender-config.md)
+- [CLI](tender-cli.md)
+- [Example](tender-example.md)
+
 # Swanling
 
 - [Getting Started](getting-started.md)
@@ -14,13 +28,17 @@
 - [Logging Load Test Requests](logging-load-test-requests.md)
 - [Logging Load Test Tasks](logging-load-test-tasks.md)
 - [Load Test Debug Logging](load-test-debug-logging.md)
-- [Coordinated Omission Mitigation](coordinated-omission-mitigation.md)
-
-# Regatta
-
-- [Description](regatta.md)
-- [CLI](cli.md)
 - [RustLS](rustls.md)
+
+# Metrics
+
+- [Description](metrics.md)
+
+# Coordinated Ommission
+
+- [Description](coordinated-omission.md)
+- [Configuration](co-config.md)
+- [Example](co-example.md)
 
 # Developers
 
