@@ -15,12 +15,17 @@ The [Swanling road-map](#road-map) envisions features that are not typically fou
 See [Road-map](#road-map) for forthcoming features.
 These features can be relied on in the current major release series (v0):
 
-- [nanomsg-NG](https://https://nng.nanomsg.org) based distributed workers.
-- Coordinated omission mitigation
+- [coordinated omission immunity](https://swanling.io/co-immunity)
+- [peer-to-peer network of workers](https://libp2p.io/)
+- [distributed storage](https://raft.github.io/)
+- [data recorded with defined precision](http://hdrhistogram.org/)
+- [latency and throughput metrics](https://swanling.io/metrics)
+- [request models](https://swanling.io/metrics)
 
 ## Documentation
 
 - [User documentation](https://swanling.io)
-- [Developer documentation](https://docs.rs/swanling/)
+- [Developer documentation](https://swanling.io/developers)
+- [Documentation guidelines](https://www.tangramvision.com/blog/making-great-docs-with-rustdoc#goals-of-documentation)
 
-- [Learn Rust Resources](https://miguelraz.github.io/blog/juliatorust/)
+[Benchmarking async requests](https://pkolaczk.github.io/benchmarking-cassandra-with-rust-streams/)
