@@ -1,3 +1,7 @@
+// 1.50.0-nightly through 1.53.0-nightly
+// #![feature(extended_key_value_attributes)]
+// #![doc = include_str!("../../book/src/crate/bin/p2p.md")]
+
 use libp2p::futures::StreamExt;
 use libp2p::{
     core::upgrade,
@@ -13,15 +17,39 @@ use libp2p::{
 use log::{error, info};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use signal_hook::consts::signal::*;
+use signal_hook_tokio::Signals;
 use std::collections::HashSet;
 use tokio::{fs, io::AsyncBufReadExt, sync::mpsc};
 
 use regatta::p2p::*;
 use regatta::*;
 
+pub async fn handle_shutdown(signals: signal_hook_tokio::Signals) {
+    let mut signals = signals.fuse();
+    while let Some(signal) = signals.next().await {
+        match signal {
+            SIGTERM | SIGINT | SIGQUIT => {
+                // Shutdown the system;
+                //signal_hook::low_level::emulate_default_handler(SIGTSTP).await;
+            },
+            _ => unreachable!(),
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> ! {
     pretty_env_logger::init();
+
+    let signals = Signals::new(&[
+        SIGTERM,
+        SIGINT,
+        SIGQUIT,
+    ]).unwrap();
+    let handle = signals.handle();
+
+    let signals_task = tokio::spawn(handle_shutdown(signals));
 
     info!("Peer Id: {}", regatta::p2p::PEER_ID.clone());
     let (response_sender, mut response_rcv) = mpsc::unbounded_channel();
@@ -85,4 +113,8 @@ async fn main() -> ! {
             }
         }
     }
+
+    // Terminate the signal stream.
+    handle.close();
+    signals_task.await;
 }

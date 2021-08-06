@@ -205,11 +205,11 @@ async fn publish_recipe(id: usize) -> Result<()> {
 // /// # Safety
 // /// # Aborts
 // /// # Undefined Behavior
-// async fn read_local_recipes() -> Result<Recipes> {
-//     let content = fs::read(STORAGE_FILE_PATH).await?;
-//     let result = serde_json::from_slice(&content)?;
-//     Ok(result)
-// }
+async fn read_local_recipes() -> Result<Recipes> {
+    let content = fs::read(STORAGE_FILE_PATH).await?;
+    let result = serde_json::from_slice(&content)?;
+    Ok(result)
+}
 
 /// # Examples
 /// See integration test: []
@@ -312,17 +312,18 @@ async fn handle_publish_recipe(cmd: &str) {
     }
 }
 
-async fn handle_shutdown(cmd: &str) {
-    signal_hook::low_level::emulate_default_handler(SIGTSTP)?;
+async fn send_shutdown(cmd: &str) {
+    
 }
+
 pub async fn match_command_line(line: String, mut swarm: &mut Swarm<RecipeBehaviour>) {
     match line.as_str() {
         "ls p" => handle_list_peers(&mut swarm).await,
         cmd if cmd.starts_with("ls r") => handle_list_recipes(cmd, &mut swarm).await,
         cmd if cmd.starts_with("create r") => handle_create_recipe(cmd).await,
         cmd if cmd.starts_with("publish r") => handle_publish_recipe(cmd).await,
-        cmd if cmd.starts_with("quit") => handle_shutdown(cmd).await,
-        cmd if cmd.starts_with("quit") => handle_shutdown(cmd).await,
+        cmd if cmd.starts_with("exit") => send_shutdown(cmd).await,
+        cmd if cmd.starts_with("quit") => send_shutdown(cmd).await,
         _ => error!("unknown command"),
     }
 }
