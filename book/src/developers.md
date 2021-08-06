@@ -19,21 +19,13 @@ cargo build
 ### P2P
 
 ```bash
-cargo criterion
-DATE_TAG=$(date --utc +"%Y%m%d")
-RUSTFLAGS="-C target-cpu=native" cargo bench -- p2p
-find ./target -wholename "*/new/raw.csv" -print0 | \
-  xargs -0 xsv cat rows > book/assets/benchmark-data_${DATE_TAG}.csv
-```
-
-```bash
 DATE_TAG=$(date --utc +"%Y%m%d")
 BENCH=p2p
 pushd regatta
   cargo bench --bench ${BENCH} -- --save-baseline ${BENCH}-${DATE_TAG}
   critcmp --export ${BENCH}-${DATE_TAG} > benches/data/${BENCH}-${DATE_TAG}.json
   # Change branches
-  cargo bench --bench p2p -- --save-baseline ${BENCH}-${DATE_TAG}a
+  cargo bench --bench ${BENCH} -- --save-baseline ${BENCH}-${DATE_TAG}a
   critcmp --export ${BENCH}-${DATE_TAG}a > ./benches/data/${BENCH}-${DATE_TAG}a.json
   critcmp ./benches/data/${BENCH}-${DATE_TAG}.json ./benches/data/${BENCH}-${DATE_TAG}a.json
 popd
