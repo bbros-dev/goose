@@ -19,6 +19,10 @@ readme = "README.md"
 categories = ["asynchronous", "simulation"]
 keywords = ["loadtest", "benchmark", "web", "microservice", "framework"]
 license = "Apache-2.0"
+exclude = [
+    "book/*",
+    "ci/*",
+]
 
 [workspace]
 members = ["regatta"]
@@ -77,3 +81,12 @@ httpmock = "0.5"
 serial_test = "0.5"
 native-tls = "0.2"
 rustls = "0.19"
+xsv = "0.13"
+
+## Historical Benchmarks
+#
+# extern crate swanlingv0;
+#
+# [dev-dependencies.swanlingv0]
+# package = "swanling"
+# version = "=0.0.0"

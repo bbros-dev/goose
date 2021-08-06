@@ -1,0 +1,150 @@
+# Reference:
+# - https://www.infinyon.com/blog/2021/04/github-actions-best-practices/
+#
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-dev"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-dev"
+  pull_request:
+    branches:
+      - "main"
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-dev"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-dev"
+
+env:
+  RUST_BACKTRACE: 1
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install shellcheck
+          ./shellcheck.sh
+  style:
+    name: Verify formatting and style
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Verify code formatting
+        run: cargo fmt -- --check
+      - name: Verify code style
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  build:
+    name: Build and run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --verbose --all-features
+      - name: Docs
+        run: cargo rustdoc --lib --examples
+      - name: Run tests
+        run: cargo test --verbose --all-features
+  builds:
+    name: ${{ matrix.redo.name }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04", "ubuntu-18.04", "ubuntu-16.04", macos-latest]
+        rust: [stable]
+        env_vars:
+          - ""
+          # allow for some parallelity without GNU parallel, since it is not installed by default
+          - "BATS_NO_PARALLELIZE_ACROSS_FILES=1 BATS_NUMBER_OF_PARALLEL_JOBS=2"
+        redo:
+          - name: Doc tests
+            task: "doc/tests"
+          - name: Unit tests
+            task: "src/tests"
+          - name: Integration tests
+            task: "tests"
+        steps:
+          - uses: actions/checkout@v2
+          - name: Run test on OS ${{ matrix.os }}
+            shell: 'script -q -e -c "bash {0}"' # work around tty issues
+            env:
+              TERM: linux # fix for tty issue work around
+            run: |
+              bash --version
+              bash -c "time ${{ matrix.env_vars }} tests/support/bats-core/bin/bats --formatter tap tests"
+        include:
+          - os: ubuntu-latest
+            sccache-path: /home/runner/.cache/sccache
+          - os: macos-latest
+            sccache-path: /Users/runner/Library/Caches/Mozilla.sccache
+
+    env:
+      RUST_BACKTRACE: full
+      RUSTC_WRAPPER: sccache
+      RUSTV: ${{ matrix.rust }}
+      SCCACHE_CACHE_SIZE: 2G
+      SCCACHE_DIR: ${{ matrix.sccache-path }}
+      # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install sccache (ubuntu-latest)
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          LINK: https://github.com/mozilla/sccache/releases/download
+          SCCACHE_VERSION: 0.2.13
+        run: |
+          SCCACHE_FILE=sccache-$SCCACHE_VERSION-x86_64-unknown-linux-musl
+          mkdir -p $HOME/.local/bin
+          curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
+          mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install sccache (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install sccache
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+          override: true
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: Save sccache
+        uses: actions/cache@v2
+        continue-on-error: false
+        with:
+          path: ${{ matrix.sccache-path }}
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+      - name: Start sccache server
+        run: sccache --start-server
+      - name: ${{ matrix.redo.name }}
+        run: redo ${{ matrix.redo.task }}
+      - name: Print sccache stats
+        run: sccache --show-stats
+      - name: Stop sccache server
+        run: sccache --stop-server || true

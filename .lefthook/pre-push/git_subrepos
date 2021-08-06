@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: (c) 2017 Anton Babenko
+# SPDX-FileCopyrightText: (c) 2020 Begley Brothers Inc. <BegleyBrothers@gmail.com>
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+if [[ ${DEBUG-} =~ ^1|y|yes|true$ ]]; then
+  # Take stdout and stderr from this script. 
+  # Redirect to the logger command, which sends to syslog.
+  # Adding `-s` echoes to stderr - however profile is run by non-interactive
+  # terminals and any noise from them breaks sftp and scp.
+  # See OpenSSH FAQ note below.
+  # So when debugging we actually want to log lots but be 'silent' wrt to the
+  # terminal.
+  exec 1> >(logger -t $(basename $0)) 2>&1
+  set -o xtrace       # Trace the execution of the script (debug)
+fi
+set -o errexit
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Uncommitted changes. Skip pushing sub-repositories."
+else
+  echo "No uncommitted changes, pushing sub-repositories."
+  git subrepo status --ALL --quiet | while IFS= read -r repo
+  do
+    echo $repo
+    git subrepo push $repo &
+    pids[${i}]=$!
+    sleep 2
+  done
+  # wait for all pids
+  for pid in ${pids[*]}; do
+      wait $pid
+  done
+fi
