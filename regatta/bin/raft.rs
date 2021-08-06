@@ -33,6 +33,7 @@ struct KVS {
     mem: Arc<RwLock<BTreeMap<String, Bytes>>>,
     copy_snapshot_mode: bool,
 }
+
 #[async_trait]
 impl RaftAppCompat for KVS {
     async fn process_message(&self, x: &[u8]) -> anyhow::Result<Vec<u8>> {
