@@ -132,8 +132,7 @@ pub async fn run() -> Result<(), anyhow::Error> {
 
     let pb = setup_progress_spinner()?;
 
-    // Tokio sleep
-    sleep(Duration::from_millis(5_000)).await;
+    tokio::time::sleep(tokio::time::Duration::from_millis(5_000)).await;
 
     find_matches(&content, &args.pattern, handle).with_context(|| {
         format!(

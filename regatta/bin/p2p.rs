@@ -47,6 +47,7 @@ async fn main() -> ! {
         SIGINT,
         SIGQUIT,
     ]).unwrap();
+
     let handle = signals.handle();
 
     let signals_task = tokio::spawn(handle_shutdown(signals));

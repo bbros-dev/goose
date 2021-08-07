@@ -312,9 +312,7 @@ async fn handle_publish_recipe(cmd: &str) {
     }
 }
 
-async fn send_shutdown(cmd: &str) {
-    
-}
+async fn send_shutdown(cmd: &str) {}
 
 pub async fn match_command_line(line: String, mut swarm: &mut Swarm<RecipeBehaviour>) {
     match line.as_str() {
