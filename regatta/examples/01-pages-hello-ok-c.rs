@@ -14,12 +14,13 @@ async fn main() {
 }
 
 async fn get_page(i: usize) -> Vec<usize> {
-    let millis = Uniform::from(0..10).sample(&mut rand::thread_rng());
+    let millis = Uniform::from(5_000..6_000).sample(&mut rand::thread_rng());
     println!(
-        "[{}] # get_page({}) will complete in {} ms",
+        "[{}] # get_page({}) will complete in {} ms on {:?}",
         START_TIME.elapsed().as_millis(),
         i,
-        millis
+        millis,
+        std::thread::current().id()
     );
 
     sleep(Duration::from_millis(millis)).await;
