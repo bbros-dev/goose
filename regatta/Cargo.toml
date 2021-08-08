@@ -71,7 +71,7 @@ hyper = { version = "0.14", features = ["full"] }
 indicatif = "0.16.2"
 lazy_static = "1.4.0"
 libp2p = { version = "^0.39.1", features = ["tcp-tokio", "dns-tokio"] }
-lol-core = { version="", features = ["persistency"] }
+lol-core = { version="0.7.2", features = ["persistency"] }
 log = "0.4"
 once_cell = "1.5"
 postcard = "0.7"
