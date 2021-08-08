@@ -1,3 +1,4 @@
+use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
 use rand::distributions::{Distribution, Uniform};
 use signal_hook::consts::signal::*;
