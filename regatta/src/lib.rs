@@ -15,13 +15,13 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::io::{self};
 use std::string::ToString;
-use std::sync::RwLock;
 
-use std::{thread, time};
 
-use tokio::time::{sleep, Duration};
 
-use thiserror::Error;
+
+
+
+
 
 // A succinct and useful guide to custom error handling:
 // https://kazlauskas.me/entries/errors.html
@@ -128,7 +128,7 @@ pub async fn run() -> Result<(), anyhow::Error> {
 
     let content = tokio::fs::read_to_string(&args.path)
         .await
-        .map_err(|e| anyhow!("could not read file `{:?}`", &args.path))?;
+        .map_err(|_e| anyhow!("could not read file `{:?}`", &args.path))?;
 
     let pb = setup_progress_spinner()?;
 

@@ -2,14 +2,10 @@ pub mod cassette;
 
 use libp2p::futures::StreamExt;
 use libp2p::{
-    core::upgrade,
     floodsub::{Floodsub, FloodsubEvent, Topic},
     identity,
     mdns::{Mdns, MdnsEvent},
-    mplex,
-    noise::{Keypair, NoiseConfig, X25519Spec},
-    swarm::{NetworkBehaviourEventProcess, Swarm, SwarmBuilder},
-    tcp::TokioTcpConfig,
+    swarm::{NetworkBehaviourEventProcess, Swarm},
     NetworkBehaviour, PeerId, Transport,
 };
 use log::{error, info};
@@ -312,7 +308,7 @@ async fn handle_publish_recipe(cmd: &str) {
     }
 }
 
-async fn send_shutdown(cmd: &str) {}
+async fn send_shutdown(_cmd: &str) {}
 
 pub async fn match_command_line(line: String, mut swarm: &mut Swarm<RecipeBehaviour>) {
     match line.as_str() {

@@ -1,13 +1,10 @@
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    symbols,
-    text::{Span, Spans},
-    widgets::canvas::{Canvas, Line, Map, MapResolution, Rectangle},
+    layout::{Constraint, Layout},
+    style::{Color, Style},
+    text::{Span},
     widgets::{
-        Axis, BarChart, Block, Borders, Chart, Dataset, Gauge, List, ListItem, Paragraph, Row,
-        Sparkline, Table, Tabs, Wrap,
+        Block, Borders, Gauge, Paragraph,
     },
     Frame,
 };
