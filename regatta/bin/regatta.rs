@@ -98,13 +98,14 @@
 //! ["VCR cassette"]: https://github.com/vcr/vcr
 //!
 use anyhow::Error;
+use rand::distributions::{Distribution, Uniform};
 use signal_hook::consts::signal::*;
 use signal_hook::low_level;
 use signal_hook_tokio::Signals;
 
 use futures::stream::StreamExt;
 
-async fn handle_signals(signals: Signals) -> Result<(), Error> {
+async fn handle_signals(signals: Signals) {
     let mut signals = signals.fuse();
     while let Some(signal) = signals.next().await {
         match signal {
@@ -123,7 +124,7 @@ async fn handle_signals(signals: Signals) -> Result<(), Error> {
                 // SIGTERM intercept the "kill" command's default signal)
                 println!("Received SIGTERM SIGINT or SIGQUIT");
                 // Actually stop.
-                low_level::emulate_default_handler(SIGTSTP)?;
+                std::process::exit(1);
             }
             SIGTSTP => {
                 // SIGTSTP intercept Ctrl-Z at a terminal
@@ -132,18 +133,20 @@ async fn handle_signals(signals: Signals) -> Result<(), Error> {
             _ => unreachable!(),
         }
     }
-    Ok(())
+    //Ok(())
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // SIGKILL and SIGSTOP cannot be subscribed to.
-    let signals = Signals::new(&[SIGHUP, SIGTERM, SIGINT, SIGQUIT, SIGTSTP])?;
+    let signals = signal_hook_tokio::Signals::new(&[SIGHUP, SIGTERM, SIGINT, SIGQUIT, SIGTSTP])?;
     let handle = signals.handle();
 
     let signals_task = tokio::spawn(handle_signals(signals));
 
     // Execute program logic
+    //let millis = Uniform::from(5_000..6_000).sample(&mut rand::thread_rng());
+    //tokio::time::sleep(std::time::Duration::from_millis(millis)).await;
     regatta::run().await?;
 
     // Terminate the signal stream.
