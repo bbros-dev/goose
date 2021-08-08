@@ -1,5 +1,8 @@
 use lazy_static::lazy_static;
 use rand::distributions::{Distribution, Uniform};
+use signal_hook::consts::signal::*;
+use signal_hook_tokio::Signals;
+use std::io::Error;
 use std::time::Duration;
 use tokio::time::{sleep, Instant};
 
@@ -7,11 +10,32 @@ lazy_static! {
     static ref START_TIME: Instant = Instant::now();
 }
 
+async fn handle_signals(signals: Signals) {
+    let mut signals = signals.fuse();
+    while let Some(signal) = signals.next().await {
+        match signal {
+            SIGTERM | SIGINT | SIGQUIT => {
+                // Lets get out of here...
+                std::process::exit(1);
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
 #[tokio::main]
-async fn main() {
-    
+async fn main() -> Result<(), Error> {
+    let signals = Signals::new(&[SIGHUP, SIGTERM, SIGINT, SIGQUIT])?;
+    let handle = signals.handle();
+    let signals_task = tokio::spawn(handle_signals(signals));
+
     let page = get_page(42).await;
     println!("Page #42: {:?}", page);
+
+    // Terminate the signal stream.
+    handle.close();
+    signals_task.await?;
+    Ok(())
 }
 
 async fn get_page(i: usize) -> Vec<usize> {
