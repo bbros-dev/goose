@@ -130,7 +130,7 @@ pub async fn run() -> Result<(), anyhow::Error> {
         .await
         .map_err(|_e| anyhow!("could not read file `{:?}`", &args.path))?;
 
-    let pb = setup_progress_spinner()?;
+    //let pb = setup_progress_spinner()?;
 
     tokio::time::sleep(tokio::time::Duration::from_millis(5_000)).await;
 
@@ -142,11 +142,11 @@ pub async fn run() -> Result<(), anyhow::Error> {
     })?;
 
     // Mark the progress bar as finished.
-    pb.finish_with_message("Done.");
+    //pb.finish_with_message("Done.");
     Ok(())
 }
 
-fn setup_progress_spinner() -> Result<indicatif::ProgressBar, anyhow::Error> {
+async fn setup_progress_spinner() -> Result<indicatif::ProgressBar, anyhow::Error> {
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(120);
     pb.set_style(

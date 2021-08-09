@@ -12,8 +12,8 @@
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use futures::Stream;
-use hyper::{body::HttpBody as _, Client};
-use std::io::Write;
+
+
 
 //
 // Reference
@@ -24,13 +24,13 @@ use std::io::Write;
 /// It runs all async code on the caller's thread.
 // not tested: use futures::stream::Iter;
 // not tested: use tokio_stream::StreamExt;
-use futures::{stream, StreamExt};
+use futures::{StreamExt};
 
 //fn calibrate_ceiling<'a>(client: &'a Session, uri: &'a PreparedStatement, count: usize)
 fn calibrate_ceiling<'a>(count: i32) -> impl Stream<Item = std::time::Duration> + 'a {
     let concurrency = 128;
     futures::stream::iter(0..count)
-        .map(move |i| async move {
+        .map(move |_i| async move {
             //let mut request = request.bind();
             //let request = request.bind(0, i as i64).unwrap();
             let query_start = tokio::time::Instant::now();
@@ -52,8 +52,8 @@ async fn ceiling_benchmark() {
     let mut stream = calibrate_ceiling(count);
 
     // Process the received durations:
-    let benchmark_start = tokio::time::Instant::now();
-    while let Some(duration) = stream.next().await {
+    let _benchmark_start = tokio::time::Instant::now();
+    while let Some(_duration) = stream.next().await {
         // ... optionally compute durations statistics
     }
     // println!(
@@ -82,7 +82,7 @@ fn calibrate_overhead<'a>(count: i32) -> impl Stream<Item = std::time::Duration>
     //let uri = "http://localhost:3000/".parse()?;
     let concurrency = 128;
     futures::stream::iter(0..count)
-        .map(move |i | async move {
+        .map(move |_i | async move {
             //let request = request.bind(0, i as i64).unwrap();
             let query_start = tokio::time::Instant::now();
             //let response = client.get(uri).await?;
@@ -105,8 +105,8 @@ async fn overhead_benchmark() {
     let mut stream = calibrate_overhead(count);
 
     // Process the received durations:
-    let benchmark_start = tokio::time::Instant::now();
-    while let Some(duration) = stream.next().await {
+    let _benchmark_start = tokio::time::Instant::now();
+    while let Some(_duration) = stream.next().await {
         // ... optionally compute durations statistics
     }
     // println!(
