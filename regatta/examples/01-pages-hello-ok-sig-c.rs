@@ -20,7 +20,7 @@ pub mod mymod {
             match signal {
                 signal_hook::consts::SIGTERM | signal_hook::consts::SIGINT | signal_hook::consts::SIGQUIT => {
                     // Lets get out of here...
-                    println!("Trapped signal to quit. Exiting");
+                    println!("Trapped signal to quit. Exiting!");
                     std::process::exit(1);
                 }
                 _ => unreachable!(),
