@@ -2,6 +2,7 @@
 name = "regatta"
 version = "0.1.0"
 edition = "2018"
+#edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -71,6 +72,7 @@ hyper = { version = "0.14", features = ["full"] }
 indicatif = "0.16.2"
 lazy_static = "1.4.0"
 libp2p = { version = "^0.39.1", features = ["tcp-tokio", "dns-tokio"] }
+linya = "0.2"
 lol-core = { version="0.7.2", features = ["persistency"] }
 log = "0.4"
 once_cell = "1.5"
