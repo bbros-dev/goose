@@ -1,4 +1,3 @@
-use futures::stream::{StreamExt};
 use lazy_static::lazy_static;
 use rand::distributions::{Distribution, Uniform};
 use signal_hook::consts::signal::*;
@@ -11,7 +10,7 @@ lazy_static! {
     static ref START_TIME: Instant = Instant::now();
 }
 
-pub mod p2p {
+pub mod mymod {
 
     use futures::stream::{StreamExt};
 
@@ -34,7 +33,7 @@ pub mod p2p {
 async fn main() -> Result<(), Error> {
     let signals = signal_hook_tokio::Signals::new(&[SIGHUP, SIGTERM, SIGINT, SIGQUIT])?;
     let handle = signals.handle();
-    let signals_task = tokio::spawn(p2p::handle_signals(signals));
+    let signals_task = tokio::spawn(mymod::handle_signals(signals));
 
     let page = get_page(42).await;
     println!("Page #42: {:?}", page);
