@@ -52,7 +52,7 @@ async fn main() -> Result<(), Error> {
 }
 
 // The progress value is allowed to change (`mut`able).
-// The bar value isn't expected to change so we can pass a reference to the immutable value
+// The bar value does not change so pass a reference to the immutable value.
 async fn get_page(i: usize, mut progress: linya::Progress, bar: &linya::Bar) -> Vec<usize> {
     let millis = Uniform::from(5_000..6_000).sample(&mut rand::thread_rng());
 
