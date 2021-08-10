@@ -31,7 +31,7 @@ pub mod mymod {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let signals = signal_hook_tokio::Signals::new(&[SIGHUP, SIGTERM, SIGINT, SIGQUIT])?;
+    let signals = signal_hook_tokio::Signals::new(&[SIGTERM, SIGINT, SIGQUIT])?;
     let handle = signals.handle();
     let signals_task = tokio::spawn(mymod::handle_signals(signals));
 
