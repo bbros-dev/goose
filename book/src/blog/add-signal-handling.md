@@ -14,14 +14,18 @@ Here I extend Guillaume's example by adding signal handling to one of his
 examples.
 In case you haven't guessed already, I decided to take
 this approach in order to understand why some non-trivial code was not working.
-
-NOTE
+---
+**NOTE**
     The full code examples are available on [this GitHub repository].
     You can run each example (or obtain the example compilation error) with `cargo run --example <example name>`.
     At the time of writing, I’ve tested them with Rust version 1.53.0.
 
+    ```bash
     $ cargo --version
     cargo 1.53.0 (4369396ce 2021-04-27)
+    ```
+
+---
 
 The dependencies in `Cargo.toml` are
 
