@@ -66,7 +66,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let signals_task = tokio::spawn(mymod::handle_signals(interrupts, terminates));
 
-
     println!("First 10 pages:\n{:?}", get_n_pages(10).await);
 
     signals_task.await?;
