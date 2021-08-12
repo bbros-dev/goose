@@ -12,72 +12,128 @@ lazy_static! {
 
 pub mod cli {
 
-    /// Listens for the CLI shutdown signal.
+    /// Listens for then tracks the CLI shutdown signal.
     ///
-    /// Shutdown is signalled using a `broadcast::Receiver`. Only a single value is
-    /// ever sent. Once a value has been sent via the broadcast channel, the server
+    /// Shutdown is signalled by the user (ctl-c) and managed using a
+    /// `tokio::sync::oneshot::channel`.
+    /// Only a single value is ever sent on this channel.
+    /// Once a value has been sent via the oneshot channel, the CLI application
     /// should shutdown.
     ///
-    /// The `Shutdown` struct listens for the signal and tracks that the signal has
-    /// been received. Callers may query for whether the shutdown signal has been
-    /// received or not.
+    /// The `Shutdown` struct listens for the shutdown signal and tracks
+    /// the signal state.
+    /// Callers are passed this struct and may query the shutdown signal state.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// struct Signal {
+    ///     shutdown: Shutdown,
+    /// }
+    /// let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
+    ///
+    /// let mut signal = Signal {
+    ///     shutdown: Shutdown.new(shutdown_rx)
+    /// }
+    /// println!("Do we shutdown now? {:?}", signal.shutdown.is_now);
+    /// assert!(!signal.shutdown.is_now);
+    /// ```
     #[derive(Debug)]
-    pub(crate) struct Shutdown {
+    pub(crate) struct Shutdown<'a> {
         /// `true` if the shutdown signal has been received
-        shutdown: bool,
+        pub is_now: bool,
 
-        /// The receive half of the channel used to listen for shutdown.
-        notify: broadcast::Receiver<()>,
+        /// The receive (RX) half of the channel used to listen for shutdown.
+        listen: &'a mut tokio::sync::oneshot::Receiver<()>,
     }
 
-    impl Shutdown {
+    impl<'a> Shutdown<'a> {
         /// Create a new `Shutdown` backed by the given `broadcast::Receiver`.
-        pub(crate) fn new(notify: broadcast::Receiver<()>) -> Shutdown {
+        /// We'll borrow the Receiver when creating a new shutdown
+        pub(crate) fn new(listen: &'a mut tokio::sync::oneshot::Receiver<()>) -> Shutdown {
             Shutdown {
-                shutdown: false,
-                notify,
+                is_now: false,
+                listen,
             }
         }
 
-        /// Returns `true` if the shutdown signal has been received.
-        pub(crate) fn is_shutdown(&self) -> bool {
-            self.shutdown
-        }
-
-        /// Receive the shutdown notice, waiting if necessary.
-        pub(crate) async fn recv(&mut self) {
+        /// Check for a shutdown notice. This uses a synchronized channel from
+        /// Tokio waiting is unnecessary.
+        pub(crate) async fn check(&mut self) {
             // If the shutdown signal has already been received, then return
             // immediately.
-            if self.shutdown {
+            if self.is_now {
                 return;
             }
 
             // Cannot receive a "lag error" as only one value is ever sent.
-            let _ = self.notify.recv().await;
-
-            // Remember that the signal has been received.
-            self.shutdown = true;
+            // Can receive the signal after the TX end has closed, if the
+            // signal was sent before the TX end was closed.
+            // NOTE:
+            //      We consider the `try_recv` call as non-blocking.
+            //      It is not asynchronous (cannot use `try_recv().await`).
+            match self.listen.try_recv() {
+                Ok(_) => {
+                    // Remember that the signal has been received.
+                    self.is_now = true;
+                    // Drop the receiver - forcing the sender to close.
+                    println!("User-sent abort/quit/exit signal detected.")
+                }
+                Err(tokio::sync::oneshot::error::TryRecvError::Closed) => {
+                    // A message can be sent before the sender `closed()`,
+                    // and still be receivable.
+                    match self.listen.try_recv() {
+                        Ok(_) => {
+                            // Remember that the signal has been received.
+                            self.is_now = true;
+                            // Drop the receiver - forcing the sender to close.
+                            println!("User-sent abort/quit/exit signal detected.")
+                        }
+                        Err(_) => {
+                            println!(
+                                "Sender (tx) is closed. No user-sent shutdown signal detected."
+                            );
+                        }
+                    };
+                }
+                Err(tokio::sync::oneshot::error::TryRecvError::Empty) => {
+                    println!("Sender (tx) is open. No user-sent shutdown signal detected.")
+                } // This is unreachable.
+            };
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn it_works() {
+            assert_eq!(2 + 2, 4);
+        }
+    }
+
     // This is the simplest signal handling in tokio.
     // We don't pass anything between the thread running `main` and the thread
     // `tokio::spawn`ed to run this function.
-    pub async fn handle_signal(mut some_tx: Option<tokio::sync::oneshot::Sender<String>>) {
-        //let tx = some_tx;
-        tokio::signal::ctrl_c().await.expect("Handle ctl-c (Tokio built in)");
+    pub async fn handle_signal(mut some_tx: Option<tokio::sync::oneshot::Sender<()>>) {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Handle ctl-c (Tokio built in)");
+
         println!("Trapped signal clt-c to quit.");
-        //let Some(tx) = some_tx.take();
+
         if let Some(tx) = some_tx.take() {
-            match tx.send("Gracefully".to_string()){
+            match tx.send(()) {
                 Ok(()) => println!("The message may be received."),
-                Err(e) => println!("The message will never be received: {:?}",e),
+                Err(e) => println!("The message will never be received: {:?}", e),
             }
         }
+
         if let Some(mut tx) = some_tx {
             // Wait for the associated `rx` handle to be `rx.close()` or`drop(rx)`ed
             tx.closed().await;
             println!("The receiver (rx) is closed or dropped.");
         }
+
         println!("Exiting!");
         //std::process::exit(1);
     }
@@ -99,13 +155,25 @@ fn main() {
     std::process::exit(real_main());
 }
 
+struct Signal<'a> {
+    shutdown: cli::Shutdown<'a>
+}
+
 #[tokio::main]
 async fn real_main() -> i32 {
     let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+    // Wrap the Sender in Option to allow taking it by value, because
+    // they consume themselves after one use
     let mut some_shutdown_tx = Some(shutdown_tx);
-    let signals_task = tokio::spawn(cli::handle_signal( some_shutdown_tx));
 
-    println!("First 10 pages:\n{:?}", get_n_pages(10).await);
+    // The Receiver does not consume itself, so no need to treat as an `Option`.
+    let signal = Signal {
+        shutdown: cli::Shutdown::new(&mut shutdown_rx),
+    };
+
+    let signals_task = tokio::spawn(cli::handle_signal(some_shutdown_tx));
+
+    println!("First 10 pages:\n{:?}", get_n_pages(10, signal).await);
 
     // From point on the user, *likely*, has not sent a signal.
     // Anyway, we are now on the shutdown glide-path.
@@ -116,13 +184,16 @@ async fn real_main() -> i32 {
     let msg = match shutdown_rx.try_recv() {
         Ok(_) => {
             println!("User-sent abort/quit/exit signal detected.")
-        },
+        }
         Err(tokio::sync::oneshot::error::TryRecvError::Closed) => {
-            println!("Sender (tx) is closed. No user-sent abort/quit/exit signal detected.")
-        },
+            println!("Sender (tx) is closed. No user-sent shutdown signal detected.")
+        }
+        Err(tokio::sync::oneshot::error::TryRecvError::Empty) => {
+            println!("Sender (tx) is open. No user-sent shutdown signal detected.")
+        }
         Err(_) => {
             println!("Shutdown sender (tx) is dropped without sending.");
-        },
+        }
     };
     // `drop(tx)` with or without sending, is achieved by setting the
     // `Option` to `None`
@@ -134,7 +205,12 @@ async fn real_main() -> i32 {
     0
 }
 
-async fn get_n_pages(n: usize) -> Vec<Vec<usize>> {
+async fn get_n_pages<'a>(n: usize, mut signal: Signal<'a>) -> Vec<Vec<usize>> {
+    signal.shutdown.check();
+    if signal.shutdown.is_now {
+        println!("Shutdown now from get_n_pages(...)");
+        return vec![vec![1]];
+    }
     get_pages().take(n).collect().await
 }
 
