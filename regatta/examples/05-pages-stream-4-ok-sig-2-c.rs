@@ -1,5 +1,6 @@
 //Add to Cargo.toml
 //ctrlc = { version = "3.1", features = ["termination"] }
+use async_stream::stream;
 use futures::{stream, Stream, StreamExt};
 use lazy_static::lazy_static;
 use rand::distributions::{Distribution, Uniform};
@@ -60,9 +61,11 @@ pub mod cli {
         /// Check for a shutdown notice. This uses a synchronized channel from
         /// Tokio waiting is unnecessary.
         pub(crate) async fn check(&mut self) {
+            println!("Checking shutdown signal...");
             // If the shutdown signal has already been received, then return
             // immediately.
             if self.is_now {
+                println!("... signal already received.");
                 return;
             }
 
@@ -167,13 +170,13 @@ async fn real_main() -> i32 {
     let mut some_shutdown_tx = Some(shutdown_tx);
 
     // The Receiver does not consume itself, so no need to treat as an `Option`.
-    let signal = Signal {
+    let mut signal = Signal {
         shutdown: cli::Shutdown::new(&mut shutdown_rx),
     };
 
     let signals_task = tokio::spawn(cli::handle_signal(some_shutdown_tx));
 
-    println!("First 10 pages:\n{:?}", get_n_pages(10, signal).await);
+    println!("First 10 pages:\n{:?}", get_n_pages(10, &mut signal).await);
 
     // From point on the user, *likely*, has not sent a signal.
     // Anyway, we are now on the shutdown glide-path.
@@ -205,20 +208,35 @@ async fn real_main() -> i32 {
     0
 }
 
-async fn get_n_pages<'a>(n: usize, mut signal: Signal<'a>) -> Vec<Vec<usize>> {
-    signal.shutdown.check();
+async fn get_n_pages<'a>(n: usize, signal: &'a mut Signal<'a>) -> Vec<Vec<usize>> {
+    signal.shutdown.check().await;
     if signal.shutdown.is_now {
         println!("Shutdown now from get_n_pages(...)");
         return vec![vec![1]];
     }
-    get_pages().take(n).collect().await
+    get_pages(signal).take(n).collect().await
 }
 
-fn get_pages() -> impl Stream<Item = Vec<usize>> {
-    stream::iter(0..).then(|i| get_page(i))
+fn get_pages<'a>(mut signal: &'a mut Signal<'a>) -> impl Stream<Item = Vec<usize>> + 'a
+{
+    // The need for lifetimes means we need to switch to async-streams to give
+    // the compiler the required insight into what is happening:
+    // See: https://users.rust-lang.org/t/lifetimes-adding-a-parameter-inside-a-3rd-party-closure/63542/3?u=taqtiqa-mark
+    // Note: As of 1.53 labels on blocks are an unstable feature.
+    //stream::iter(0..).then(move |i| get_page(i, &mut signal) )
+    stream! {
+        for i in 0.. {
+           yield get_page(i, &mut signal).await;
+        }
+    }
 }
 
-async fn get_page(i: usize) -> Vec<usize> {
+async fn get_page<'a, 'b: 'a>(i: usize, signal: &'a mut Signal<'b>) -> Vec<usize> {
+    signal.shutdown.check().await;
+    if signal.shutdown.is_now {
+        println!("Shutdown now from get_page(...)");
+        return vec![0];
+    }
     let millis = Uniform::from(1_000..2_000).sample(&mut rand::thread_rng());
     println!(
         "[{}] # get_page({}) will complete in {} ms on {:?}",
