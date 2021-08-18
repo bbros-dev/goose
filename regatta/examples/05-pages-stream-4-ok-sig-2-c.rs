@@ -49,7 +49,7 @@ pub mod cli {
     }
 
     impl<'a> Shutdown<'a> {
-        /// Create a new `Shutdown` backed by the given `broadcast::Receiver`.
+        /// Create a new `Shutdown` backed by the given `tokio::sync::oneshot::Receiver`.
         /// We'll borrow the Receiver when creating a new shutdown
         pub(crate) fn new(listen: &'a mut tokio::sync::oneshot::Receiver<()>) -> Shutdown {
             Shutdown {
@@ -59,11 +59,10 @@ pub mod cli {
         }
 
         /// Check for a shutdown notice. This uses a synchronized channel from
-        /// Tokio waiting is unnecessary.
+        /// Tokio. Waiting is unnecessary.
         pub(crate) async fn check(&mut self) {
             println!("Checking shutdown signal...");
-            // If the shutdown signal has already been received, then return
-            // immediately.
+            // If the shutdown signal has been received, return immediately.
             if self.is_now {
                 println!("... signal already received.");
                 return;
@@ -80,7 +79,7 @@ pub mod cli {
                     // Remember that the signal has been received.
                     self.is_now = true;
                     // Drop the receiver - forcing the sender to close.
-                    println!("User-sent abort/quit/exit signal detected.")
+                    println!("... user-sent abort/quit/exit signal detected.")
                 }
                 Err(tokio::sync::oneshot::error::TryRecvError::Closed) => {
                     // A message can be sent before the sender `closed()`,
@@ -90,18 +89,19 @@ pub mod cli {
                             // Remember that the signal has been received.
                             self.is_now = true;
                             // Drop the receiver - forcing the sender to close.
-                            println!("User-sent abort/quit/exit signal detected.")
+                            println!("... user-sent abort/quit/exit signal detected.")
                         }
                         Err(_) => {
                             println!(
-                                "Sender (tx) is closed. No user-sent shutdown signal detected."
+                                "... sender (tx) is closed. No user-sent shutdown signal detected."
                             );
                         }
                     };
                 }
+                // This is unreachable - but here for the record:
                 Err(tokio::sync::oneshot::error::TryRecvError::Empty) => {
-                    println!("Sender (tx) is open. No user-sent shutdown signal detected.")
-                } // This is unreachable.
+                    println!("... sender (tx) is open. No user-sent shutdown signal detected.")
+                }
             };
         }
     }
@@ -116,7 +116,7 @@ pub mod cli {
 
     // This is the simplest signal handling in tokio.
     // We don't pass anything between the thread running `main` and the thread
-    // `tokio::spawn`ed to run this function.
+    // `tokio::spawn`ed to run this function - we just `send(())`
     pub async fn handle_signal(mut some_tx: Option<tokio::sync::oneshot::Sender<()>>) {
         tokio::signal::ctrl_c()
             .await
@@ -137,8 +137,7 @@ pub mod cli {
             println!("The receiver (rx) is closed or dropped.");
         }
 
-        println!("Exiting!");
-        //std::process::exit(1);
+        println!("Graceful shutdown initiated.");
     }
 }
 
@@ -159,7 +158,7 @@ fn main() {
 }
 
 struct Signal<'a> {
-    shutdown: cli::Shutdown<'a>
+    shutdown: cli::Shutdown<'a>,
 }
 
 #[tokio::main]
@@ -178,22 +177,24 @@ async fn real_main() -> i32 {
 
     println!("First 10 pages:\n{:?}", get_n_pages(10, &mut signal).await);
 
-    // From point on the user, *likely*, has not sent a signal.
+    // From here onwards the user, *likely*, has not sent a signal.
     // Anyway, we are now on the shutdown glide-path.
-    // A `rx.close()` prevents the `tx` side from sending.
+    // A `rx.close()` prevents the `tx` side from sending, and user initiated
+    // shutdown will
     shutdown_rx.close();
     println!("If a User-signal has been sent: The `signal_handler` will shortly call `tx.closed().await`");
     // However, a `tx.send()` a 'just' before or during `rx.close()` was possible...
-    let msg = match shutdown_rx.try_recv() {
+    match shutdown_rx.try_recv() {
         Ok(_) => {
             println!("User-sent abort/quit/exit signal detected.")
         }
         Err(tokio::sync::oneshot::error::TryRecvError::Closed) => {
-            println!("Sender (tx) is closed. No user-sent shutdown signal detected.")
+            println!("Sender (tx) is closed. No previously user-sent shutdown signal detected.")
         }
         Err(tokio::sync::oneshot::error::TryRecvError::Empty) => {
             println!("Sender (tx) is open. No user-sent shutdown signal detected.")
         }
+        // This is unreachable - here for the record.
         Err(_) => {
             println!("Shutdown sender (tx) is dropped without sending.");
         }
@@ -217,8 +218,7 @@ async fn get_n_pages<'a>(n: usize, signal: &'a mut Signal<'a>) -> Vec<Vec<usize>
     get_pages(signal).take(n).collect().await
 }
 
-fn get_pages<'a>(mut signal: &'a mut Signal<'a>) -> impl Stream<Item = Vec<usize>> + 'a
-{
+fn get_pages<'a>(mut signal: &'a mut Signal<'a>) -> impl Stream<Item = Vec<usize>> + 'a {
     // The need for lifetimes means we need to switch to async-streams to give
     // the compiler the required insight into what is happening:
     // See: https://users.rust-lang.org/t/lifetimes-adding-a-parameter-inside-a-3rd-party-closure/63542/3?u=taqtiqa-mark
@@ -234,7 +234,7 @@ fn get_pages<'a>(mut signal: &'a mut Signal<'a>) -> impl Stream<Item = Vec<usize
 async fn get_page<'a, 'b: 'a>(i: usize, signal: &'a mut Signal<'b>) -> Vec<usize> {
     signal.shutdown.check().await;
     if signal.shutdown.is_now {
-        println!("Shutdown now from get_page(...)");
+        println!("Shutdown now from get_page({}, ...)", i);
         return vec![0];
     }
     let millis = Uniform::from(1_000..2_000).sample(&mut rand::thread_rng());
