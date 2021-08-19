@@ -1,6 +1,6 @@
-#[macro_use]
-#[cfg(test)]
-extern crate lazy_static;
+pub mod client;
+pub mod error;
+pub mod handler;
 
 use http::HttpClient;
 use mobc::{Connection, Pool};
@@ -8,13 +8,6 @@ use mobc_postgres::{tokio_postgres, PgConnectionManager};
 use std::convert::Infallible;
 use tokio_postgres::NoTls;
 use warp::{Filter, Rejection, Reply};
-
-mod db;
-mod error;
-mod handler;
-mod http;
-#[cfg(test)]
-mod tests;
 
 type Result<T> = std::result::Result<T, Rejection>;
 type DBCon = Connection<PgConnectionManager<NoTls>>;

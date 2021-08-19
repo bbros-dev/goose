@@ -70,6 +70,7 @@ futures-signals = "0.3.22"
 hdrhistogram = "7"
 heapless = "0.7"
 hyper = { version = "0.14", features = ["full"] }
+hyper-tls = "0.5.0"
 # A progress bar and cli reporting library for Rust
 indicatif = "0.16.2"
 lazy_static = "1.4.0"
@@ -111,6 +112,7 @@ tonic = "0.4"
 tui = "0.14"
 tungstenite = "0.14"
 url = "2.2"
+warp = "0.3.1"
 
 [dev-dependencies]
 assert_cmd = "1.0.7"
@@ -118,12 +120,14 @@ cargo-criterion = "1.0.1"
 criterion = "0.3"
 critcmp = "0.1.7"
 duct = "0.13.5"
+lazy_static = "=1.4.0"
 mockall = "0.10.2"
 mockall_double = "0.2.0"
 predicates = "2.0.0"
 plotters = "0.3"
 rexpect = "0.4.0"
 tempfile = "3.2.0"
+wiremock = "0.5.6"
 
 [profile.dev]
 lto = false

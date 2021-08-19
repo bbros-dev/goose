@@ -1,4 +1,5 @@
 // mod histogram;
+pub mod calibrate;
 pub mod p2p;
 pub mod raft;
 pub mod tender;
@@ -6,6 +7,8 @@ pub mod tender;
 #[macro_use]
 extern crate clap;
 extern crate clap_verbosity_flag;
+#[cfg(test)]
+extern crate lazy_static;
 
 use anyhow::{anyhow, bail, Context, Result};
 use clap::App;

@@ -1,4 +1,4 @@
-use crate::error;
+use crate::calibrate::error;
 use hyper::{body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
 use hyper_tls::HttpsConnector;
 use mobc::async_trait;
@@ -7,7 +7,7 @@ use serde_json::from_slice;
 
 type Result<T> = std::result::Result<T, error::Error>;
 
-const URI: &str = "https://cat-fact.herokuapp.com";
+const URI: &str = "https://127.0.0.1";
 
 #[async_trait]
 pub trait HttpClient: Send + Sync + Clone + 'static {
