@@ -125,6 +125,9 @@ plotters = "0.3"
 rexpect = "0.4.0"
 tempfile = "3.2.0"
 
+[profile.dev]
+lto = false
+
 [[bench]]
 name = "p2p"
 harness = false
