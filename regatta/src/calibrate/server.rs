@@ -21,10 +21,6 @@ type DBCon = Connection<PgConnectionManager<NoTls>>;
 type DBPool = Pool<PgConnectionManager<NoTls>>;
 
 #[tokio::main]
-async fn main() {
-    run().await;
-}
-
 async fn run() {
     let db_pool = db::create_pool().expect("database pool can be created");
     let db_access = db::DBAccess::new(db_pool);
