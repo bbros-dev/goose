@@ -23,6 +23,10 @@ async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallib
     Ok(Response::new(Body::from("Hello World!")))
 }
 
+// async fn hello(content: hyper::body::Bytes) -> std::result::Result<Response<Body>, Infallible> {
+//     Ok(Response::new(Body::from(content)))
+// }
+
 // #[tokio::main]
 async fn run() {
 
@@ -30,9 +34,16 @@ async fn run() {
 
     //pretty_env_logger::init();
 
+    //let bytes = hyper::body::Bytes::from_static(b"Hello World!");
+
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
     let make_svc = make_service_fn(|_conn| {
+        // Documentation: For Bytes implementations which refer to constant
+        // memory (e.g. created via Bytes::from_static()) the cloning
+        // implementation will be a no-op.
+        //let bytes = bytes.clone();
+
         // This is the `Service` that will handle the connection.
         // `service_fn` is a helper to convert a function that
         // returns a Response into a `Service`.
