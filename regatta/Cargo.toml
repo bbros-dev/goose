@@ -45,6 +45,12 @@ path = "bin/tender.rs"
 # [criterion-bench-workaround]
 bench = false
 
+[[bin]]
+name = "reqs"
+path = "bin/reqs.rs"
+# [criterion-bench-workaround]
+bench = false
+
 [lib]
 # [criterion-bench-workaround]
 bench = false
@@ -117,7 +123,7 @@ warp = "0.3.1"
 [dev-dependencies]
 assert_cmd = "1.0.7"
 cargo-criterion = "1.0.1"
-criterion = "0.3"
+criterion = {version = "0.3", features = ["async_tokio"]}
 critcmp = "0.1.7"
 duct = "0.13.5"
 lazy_static = "=1.4.0"
@@ -134,4 +140,8 @@ lto = false
 
 [[bench]]
 name = "p2p"
+harness = false
+
+[[bench]]
+name = "reqs"
 harness = false

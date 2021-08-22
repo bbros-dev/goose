@@ -2,60 +2,97 @@ pub mod client;
 pub mod error;
 pub mod handler;
 
-use http::HttpClient;
-use mobc::{Connection, Pool};
-use mobc_postgres::{tokio_postgres, PgConnectionManager};
+use crate::calibrate::client::HttpClient;
+//use hyper::{body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
 use std::convert::Infallible;
-use tokio_postgres::NoTls;
-use warp::{Filter, Rejection, Reply};
 
-type Result<T> = std::result::Result<T, Rejection>;
-type DBCon = Connection<PgConnectionManager<NoTls>>;
-type DBPool = Pool<PgConnectionManager<NoTls>>;
+use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Client as HyperClient, Request, Response, Server as HyperServer};
+use lazy_static::lazy_static;
+//use std::convert::Infallible;
+use std::sync::atomic::{AtomicBool, Ordering};
+//use warp::{Filter, Rejection, Reply};
 
-#[tokio::main]
+type Result<T> = std::result::Result<T, Infallible>;
+
+lazy_static! {
+    static ref SERVER: tokio::sync::RwLock<Server> = tokio::sync::RwLock::new(Server::new());
+}
+
+async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallible> {
+    Ok(Response::new(Body::from("Hello World!")))
+}
+
+// #[tokio::main]
 async fn run() {
-    let db_pool = db::create_pool().expect("database pool can be created");
-    let db_access = db::DBAccess::new(db_pool);
 
-    db_access
-        .init_db()
-        .await
-        .expect("database can be initialized");
-    let http_client = http::Client::new();
+    //let http_client = crate::calibrate::client::Client::new();
 
-    println!("Server started at localhost:8080");
-    warp::serve(router(http_client, db_access))
-        .run(([0, 0, 0, 0], 8080))
-        .await;
+    //pretty_env_logger::init();
+
+    // For every connection, we must make a `Service` to handle all
+    // incoming HTTP requests on said connection.
+    let make_svc = make_service_fn(|_conn| {
+        // This is the `Service` that will handle the connection.
+        // `service_fn` is a helper to convert a function that
+        // returns a Response into a `Service`.
+        async { Ok::<_, Infallible>(service_fn(hello)) }
+    });
+
+    let addr = ([127, 0, 0, 1], 8888).into();
+
+    let server = HyperServer::try_bind(&addr).unwrap().serve(make_svc);
+
+    println!("Listening on http://{}", addr);
+
+    if let Err(e) = server.await {
+        eprintln!("server error: {}", e);
+    }
+    //Ok(())
 }
 
-fn router(
-    http_client: impl http::HttpClient,
-    db_access: impl db::DBAccessor,
-) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
-    let todo = warp::path("todo");
-    let todo_routes = todo
-        .and(warp::get())
-        .and(with_db(db_access.clone()))
-        .and_then(handler::list_todos_handler)
-        .or(todo
-            .and(warp::post())
-            .and(with_http_client(http_client.clone()))
-            .and(with_db(db_access.clone()))
-            .and_then(handler::create_todo));
+// fn router(
+//     http_client: impl crate::calibrate::client::HttpClient,
+// ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
+//     let todo = warp::path("todo");
+//     let todo_routes = todo
+//         .and(warp::get())
+//         .and_then(handler::list_todos_handler)
+//         .or(todo
+//             .and(warp::post())
+//             .and(with_http_client(http_client.clone()))
+//             .and_then(handler::create_todo));
 
-    todo_routes.recover(error::handle_rejection)
+//     todo_routes.recover(error::handle_rejection)
+// }
+
+// Server abstraction that guards server restarts during calibration loops.
+pub struct Server {
+    pub started: AtomicBool,
 }
 
-fn with_db(
-    db_access: impl db::DBAccessor,
-) -> impl Filter<Extract = (impl db::DBAccessor,), Error = Infallible> + Clone {
-    warp::any().map(move || db_access.clone())
+impl Server {
+    pub fn new() -> Server {
+        Server {
+            started: AtomicBool::new(false),
+        }
+    }
+
+    pub async fn init_server(&mut self) {
+        if !self.started.load(Ordering::Relaxed) {
+            std::thread::spawn(move || {
+                let rt = tokio::runtime::Runtime::new().expect("runtime starts");
+                rt.spawn(run());
+                loop {
+                    std::thread::sleep(std::time::Duration::from_millis(100_000));
+                }
+            });
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+            self.started.store(true, Ordering::Relaxed);
+        }
+    }
 }
 
-fn with_http_client(
-    http_client: impl HttpClient,
-) -> impl Filter<Extract = (impl HttpClient,), Error = Infallible> + Clone {
-    warp::any().map(move || http_client.clone())
+pub async fn init_real_server() {
+    SERVER.write().await.init_server().await;
 }

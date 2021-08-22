@@ -22,7 +22,7 @@ fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::c
             let statement = statement.clone();
             //Circa 13-15K req/sec
             //let (_parts, _body)  = session.get(statement).await.unwrap().into_parts();
-            let _ = session.get(statement).await.unwrap();
+            //let _ = session.get(statement).await.unwrap();
             query_start.elapsed()
 
             //futures::future::ready(query_start.elapsed()).await
@@ -44,12 +44,13 @@ async fn run_stream(session: std::sync::Arc<hyper::Client<hyper_tls::HttpsConnec
 
 #[tokio::main]
 async fn main(){
-    regatta::calibrate::init_real_server().await;
-    capacity_benchmark().await;
+    let count = 10000;
+
+    capacity_benchmark(count).await;
 }
 
-async fn capacity_benchmark() {
-    let count = 1000000;
+async fn capacity_benchmark(count: usize) {
+    regatta::calibrate::init_real_server().await;
 
     let session1 = regatta::calibrate::client::Client::new().client;
     let session2 = regatta::calibrate::client::Client::new().client;
@@ -63,10 +64,14 @@ async fn capacity_benchmark() {
     let statement = "http://localhost:8888/".parse::<hyper::Uri>().unwrap();
     let statement = std::sync::Arc::new(statement);
     let benchmark_start = Instant::now();
-    let thread_1 = run_stream(session1.clone(), statement.clone(), count / 2);
-    let thread_2 = run_stream(session2.clone(), statement.clone(), count / 2);
+    let thread_1 = run_stream(session1.clone(), statement.clone(), count / 4);
+    let thread_2 = run_stream(session2.clone(), statement.clone(), count / 4);
+    let thread_3 = run_stream(session1.clone(), statement.clone(), count / 4);
+    let thread_4 = run_stream(session2.clone(), statement.clone(), count / 4);
     thread_1.await;
     thread_2.await;
+    thread_3.await;
+    thread_4.await;
 
     println!(
         "Throughput: {:.1} request/s",
