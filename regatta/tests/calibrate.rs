@@ -3,7 +3,7 @@
 
 //use regatta::calibrate::{client, router};
 use hyper::{body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
-use hyper_tls::HttpsConnector;
+use hyper_rustls::HttpsConnector;
 use lazy_static::lazy_static;
 use mock::*;
 use std::sync::RwLock;

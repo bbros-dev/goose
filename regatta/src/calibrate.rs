@@ -18,9 +18,10 @@ type Result<T> = std::result::Result<T, Infallible>;
 lazy_static! {
     static ref SERVER: tokio::sync::RwLock<Server> = tokio::sync::RwLock::new(Server::new());
 }
+static HELLO: &[u8] = b"Hello World!";
 
-async fn hello(req: Request<Body>, content: Bytes) -> std::result::Result<Response<Body>, Infallible> {
-    Ok(Response::new(Body::from(content)))
+async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallible> {
+    Ok(Response::new(Body::from(HELLO)))
 }
 
 // async fn hello(content: hyper::body::Bytes) -> std::result::Result<Response<Body>, Infallible> {
@@ -38,7 +39,7 @@ async fn run() {
 
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
-    let make_svc = make_service_fn(|_conn| {
+    let make_svc = make_service_fn( |_| async {
         // Documentation: For Bytes implementations which refer to constant
         // memory (e.g. created via Bytes::from_static()) the cloning
         // implementation will be a no-op.
@@ -48,12 +49,12 @@ async fn run() {
         // `service_fn` is a helper to convert a function that
         // returns a Response into a `Service`.
         //async { Ok::<_, Infallible>(service_fn(hello)) }
-        futures::future::ok::<_, Infallible>(service_fn(hello))
+        Ok::<_, Infallible>(service_fn(hello))
     });
 
     let addr = ([127, 0, 0, 1], 8888).into();
 
-    let server = HyperServer::try_bind(&addr).unwrap().serve(make_svc);
+    let server = HyperServer::bind(&addr).serve(make_svc);
 
     println!("Listening on http://{}", addr);
 

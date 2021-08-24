@@ -124,9 +124,9 @@ async fn clientless_capacity(count: usize) {
     let statement = std::sync::Arc::new(statement);
     let benchmark_start = Instant::now();
     let thread_1 = run_clientless_stream(session.clone(), statement.clone(), count / 2);
-    let thread_2 = run_clientless_stream(session.clone(), statement.clone(), count / 2);
+    //let thread_2 = run_clientless_stream(session.clone(), statement.clone(), count / 2);
     thread_1.await;
-    thread_2.await;
+    //thread_2.await;
 
     println!(
         "Throughput: {:.1} request/s",
@@ -136,29 +136,29 @@ async fn clientless_capacity(count: usize) {
 
 fn calibrate_limit(c: &mut Criterion) {
     let mut group = c.benchmark_group("Calibrate");
-    let count = 10000;
+    let count = 100000;
     let tokio_executor = tokio::runtime::Runtime::new()
                                 .expect("initializing tokio runtime");
     group.bench_with_input(BenchmarkId::new("calibrate-limit", count), &count, |b, &s| {
         // Insert a call to `to_async` to convert the bencher to async mode.
         // The timing loops are the same as with the normal bencher.
         b.to_async(&tokio_executor).iter(|| capacity(count));
-    })
-        .measurement_time(Duration::from_millis(133_000));
+    });
+
     group.finish();
 }
 
 fn calibrate_clientless_limit(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Calibrate-Clientless");
     let count = 10000;
     let tokio_executor = tokio::runtime::Runtime::new()
                                 .expect("initializing tokio runtime");
+    let mut group = c.benchmark_group("Calibrate-Clientless");
+    group.measurement_time(Duration::from_secs(133));
     group.bench_with_input(BenchmarkId::new("calibrate-clientless-limit", count), &count, |b, &s| {
         // Insert a call to `to_async` to convert the bencher to async mode.
         // The timing loops are the same as with the normal bencher.
         b.to_async(&tokio_executor).iter(|| clientless_capacity(count));
-    })
-        .measurement_time(Duration::from_millis(133_000));
+    });
     group.finish();
 }
 
