@@ -82,7 +82,10 @@ serial_test = "0.5"
 native-tls = "0.2"
 rustls = "0.19"
 xsv = "0.13"
+pprof = { version = "0.5", features = ["criterion", "flamegraph", "protobuf"] }
 
+[profile.bench]
+debug = true
 ## Historical Benchmarks
 #
 # extern crate swanlingv0;

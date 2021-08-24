@@ -1,7 +1,7 @@
 use crate::calibrate::error;
 use async_trait::async_trait;
 use hyper::{body::HttpBody as _, body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
-use hyper_tls::HttpsConnector;
+use hyper_rustls::HttpsConnector;
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use serde_json::from_slice;
@@ -23,13 +23,15 @@ pub trait HttpClient: Send + Sync + Clone + 'static {
 
 #[derive(Clone)]
 pub struct Client {
-    pub client: HyperClient<HttpsConnector<HttpConnector>>,
+    pub client: HyperClient<HttpConnector>,
+    pub client_tls: HyperClient<HttpsConnector<HttpConnector>>,
 }
 
 impl Client {
     pub fn new() -> Self {
         Self {
-            client: https_client(),
+            client_tls: https_client(),
+            client: http_client(),
         }
     }
 
@@ -46,9 +48,20 @@ impl Client {
     }
 }
 
-fn https_client() -> HyperClient<hyper_tls::HttpsConnector<hyper::client::HttpConnector>> {
-    let https = hyper_tls::HttpsConnector::new();
+// hyper-tls crate
+// fn https_client() -> HyperClient<hyper_tls::HttpsConnector<hyper::client::HttpConnector>> {
+//     let https = hyper_tls::HttpsConnector::new();
+//     HyperClient::builder().build::<_, Body>(https)
+// }
+
+// hyper-rusttls
+fn https_client() -> HyperClient<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>> {
+    let https = hyper_rustls::HttpsConnector::with_native_roots();
     HyperClient::builder().build::<_, Body>(https)
+}
+
+fn http_client() -> HyperClient<hyper::client::HttpConnector> {
+    HyperClient::new()
 }
 
 // fn with_http_client(

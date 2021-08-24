@@ -19,8 +19,8 @@ lazy_static! {
     static ref SERVER: tokio::sync::RwLock<Server> = tokio::sync::RwLock::new(Server::new());
 }
 
-async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallible> {
-    Ok(Response::new(Body::from("Hello World!")))
+async fn hello(req: Request<Body>, content: Bytes) -> std::result::Result<Response<Body>, Infallible> {
+    Ok(Response::new(Body::from(content)))
 }
 
 // async fn hello(content: hyper::body::Bytes) -> std::result::Result<Response<Body>, Infallible> {
@@ -47,7 +47,8 @@ async fn run() {
         // This is the `Service` that will handle the connection.
         // `service_fn` is a helper to convert a function that
         // returns a Response into a `Service`.
-        async { Ok::<_, Infallible>(service_fn(hello)) }
+        //async { Ok::<_, Infallible>(service_fn(hello)) }
+        futures::future::ok::<_, Infallible>(service_fn(hello))
     });
 
     let addr = ([127, 0, 0, 1], 8888).into();
@@ -98,7 +99,7 @@ impl Server {
                     std::thread::sleep(std::time::Duration::from_millis(100_000));
                 }
             });
-            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             self.started.store(true, Ordering::Relaxed);
         }
     }

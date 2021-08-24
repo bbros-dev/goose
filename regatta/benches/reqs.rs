@@ -1,4 +1,6 @@
 use criterion::{BenchmarkId, black_box, criterion_group, criterion_main, Criterion};
+use pprof::criterion::{Output, PProfProfiler};
+
 //use criterion::async_executor::FuturesExecutor;
 use tokio::runtime::Runtime;
 
@@ -11,7 +13,7 @@ use std::time::Duration;
 use tokio::time::{sleep, Instant};
 
 
-fn make_clientless_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::Uri, count: usize)
+fn make_clientless_stream<'a>(session: &'a hyper::Client<hyper::client::HttpConnector>, statement: &'a hyper::Uri, count: usize)
     -> impl Stream + 'a {
 
     let concurrency_limit = 128;
@@ -32,7 +34,7 @@ fn make_clientless_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnect
 /// Note: Does *not* spawn new threads. Requests are concurrent not parallel.
 /// Async code runs on the caller thread.
 //    -> impl Stream<Item=Duration> + 'a {
-fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::Uri, count: usize)
+fn make_stream<'a>(session: &'a hyper::Client<hyper::client::HttpConnector>, statement: &'a hyper::Uri, count: usize)
     -> impl Stream + 'a {
 
     let concurrency_limit = 128;
@@ -49,7 +51,24 @@ fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::c
         .buffer_unordered(concurrency_limit)
 }
 
-async fn run_stream(session: std::sync::Arc<hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
+fn make_stream_tls<'a>(session: &'a hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::Uri, count: usize)
+    -> impl Stream + 'a {
+
+    let concurrency_limit = 128;
+
+    futures::stream::iter(0..count)
+        .map( move |i| async move {
+            let statement = statement.clone();
+            let query_start = tokio::time::Instant::now();
+            let _response = session.get(statement).await;
+            // let (_parts, _body)  = response.unwrap().into_parts();
+            query_start.elapsed()
+        })
+        // This will run up to `concurrency_limit` futures at a time:
+        .buffer_unordered(concurrency_limit)
+}
+
+async fn run_stream(session: std::sync::Arc<hyper::Client<hyper::client::HttpConnector>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
     let task = tokio::spawn(async move {
         let session = session.as_ref();
         let statement = statement.as_ref();
@@ -59,7 +78,17 @@ async fn run_stream(session: std::sync::Arc<hyper::Client<hyper_tls::HttpsConnec
     task.await;
 }
 
-async fn run_clientless_stream(session: std::sync::Arc<hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
+async fn run_stream_tls(session: std::sync::Arc<hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
+    let task = tokio::spawn(async move {
+        let session = session.as_ref();
+        let statement = statement.as_ref();
+        let mut stream = make_stream_tls(session, statement, count);
+        while let Some(duration) = stream.next().await {}
+    });
+    task.await;
+}
+
+async fn run_clientless_stream(session: std::sync::Arc<hyper::Client<hyper::client::HttpConnector>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
     let task = tokio::spawn(async move {
         let session = session.as_ref();
         let statement = statement.as_ref();
@@ -133,6 +162,10 @@ fn calibrate_clientless_limit(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, calibrate_limit, calibrate_clientless_limit);
+criterion_group! {
+    name = benches;
+    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
+    targets = calibrate_limit, calibrate_clientless_limit
+}
 
 criterion_main!(benches);

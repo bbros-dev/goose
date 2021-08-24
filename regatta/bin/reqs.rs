@@ -10,7 +10,7 @@ use tokio::time::{sleep, Instant};
 /// Note: this does *not* spawn a new thread.
 /// It runs all async code on the caller's thread.
 //    -> impl Stream<Item=Duration> + 'a {
-fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::Uri, count: usize)
+fn make_stream<'a>(session: &'a hyper::Client<hyper::client::HttpConnector>, statement: &'a hyper::Uri, count: usize)
     -> impl Stream + 'a {
 
     let concurrency_limit = 128;
@@ -32,7 +32,7 @@ fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::c
         .buffer_unordered(concurrency_limit)
 }
 
-async fn run_stream(session: std::sync::Arc<hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
+async fn run_stream(session: std::sync::Arc<hyper::Client<hyper::client::HttpConnector>>, statement: std::sync::Arc<hyper::Uri>, count: usize) {
     let task = tokio::spawn(async move {
         let session = session.as_ref();
         let statement = statement.as_ref();
