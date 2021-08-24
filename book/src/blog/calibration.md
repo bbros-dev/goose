@@ -57,9 +57,92 @@ simple server implementations.  We limit ourselves to the Rust based servers
 Our functionality is simpler than [kcup (v 0.2.1)] and
 [miniserve (v 0.14.0)], so we expected higher request/second rates.
 We attempted to change the response string into Bytes (static), but that made
-no improvement and has been reverted:
+no statistically significant improvement and is reverted:
 
-![Source: http://shiny.chemgrid.org/boxplotr/](images/string-bytes-revert-boxplot.svg "String to Bytes and Back Boxplot")
+![Source: http://shiny.chemgrid.org/boxplotr/](images/string-bytes-revert-boxplot-openssl.svg "String to Bytes and Back Boxplot")
+
+In the absence of known performance improvements that are low hanging fruit we
+decided to explore performance profiling in Rust.
+Two guideposts were helpful launch points:
+
+* [Nick Babcock's Guidelines on Benchmarking and Rust]: https://nickb.dev/blog/guidelines-on-benchmarking-and-rust
+* [Denis Bakhvalov's Top-Down performance analysis methodology]: https://easyperf.net/blog/2019/02/09/Top-Down-performance-analysis-methodology
+
+### TMAM
+
+### Valgrind
+
+```BASH
+RUSTFLAGS="-g" cargo bench --norun --package regatta --bench reqs -- --nocapture
+BENCH="./../target/release/reqs"
+T_ID="Calibrate/calibrate-limit/10000"
+valgrind --tool=callgrind \
+         --dump-instr=yes \
+         --collect-jumps=yes \
+         --simulate-cache=yes \
+         $BENCH --bench --profile-time 10 $T_ID
+kcachegrind
+```
+
+Valgrind showed the HTTPS client is generating many OpenSSL calls.
+
+One of the Rust learning curves is becoming familiar with the state of the Rust
+ecosystem - and the valgrind/kcachegrind insight resulted in a decision to
+replacing rust-tls with [rustls], via the [hyper-rustls] crate. We discovered
+[rustls] has:
+
+* passed a [substantial security audit]
+* [outperforms OpenSSL] across
+  * [Bulk performance]
+  * [Full handshakes]
+  * [Resumed handshakes]
+  * [Memory usage]
+* has substantial adoption efforts via
+  * [Linkerd]
+  * [Apache (mod_tls)]
+  * [Curl]
+
+The medians are internal: 14712.30, kcup: 27973.83, miniserve 10894.32.
+All 100 observations are:
+
+![Source: http://shiny.chemgrid.org/boxplotr/](images/string-bytes-revert-boxplot-rustls.svg "Internal(rustls) v KCup v Miniserve Boxplot")
+
+The relative positions are unchanged.  The the medians are higher and dispersion
+smaller because the test host was 'quieter'.  Switching to use rustls improved
+performance, but not to a level comparable to kcup.
+
+#### Flamegraph
+
+There are several option in this space.  [cargo-flamegraph] and [pprof-rs] and
+the pprof-rs integration with Criterion.
+
+Setup:
+
+```BASH
+echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
+```
+
+```BASH
+cargo install flamegraph
+flamegraph --no-inline -o reqs_flamegraph.svg ${BENCH}
+cargo flamegraph --bench reqs --features calibrate-limit -- --bench
+```
+
+#### pprof
+
+The `--profile-time 130` argument is required to generate the pprof output
+`profile.pb`.
+
+```bash
+cargo bench --bench reqs -- calibrate-limit --nocapture --profile-time 130
+go tool pprof -http=:8080 ./../target/criterion/Calibrate/calibrate-limit/10000/profile/profie.pb
+```
+
+Possible change:  Use tokio thread local sets for the server setup, and for
+the client
+
+* https://github.com/tokio-rs/tokio/issues/2095#issuecomment-573330413
+* https://github.com/tokio-rs/tokio/issues/2095#issuecomment-573334953
 
 ## Appendix
 
@@ -80,11 +163,11 @@ for i in {1..100} ;do wrk -t12 -c400 -d2s --latency http://127.0.0.1:5001 &>>min
 
 ```bash
 echo internal > int.txt
-cat internal.log | grep Throughput:|cut -d' ' -f2|sort >>in.txt
+cat internal.log | grep Throughput:|cut -d' ' -f2 >>int.txt
 echo kcup >kc.txt
-cat kcup.log |grep Requests/sec|cut -d: -f2|sort >>kc.txt
+cat kcup.log |grep Requests/sec|cut -d: -f2 >>kc.txt
 echo miniserve >ms.txt
-cat miniserve.log |grep Requests/sec|cut -d: -f2|sort >>ms.txt
+cat miniserve.log |grep Requests/sec|cut -d: -f2 >>ms.txt
 pr -tm -s, int.txt kc.txt ms.txt >int-kc-ms.csv
 rm int.txt kc.txt ms.txt internal.log kcup.log miniserve.log
 ```
@@ -121,6 +204,18 @@ pr -tm -s, int.txt int2.txt int2b.txt >int-int2b-int2.csv
 rm int.txt int2b.txt int2.txt internal.log internal2b.log internal2.log
 ```
 
-
+[flamegraph]: https://github.com/flamegraph-rs/flamegraph
+[hyper-rustls]: https://github.com/rustls/hyper-rustls
 [kcup (v 0.2.1)]: https://gitlab.com/mrman/kcup-rust
 [miniserve (v 0.14.0)]: https://github.com/svenstaro/miniserve
+[pprof-rs]: https://github.com/tikv/pprof-rs/blob/master/examples/criterion.rs
+[rustls]: https://github.com/rustls/rustls
+[Curl]: https://www.abetterinternet.org/post/memory-safe-curl/
+[Apache]: https://www.abetterinternet.org/post/memory-safe-tls-apache/
+[substantial security audit]: https://github.com/ctz/rustls/blob/master/audit/TLS-01-report.pdf
+[outperforms OpenSSL]: https://jbp.io/2019/07/01/rustls-vs-openssl-performance.html
+[linkerd]: https://github.com/linkerd/linkerd2
+[Bulk performance]: https://jbp.io/2019/07/02/rustls-vs-openssl-bulk-performance.html
+[Full handshakes]: https://jbp.io/2019/07/02/rustls-vs-openssl-handshake-performance.html
+[Resumed handshakes]: https://jbp.io/2019/07/02/rustls-vs-openssl-resumption-performance.html
+[Memory usage]: https://jbp.io/2019/07/02/rustls-vs-openssl-memory-usage.html
