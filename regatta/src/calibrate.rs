@@ -79,6 +79,10 @@ async fn run() {
 //     todo_routes.recover(error::handle_rejection)
 // }
 
+// Pooled connections to server (DB)... try to extend to hyper.
+// https://stackoverflow.com/q/57076970
+// https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=af120bda3f2354498f08f1d44d0a5925
+
 // Server abstraction that guards server restarts during calibration loops.
 pub struct Server {
     pub started: AtomicBool,
@@ -95,7 +99,7 @@ impl Server {
         if !self.started.load(Ordering::Relaxed) {
             std::thread::spawn(move || {
                 let rt = tokio::runtime::Runtime::new().expect("runtime starts");
-                rt.spawn(run());
+                rt.spawn( run() );
                 loop {
                     std::thread::sleep(std::time::Duration::from_millis(100_000));
                 }
@@ -103,6 +107,27 @@ impl Server {
             tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             self.started.store(true, Ordering::Relaxed);
         }
+    }
+
+    fn reuse_listener(addr: &SocketAddr, handle: &Handle) -> io::Result<TcpListener> {
+        let builder = match *addr {
+            SocketAddr::V4(_) => std::TcpListener::bind("127.0.0.1:8888")?,
+            SocketAddr::V6(_) => std::TcpListener::bind("[::1]:8888").unwrap()?,
+        };
+
+        #[cfg(unix)]
+        {
+            //use nix::sys::socket::{self, sockopt::ReusePort};
+            if let Err(e) = nix::sys::socket::setsockopt(builder.as_raw_fd(), nix::sys::sockopt::ReusePort, &true) {
+                eprintln!("error setting SO_REUSEPORT: {}", e);
+            }
+            if let Err(e) = nix::sys::socket::setsockopt(builder.as_raw_fd(), nix::sys::sockopt::ReuseAddr, &true) {
+                eprintln!("error setting SO_REUSEADDR: {}", e);
+            }
+        }
+
+        nix::sys::socket::listen(builder.as_raw_fd(), 1024)
+            .and_then(|l| tokio::net::TcpListener::from_listener(l, addr, handle))
     }
 }
 
