@@ -21,7 +21,9 @@ fn make_stream<'a>(session: &'a hyper::Client<hyper::client::HttpConnector>, sta
 
             let statement = statement.clone();
             //Circa 13-15K req/sec
-            //let (_parts, _body)  = session.get(statement).await.unwrap().into_parts();
+            async{
+                let (_parts, _body)  = session.get(statement).await.unwrap().into_parts();
+            }.await;
             //let _ = session.get(statement).await.unwrap();
             query_start.elapsed()
 
@@ -44,7 +46,7 @@ async fn run_stream(session: std::sync::Arc<hyper::Client<hyper::client::HttpCon
 
 #[tokio::main]
 async fn main(){
-    let count = 10000;
+    let count = 1000000;
 
     capacity_benchmark(count).await;
 }

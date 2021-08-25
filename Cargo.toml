@@ -86,6 +86,14 @@ pprof = { version = "0.5", features = ["criterion", "flamegraph", "protobuf"] }
 
 [profile.bench]
 debug = true
+
+## TechEmpower benchmark settings for hyper
+#
+[profile.release]
+opt-level = 3
+codegen-units = 1
+lto = true
+
 ## Historical Benchmarks
 #
 # extern crate swanlingv0;
