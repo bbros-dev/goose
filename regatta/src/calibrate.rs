@@ -108,20 +108,6 @@ where
         tokio::task::spawn_local(fut);
     }
 }
-// fn router(
-//     http_client: impl crate::calibrate::client::HttpClient,
-// ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
-//     let todo = warp::path("todo");
-//     let todo_routes = todo
-//         .and(warp::get())
-//         .and_then(handler::list_todos_handler)
-//         .or(todo
-//             .and(warp::post())
-//             .and(with_http_client(http_client.clone()))
-//             .and_then(handler::create_todo));
-
-//     todo_routes.recover(error::handle_rejection)
-// }
 
 // Pooled connections to server (DB)... try to extend to hyper.
 // https://stackoverflow.com/q/57076970
@@ -167,6 +153,52 @@ impl Server {
             self.started.store(true, Ordering::Relaxed);
         }
     }
+
+    /// Run Hyper server using multiple threads, with a server restricted to
+    /// the current thread is starts in.
+    pub(crate) fn run_mct<F>(per_connection: F)
+    where
+        F: Fn(tokio::net::TcpStream, &mut hyper::server::conn::Http, &Handle) + Clone + Send + 'static,
+    {
+        // Spawn a thread for each available core.
+        // We'll reuse the main thread for client futures.
+        for _ in 0..num_cpus::get() {
+            let per_connection = per_connection.clone();
+            std::thread::spawn(move || {
+                server_thread(per_connection);
+            });
+        }
+        //server_thread(per_connection);
+    }
+
+    fn server_thread<F>(per_connection: F)
+    where
+        F: Fn(tokio::net::TcpStream, &mut  hyper::server::conn::Http, &Handle) + Send + 'static,
+    {
+        let mut http =  hyper::server::conn::Http::new();
+        http.http1_only(true);
+
+        // Our event loop...
+        let mut core = Core::new().expect("core");
+        let handle = core.handle();
+
+        // Bind to 0.0.0.0:8080
+        let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
+        let tcp = reuse_listener(&addr, &handle).expect("couldn't bind to addr");
+
+        // For every accepted connection, spawn an HTTP task
+        let server = tcp
+            .incoming()
+            .for_each(move |(sock, _addr)| {
+                let _ = sock.set_nodelay(true);
+                per_connection(sock, &mut http, &handle);
+                Ok(())
+            })
+            .map_err(|e| eprintln!("accept error: {}", e));
+
+        core.run(server).expect("server");
+    }
+
 
     // async fn reuse_listener(addr: &std::net::SocketAddr, handle: &Handle) -> Result<TcpListener> {
     async fn reuse_listener(addr: &std::net::SocketAddr) -> Result<tokio::net::TcpListener> {
