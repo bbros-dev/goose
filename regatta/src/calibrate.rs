@@ -29,7 +29,7 @@ async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallib
 // }
 
 // #[tokio::main]
-async fn run() {
+async fn run_simple() {
 
     //let http_client = crate::calibrate::client::Client::new();
 
@@ -64,6 +64,50 @@ async fn run() {
     //Ok(())
 }
 
+// Run for HyperServer restricted to current thread
+async fn run_ct() {
+
+    // For every connection, we must make a `Service` to handle all
+    // incoming HTTP requests on said connection.
+    let make_svc = make_service_fn( |_| async {
+        // Documentation: For Bytes implementations which refer to constant
+        // memory (e.g. created via Bytes::from_static()) the cloning
+        // implementation will be a no-op.
+        //let bytes = bytes.clone();
+
+        // This is the `Service` that will handle the connection.
+        // `service_fn` is a helper to convert a function that
+        // returns a Response into a `Service`.
+        //async { Ok::<_, Infallible>(service_fn(hello)) }
+        Ok::<_, Infallible>(service_fn(hello))
+    });
+
+    let addr = ([127, 0, 0, 1], 8888).into();
+
+    let server = HyperServer::bind(&addr).executor(LocalExec).serve(make_svc);
+
+    println!("Listening on thread {:?} at http://{}", std::thread::current().id(), addr);
+
+    if let Err(e) = server.await {
+        eprintln!("server error: {}", e);
+    }
+    //Ok(())
+}
+
+// HyperServer needs to spawn background tasks, hence
+// configure an Executor that can spawn !Send futures...
+#[derive(Clone, Copy, Debug)]
+struct LocalExec;
+
+impl<F> hyper::rt::Executor<F> for LocalExec
+where
+    F: std::future::Future + 'static, // not requiring `Send`
+{
+    fn execute(&self, fut: F) {
+        // This will spawn into the running `LocalSet`.
+        tokio::task::spawn_local(fut);
+    }
+}
 // fn router(
 //     http_client: impl crate::calibrate::client::HttpClient,
 // ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
@@ -98,12 +142,27 @@ impl Server {
     pub async fn init_server(&mut self) {
         if !self.started.load(Ordering::Relaxed) {
             std::thread::spawn(move || {
-                let rt = tokio::runtime::Runtime::new().expect("runtime starts");
-                rt.spawn( run() );
-                loop {
-                    std::thread::sleep(std::time::Duration::from_millis(100_000));
-                }
+                // Configure a current-thread only runtime
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("build current-thread runtime");
+
+            // Combine `rt` with a `LocalSet`, for spawning !Send futures...
+            let local = tokio::task::LocalSet::new();
+            local.block_on(&rt, run_ct());
+            // loop {
+            //         std::thread::sleep(std::time::Duration::from_millis(100_000));
+            //     }
             });
+
+            // std::thread::spawn(move || {
+            //     let rt = tokio::runtime::Runtime::new().expect("runtime starts");
+            //     rt.spawn( run_simple() );
+            //     loop {
+            //         std::thread::sleep(std::time::Duration::from_millis(100_000));
+            //     }
+            // });
             tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             self.started.store(true, Ordering::Relaxed);
         }
