@@ -12,6 +12,7 @@ use rand::distributions::{Distribution, Uniform};
 use std::time::Duration;
 use tokio::time::{sleep, Instant};
 
+//static URL = b"http://127.0.0.1";
 
 // fn make_clientless_stream<'a>(session: &'a hyper::Client<hyper::client::HttpConnector>, statement: &'a hyper::Uri, count: usize)
 //     -> impl Stream + 'a {
@@ -57,7 +58,7 @@ fn make_stream_tls<'a>(session: &'a hyper::Client<hyper_rustls::HttpsConnector<h
     let concurrency_limit = 128;
 
     futures::stream::iter(0..count)
-        .map( move |i| async move {
+        .map( move |_| async move {
             let statement = statement.clone();
             let query_start = tokio::time::Instant::now();
             let _response = session.get(statement).await;
@@ -105,8 +106,8 @@ async fn capacity(count: usize) {
     let statement = "http://localhost:8888".parse::<hyper::Uri>().unwrap();
     let statement = std::sync::Arc::new(statement);
     let benchmark_start = Instant::now();
-    let thread_1 = run_stream(session.clone(), statement.clone(), count / 2);
-    //let thread_2 = run_stream(session.clone(), statement.clone(), count / 2);
+    let thread_1 = tokio::task::spawn(run_stream(session.clone(), statement.clone(), count / 2));
+    //let thread_2 = tokio::task::spawn(run_stream(session.clone(), statement.clone(), count / 2));
     thread_1.await;
     //thread_2.await;
 
@@ -135,6 +136,8 @@ async fn capacity(count: usize) {
 // }
 
 fn calibrate_limit(c: &mut Criterion) {
+    println!("Running on thread {:?}", std::thread::current().id());
+
     let mut group = c.benchmark_group("Calibrate");
     let count = 100000;
     let tokio_executor = tokio::runtime::Runtime::new()
