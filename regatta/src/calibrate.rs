@@ -109,25 +109,16 @@ impl Server {
         }
     }
 
-    fn reuse_listener(addr: &SocketAddr, handle: &Handle) -> io::Result<TcpListener> {
+    // async fn reuse_listener(addr: &std::net::SocketAddr, handle: &Handle) -> Result<TcpListener> {
+    async fn reuse_listener(addr: &std::net::SocketAddr) -> Result<tokio::net::TcpListener> {
         let builder = match *addr {
-            SocketAddr::V4(_) => std::TcpListener::bind("127.0.0.1:8888")?,
-            SocketAddr::V6(_) => std::TcpListener::bind("[::1]:8888").unwrap()?,
+            std::net::SocketAddr::V4(_) => tokio::net::TcpSocket::new_v4().expect("TCP v4"),
+            std::net::SocketAddr::V6(_) => tokio::net::TcpSocket::new_v6().expect("TCP v6"),
         };
-
-        #[cfg(unix)]
-        {
-            //use nix::sys::socket::{self, sockopt::ReusePort};
-            if let Err(e) = nix::sys::socket::setsockopt(builder.as_raw_fd(), nix::sys::sockopt::ReusePort, &true) {
-                eprintln!("error setting SO_REUSEPORT: {}", e);
-            }
-            if let Err(e) = nix::sys::socket::setsockopt(builder.as_raw_fd(), nix::sys::sockopt::ReuseAddr, &true) {
-                eprintln!("error setting SO_REUSEADDR: {}", e);
-            }
-        }
-
-        nix::sys::socket::listen(builder.as_raw_fd(), 1024)
-            .and_then(|l| tokio::net::TcpListener::from_listener(l, addr, handle))
+        builder.set_reuseport(true).expect("Reusable port");
+        builder.set_reuseaddr(true).expect("Reusable address");
+        builder.bind(*addr).expect("TCP socket");
+        Ok(builder.listen(1024).expect("TCP listener"))
     }
 }
 
