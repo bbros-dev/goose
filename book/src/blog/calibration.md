@@ -52,17 +52,17 @@ requests/second results are in the ballpark of results reported by 'similarly'
 simple server implementations.  We limit ourselves to the Rust based servers
 [kcup (v 0.2.1)] and [miniserve (v 0.14.0)] (sample of 100 simulations each):
 
-![Source: http://shiny.chemgrid.org/boxplotr/](images/int-kc-ms-boxplot.svg "Inital boxplot")
+![Source: http://shiny.chemgrid.org/boxplotr/](images/
+internal-kcup-miniserve-boxplot-rustls-uncongested-boxplot-openssl-congested.svg "Inital boxplot")
 
 Our functionality is simpler than [kcup (v 0.2.1)] and
 [miniserve (v 0.14.0)], so we expected higher request/second rates.
 We attempted to change the response string into Bytes (static), but that made
-no statistically significant improvement and is reverted:
+no statistically significant improvement and was reverted:
 
 ![Source: http://shiny.chemgrid.org/boxplotr/](images/string-bytes-revert-boxplot-openssl.svg "String to Bytes and Back Boxplot")
 
-In the absence of known performance improvements that are low hanging fruit we
-decided to explore performance profiling in Rust.
+In the absence of known, easy performance improvements we decided to explore performance profiling in Rust.
 Two guideposts were helpful launch points:
 
 * [Nick Babcock's Guidelines on Benchmarking and Rust]: https://nickb.dev/blog/guidelines-on-benchmarking-and-rust
@@ -84,12 +84,12 @@ valgrind --tool=callgrind \
 kcachegrind
 ```
 
-Valgrind showed the HTTPS client is generating many OpenSSL calls.
+Valgrind showed the HTTPS client is generating many calls related to OpenSSL.
 
-One of the Rust learning curves is becoming familiar with the state of the Rust
-ecosystem - and the valgrind/kcachegrind insight resulted in a decision to
-replacing rust-tls with [rustls], via the [hyper-rustls] crate. We discovered
-[rustls] has:
+When adopting Rust, one of the learning curves is becoming familiar with the
+state of the Rust ecosystem - and the valgrind/kcachegrind insight resulted in
+a decision to replace the `rust-tls` crate with [rustls], via the
+[hyper-rustls] crate. We learned [rustls] has:
 
 * passed a [substantial security audit]
 * [outperforms OpenSSL] across
@@ -102,16 +102,18 @@ replacing rust-tls with [rustls], via the [hyper-rustls] crate. We discovered
   * [Apache (mod_tls)]
   * [Curl]
 
-The medians are internal: 14712.30, kcup: 27973.83, miniserve 10894.32.
-All 100 observations are:
+After rewriting the client code to use [rustls], the median requests/second
+are internal: 14,712.30, kcup: 27,973.83, miniserve 10,894.32.
+All 300 observations are summarized in these box plots (uncongested test desktop):
 
-![Source: http://shiny.chemgrid.org/boxplotr/](images/string-bytes-revert-boxplot-rustls.svg "Internal(rustls) v KCup v Miniserve Boxplot")
+![Source: http://shiny.chemgrid.org/boxplotr/](images/internal-kcup-miniserve-boxplot-rustls-uncongested.svg "Internal(rustls) v KCup v Miniserve Boxplot")
 
 The relative positions are unchanged.  The the medians are higher and dispersion
-smaller because the test host was 'quieter'.  Switching to use rustls improved
-performance, but not to a level comparable to kcup.
+smaller because the test host was 'quieter'.  We know from the [rustls] benchmarks we
+linked to, that switching to use [rustls] improved performance, but not to a
+level comparable to [kcup].
 
-#### Flamegraph
+#### Flamegraphs
 
 There are several option in this space.  [cargo-flamegraph] and [pprof-rs] and
 the pprof-rs integration with Criterion.
@@ -122,20 +124,34 @@ Setup:
 echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
 ```
 
+###### cargo-flamegraph
+
+We include these instructions for completeness.  The results weren't
+particularly useful.  Meaning we couldn't interactively explore them, and we
+didn't find a way to use its output with other tools.  We didn't look too hard
+after we discovered pprof could be used with Criterion benchmarks (next),
+across so please let us know if we have overlooked anything significant.
+
 ```BASH
 cargo install flamegraph
 flamegraph --no-inline -o reqs_flamegraph.svg ${BENCH}
 cargo flamegraph --bench reqs --features calibrate-limit -- --bench
 ```
 
-#### pprof
+#### pprof (Cargo Criterion)
 
-The `--profile-time 130` argument is required to generate the pprof output
+The pprof crate can generate profiles from Criterion benchmarks, and the output
+data can be explored with the tooling developed around Go, `go tool pprof ...`
+as well as the [SpeedScope] project.
+These two features won us over.
+
+The criterion option, `--profile-time 130`, is required to generate the pprof output
 `profile.pb`.
 
 ```bash
 cargo bench --bench reqs -- calibrate-limit --nocapture --profile-time 130
 go tool pprof -http=:8080 ./../target/criterion/Calibrate/calibrate-limit/10000/profile/profie.pb
+go tool pprof -svg profile300.gz ./../target/criterion/Calibrate/calibrate-limit/10000/profile/profie.pb
 ```
 
 Possible change:  Use tokio thread local sets for the server setup, and for
@@ -219,3 +235,4 @@ rm int.txt int2b.txt int2.txt internal.log internal2b.log internal2.log
 [Full handshakes]: https://jbp.io/2019/07/02/rustls-vs-openssl-handshake-performance.html
 [Resumed handshakes]: https://jbp.io/2019/07/02/rustls-vs-openssl-resumption-performance.html
 [Memory usage]: https://jbp.io/2019/07/02/rustls-vs-openssl-memory-usage.html
+[speedscope]: https://www.speedscope.app/
