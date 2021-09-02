@@ -63,7 +63,7 @@ async fn capacity_benchmark(count: usize) {
     //     .uri("http://localhost:8888")
     //     .body(hyper::Body::empty())
     //     .unwrap();
-    let statement = "http://localhost:8888/".parse::<hyper::Uri>().unwrap();
+    let statement = "http://127.0.0.1:8888/".parse::<hyper::Uri>().unwrap();
     let statement = std::sync::Arc::new(statement);
     let benchmark_start = Instant::now();
     let thread_1 = run_stream(session1.clone(), statement.clone(), count / 4);

@@ -1,6 +1,11 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use pprof::criterion::{Output, PProfProfiler};
 
+use tracing::{self, debug, error, info, span, trace, warn, Instrument as _, Level, Span};
+//use tracing_subscriber::{filter::EnvFilter, reload::Handle};
+use tracing::instrument;
+//use tracing_attributes::instrument;
+
 //use criterion::async_executor::FuturesExecutor;
 //use tokio::runtime::Runtime;
 
@@ -13,7 +18,7 @@ use lazy_static::lazy_static;
 use tokio::time::Instant;
 
 lazy_static! {
-    static ref URL: hyper::Uri = hyper::Uri::from_static("http://localhost:8888");
+    static ref URL: hyper::Uri = hyper::Uri::from_static("http://127.0.0.1:8888");
 }
 
 /// Invokes client get URL, return a stream of response durations.
@@ -25,7 +30,7 @@ fn make_stream<'a>(
     statement: &'a hyper::Uri,
     count: usize,
 ) -> impl futures::Stream + 'a {
-    let concurrency_limit = 1024;
+    let concurrency_limit = 512;
 
     futures::stream::iter(0..count)
         .map(move |_| async move {
@@ -106,8 +111,10 @@ async fn capacity(count: usize) {
 }
 
 fn calibrate_limit(c: &mut Criterion) {
-    println!("Running on thread {:?}", std::thread::current().id());
-
+    // tracing_subscriber::fmt()
+    //         .with_max_level(tracing::Level::DEBUG)
+    //         .try_init();
+    info!("Running on thread {:?}", std::thread::current().id());
     let mut group = c.benchmark_group("Calibrate");
     let count = 100000;
     let tokio_executor = tokio::runtime::Runtime::new().expect("initializing tokio runtime");
