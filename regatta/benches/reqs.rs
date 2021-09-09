@@ -25,6 +25,7 @@ lazy_static! {
 /// Note: Does *not* spawn new threads. Requests are concurrent not parallel.
 /// Async code runs on the caller thread.
 ///    -> impl Stream<Item=Duration> + 'a {
+#[instrument]
 fn make_stream<'a>(
     session: &'a hyper::Client<hyper::client::HttpConnector>,
     statement: &'a hyper::Uri,
@@ -77,6 +78,28 @@ async fn run_stream(
     task.await;
 }
 
+async fn run_stream_ct(
+    session: hyper::Client<hyper::client::HttpConnector>,
+    statement: &'static URL,
+    count: usize,
+) {
+    // Construct a local task set that can run `!Send` futures.
+    //let local = tokio::task::LocalSet::new();
+    // Run the local task set.
+    //local.run_until(async move {
+        //let task = tokio::task::spawn_local(async move {
+            //let session = &session;
+            //let statement = &statement;
+            debug!("About to make stream");
+            let mut stream = make_stream(&session, statement, count);
+            while let Some(duration) = stream.next().await {
+                debug!("Stream next polled.");
+            }
+        //}).await.unwrap();
+    //}).await;
+    //task.await;
+}
+
 async fn run_stream_tls(
     session: hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
     statement: &'static URL,
@@ -90,18 +113,33 @@ async fn run_stream_tls(
     });
     task.await;
 }
-
+#[instrument]
 async fn capacity(count: usize) {
+    debug!("About to init server");
     regatta::calibrate::init_real_server().await;
+    debug!("About to init client");
     let session = regatta::calibrate::client::Client::new().client;
     //let session = std::sync::Arc::new(session);
     //let statement = "http://localhost:8888".parse::<hyper::Uri>().unwrap();
     let statement = &URL;
     //let statement = std::sync::Arc::new(statement);
-    let benchmark_start = Instant::now();
-    let thread_1 = tokio::task::spawn(run_stream(session.clone(), statement, count / 2));
-    //let thread_2 = tokio::task::spawn(run_stream(session.clone(), statement.clone(), count / 2));
-    thread_1.await;
+    let benchmark_start = tokio::time::Instant::now();
+    debug!("Client: About to spawn blocking (Tokio)");
+    tokio::task::spawn_blocking( move || {
+        let rt = tokio::runtime::Handle::current();
+        debug!("Client: About to block on (Tokio)");
+        rt.block_on( async {
+            let local = tokio::task::LocalSet::new();
+            debug!("Client: About to run until (local set)");
+            local.run_until(async move {
+                //let task = tokio::task::spawn_local(async move {
+                debug!("Client: About to spawn local (Tokio)");
+                tokio::task::spawn_local(run_stream_ct(session.clone(), statement, count / 2)).await.expect("Tokio spawn local (streams for clients)");
+            }).await;
+        });
+    }).await.unwrap();
+        //let thread_2 = tokio::task::spawn(run_stream(session.clone(), statement.clone(), count / 2));
+    //thread_1.await;
     //thread_2.await;
 
     println!(
@@ -111,10 +149,10 @@ async fn capacity(count: usize) {
 }
 
 fn calibrate_limit(c: &mut Criterion) {
-    // tracing_subscriber::fmt()
-    //         .with_max_level(tracing::Level::DEBUG)
-    //         .try_init();
-    info!("Running on thread {:?}", std::thread::current().id());
+    tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .try_init().expect("Tracing subscriber in benchmark");
+    debug!("Running on thread {:?}", std::thread::current().id());
     let mut group = c.benchmark_group("Calibrate");
     let count = 100000;
     let tokio_executor = tokio::runtime::Runtime::new().expect("initializing tokio runtime");

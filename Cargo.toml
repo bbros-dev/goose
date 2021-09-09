@@ -83,6 +83,7 @@ native-tls = "0.2"
 rustls = "0.19"
 xsv = "0.13"
 pprof = { version = "0.5", features = ["criterion", "flamegraph", "protobuf"] }
+sccache = "0.2.15"
 
 [profile.bench]
 debug = true

@@ -26,6 +26,7 @@ lazy_static! {
 }
 static HELLO: &[u8] = b"Hello World!";
 
+#[instrument]
 async fn hello(_: Request<Body>) -> std::result::Result<Response<Body>, Infallible> {
     Ok(Response::new(Body::from(HELLO)))
 }
@@ -61,7 +62,7 @@ async fn run_simple() {
 
     let server = HyperServer::bind(&addr).serve(make_svc);
 
-    println!("Listening on http://{}", addr);
+    debug!("Listening on http://{}", addr);
 
     if let Err(e) = server.await {
         eprintln!("server error: {}", e);
@@ -70,21 +71,23 @@ async fn run_simple() {
 }
 
 // Run for HyperServer restricted to current thread
+// -> futures::future::Ready<std::result::Result<i32,i32>>
+#[instrument]
 async fn run_ct() {
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
-    let make_svc = make_service_fn(|_| async {
-        // Documentation: For Bytes implementations which refer to constant
-        // memory (e.g. created via Bytes::from_static()) the cloning
-        // implementation will be a no-op.
-        //let bytes = bytes.clone();
+    // let make_svc = make_service_fn(|_| async {
+    //     // Documentation: For Bytes implementations which refer to constant
+    //     // memory (e.g. created via Bytes::from_static()) the cloning
+    //     // implementation will be a no-op.
+    //     //let bytes = bytes.clone();
 
-        // This is the `Service` that will handle the connection.
-        // `service_fn` is a helper to convert a function that
-        // returns a Response into a `Service`.
-        //async { Ok::<_, Infallible>(service_fn(hello)) }
-        Ok::<_, Infallible>(service_fn(hello))
-    });
+    //     // This is the `Service` that will handle the connection.
+    //     // `service_fn` is a helper to convert a function that
+    //     // returns a Response into a `Service`.
+    //     //async { Ok::<_, Infallible>(service_fn(hello)) }
+    //     Ok::<_, Infallible>(service_fn(hello))
+    // });
 
     //let addr = ([127, 0, 0, 1], 8888).into();
 
@@ -92,41 +95,59 @@ async fn run_ct() {
     //http.http1_only(true);
 
     // Bind to 127.0.0.1:8888
+    let span = span!(Level::DEBUG, "run-current-thread");
     let addr = SCKTADDR.parse().unwrap();
+    debug!("About to reuse address for Hyper server.");
     let listener = reuse_listener(&addr).await.expect("couldn't bind to addr");
-    let incoming = listener
-        .accept()
-        .await
-        .map(|(stream, socket)| {
-            stream.set_nodelay(true).unwrap();
-            //socket.set_keepalive(Some(std::time::Duration::from_secs(7200))).unwrap();
-            socket
-        })
-        .unwrap();
+    debug!("About to poll to accept Hyper server connection.");
+    loop {
+        let incoming = listener
+            .accept()
+            .await
+            .map(|(stream, socket)| {
+                stream.set_nodelay(true).unwrap();
+                //socket.set_keepalive(Some(std::time::Duration::from_secs(7200))).unwrap();
+                stream
+            })
+            .unwrap();
 
-    // Run service
-    let server = HyperServer::bind(&incoming)
-        .executor(LocalExec)
-        .http1_only(true)
-        .serve(make_svc);
+        // Run service
+        debug!("About to run service on Hyper server: {:?} {:?} {:?}.", listener, incoming, addr);
+        tokio::task::spawn(async move {
+            if let Err(http_err) = hyper::server::conn::Http::new()
+                    .http1_only(true)
+                    //.http1_keep_alive(true)
+                    .serve_connection(incoming, service_fn(hello))
+                    .await {
+                eprintln!("Error while serving HTTP connection: {}", http_err);
+            }
+        });
+    }
+    // let server = HyperServer::bind(&addr)
+    //     .executor(LocalExec)
+    //     .http1_only(true)
+    //     .serve(make_svc)
+    //     .instrument(span);
+
     //.serve(|| make_service_fn(|_| Response::new(Body::from("Hello World"))))
     //.map_err(|e| eprintln!("server error: {}", e));
     //tokio::run(server);
 
     //let server = HyperServer::bind(&addr).executor(LocalExec).serve(make_svc);
     // Give the server a moment to start.
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    // debug!("About to pause for Hyper server startup.");
+    // tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-    println!(
-        "Listening on thread {:?} at http://{}",
-        std::thread::current().id(),
-        addr
-    );
+    // debug!(
+    //     "Listening on thread {:?} at http://{}",
+    //     std::thread::current().id(),
+    //     addr
+    // );
 
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
-    }
-    //Ok(())
+    // if let Err(e) = server.await {
+    //     eprintln!("server error: {}", e);
+    // }
+    //futures::future::ok::<i32, i32>(0)
 }
 
 // Run for multiple HyperServer restricted to current thread.
@@ -151,8 +172,8 @@ async fn prep_connection<F, Fut>(
         + 'static,
     Fut: std::future::Future<Output = ()>,
 {
-    //let span_prep_connection = span!(Level::DEBUG, "prepare-connection");
-    info!("Preparing connection.");
+    //let span = span!(Level::DEBUG, "prepare-connection");
+    debug!("Preparing connection.");
     //let state = statelock.read().await;
 
     // For every connection, we must make a `Service` to handle all
@@ -173,11 +194,11 @@ async fn prep_connection<F, Fut>(
     let addr = ([127, 0, 0, 1], 8888).into();
 
     let server = HyperServer::bind(&addr).executor(LocalExec).serve(make_svc);
-    //.instrument(span_prep_connection);
+    //.instrument(span);
     // Give the server a moment to start.
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-    info!(
+    debug!(
         "Listening on thread {:?} at http://{}",
         std::thread::current().id(),
         addr
@@ -215,7 +236,7 @@ where
     for _ in 0..num_cpus::get() {
         let per_connection = per_connection.clone();
         std::thread::spawn(move || async {
-            info!("Starting new std::thread for server.");
+            debug!("Starting new std::thread for server.");
             let srv_rwlck = tokio::sync::RwLock::new(Server::new());
             server_thread(per_connection, srv_rwlck).await;
         });
@@ -231,7 +252,7 @@ where
         + 'static,
     Fut: std::future::Future<Output = ()>,
 {
-    info!("Setting up server thread.");
+    debug!("Setting up server thread.");
     // Setup scope that reads then release the RwLock
     let state = statelock.read().await;
     //let span = span!(Level::DEBUG, "server_thread");
@@ -255,7 +276,7 @@ where
 
         // Combine `rt` with a `LocalSet`, for spawning !Send futures...
         let local = tokio::task::LocalSet::new();
-        info!("About to enter block_on prep_connection(...)");
+        debug!("About to enter block_on prep_connection(...)");
         local.block_on(
             &handle,
             prep_connection(per_connection, tcp, &mut http, &handle, statelock),
@@ -297,6 +318,7 @@ where
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=af120bda3f2354498f08f1d44d0a5925
 
 // Server abstraction that guards server restarts during calibration loops.
+#[derive(Debug)]
 pub struct Server {
     pub started: AtomicBool,
 }
@@ -308,42 +330,78 @@ impl Server {
         }
     }
 
+    /// Launch multiple Hyper servers. Each running in its current thread, via
+    /// a LocalSet.
+    #[instrument]
     pub async fn init_server(&mut self) {
         //if !self.started.load(Ordering::Relaxed) {
+        debug!("Setting up server threads.");
+        let mut threads = vec![];
         for _ in 0..(num_cpus::get() * 2) {
+            //let threads: Vec<_> = (0..(num_cpus::get() * 2))
+            //.map(|thread_id| {
             // let per_connection = per_connection.clone();
-            std::thread::spawn(move || async {
-                println!("Starting new std::thread for server.");
-                let srv_rwlck = tokio::sync::RwLock::new(Server::new());
-                info!("Setting up server thread.");
-                // Setup scope that reads then release the RwLock
-                let state = srv_rwlck.read().await;
-                //let span = span!(Level::DEBUG, "server_thread");
-                if !state.started.load(Ordering::Relaxed) {
-                    state.started.store(true, Ordering::Relaxed);
-                    drop(state); // release the lock before proceeding
-                                 // let mut http = hyper::server::conn::Http::new();
-                                 // http.http1_only(true);
-                                 // Our event loop...
-                                 // let mut core = Core::new().expect("core");
-                                 // let handle = core.handle();
-                                 // Configure a current-thread only runtime (event loop)
-                    let handle = tokio::runtime::Builder::new_current_thread()
-                        .enable_all()
-                        .build()
-                        .expect("build current-thread runtime");
-
-                    // Bind to 127.0.0.1:8888
-                    // let addr = SCKTADDR.parse().unwrap();
-                    // let tcp = reuse_listener(&addr).await.expect("couldn't bind to addr");
-
-                    // Combine `rt` with a `LocalSet`, for spawning !Send futures...
-                    let local = tokio::task::LocalSet::new();
-                    info!("About to enter block_on run_ct(...)");
-                    local.block_on(&handle, run_ct());
-                    //.instrument(span);
-                }
+            debug!("CPU counter.");
+            debug!("About to spawn Tokio task for Hyper server.");
+            // tokio::task::spawn( async move {
+            //     let rt = tokio::runtime::Handle::current();
+            //     debug!("About to block on runtime for server (Tokio)");
+            //     rt.block_on( async {
+            //         let local = tokio::task::LocalSet::new();
+            //         debug!("About to run until for server (local set)");
+            //         local.run_until(async move {
+            //             debug!("About to spawn local for server (Tokio)");
+            //             tokio::task::spawn_local(run_ct()).await.expect("Tokio spawn local");
+            //         }).await;
+            //     });
+            // }).await.unwrap();
+            //start suspended
+            debug!("About to spawn new std::thread for Hyper server.");
+            // Set handle to be passed in to new std::thread
+            let handle = tokio::runtime::Handle::current();
+            let t = std::thread::spawn(move || {
+                //     debug!("Starting new std::thread for server.");
+                //     let srv_rwlck = tokio::sync::RwLock::new(Server::new());
+                //     // Setup scope that reads then release the RwLock
+                //     let state = srv_rwlck.read().await;
+                let span = span!(Level::DEBUG, "server_thread");
+                //     if !state.started.load(Ordering::Relaxed) {
+                //         state.started.store(true, Ordering::Relaxed);
+                //         drop(state); // release the lock before proceeding
+                //                      // let mut http = hyper::server::conn::Http::new();
+                //                      // http.http1_only(true);
+                //                      // Our event loop...
+                //                      // let mut core = Core::new().expect("core");
+                //                      // let handle = core.handle();
+                //         // Configure a current-thread only runtime (event loop)
+                // let handle = tokio::runtime::Builder::new_current_thread()
+                //         .enable_all()
+                //         .build()
+                //         .expect("build current-thread runtime");
+                debug!("About to spawn async task from outside the Tokio runtime.");
+                handle.spawn(async move {
+                    //debug!("About to build new Tokio thread for Hyper server.");
+                    {
+                        //let local = tokio::task::LocalSet::new();
+                        //debug!("About to block for server (local set)");
+                        //local.run_until(run_ct()).await;
+                        debug!("About to run server");
+                        run_ct().await;
+                    }
+                    //futures::future::ok<i32, i32>(0);
+                });
+                //         // Bind to 127.0.0.1:8888
+                //         // let addr = SCKTADDR.parse().unwrap();
+                //         // let tcp = reuse_listener(&addr).await.expect("couldn't bind to addr");
+                //         // Combine `rt` with a `LocalSet`, for spawning !Send futures...
+                //    }
             });
+            threads.push(t);
+            //end suspended
+        }
+        //).collect::<Vec<_>>();
+        for t in threads {
+            t.join().expect("Thread panicked");
         }
         // std::thread::spawn(move || {
         //     // Configure a current-thread only runtime
@@ -381,7 +439,7 @@ impl Server {
             //     // This closure is run for each connection...
             //     // The plaintext benchmarks use pipelined requests.
             //http.pipeline_flush(true);
-            println!("Within init_server_mct - per_connection");
+            debug!("Within init_server_mct - per_connection");
             //futures::future::ok::<bool, bool>(true)
             //true
             //     // Gotta clone these to be able to move into the Service...
@@ -433,8 +491,8 @@ impl Server {
     }
 }
 
-//#[instrument]
+#[instrument]
 pub async fn init_real_server() {
-    info!("Initializing servers - multiple current thread Hyper servers");
+    debug!("Initializing servers - multiple current thread Hyper servers");
     SERVER.write().await.init_server().await;
 }
