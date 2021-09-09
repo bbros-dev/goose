@@ -73,7 +73,7 @@ async fn run_simple() {
 // Run for HyperServer restricted to current thread
 // -> futures::future::Ready<std::result::Result<i32,i32>>
 #[instrument]
-async fn run_ct() {
+async fn run_ct(mut http: hyper::server::conn::Http) {
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
     // let make_svc = make_service_fn(|_| async {
@@ -95,6 +95,7 @@ async fn run_ct() {
     //http.http1_only(true);
 
     // Bind to 127.0.0.1:8888
+    let http = http.clone();
     let span = span!(Level::DEBUG, "run-current-thread");
     let addr = SCKTADDR.parse().unwrap();
     debug!("About to reuse address for Hyper server.");
@@ -110,15 +111,12 @@ async fn run_ct() {
                 stream
             })
             .unwrap();
+        let serve = http.serve_connection(incoming, service_fn(hello));
 
         // Run service
-        debug!("About to run service on Hyper server: {:?} {:?} {:?}.", listener, incoming, addr);
+        debug!("About to run service on Hyper server: {:?} {:?}.", listener, addr);
         tokio::task::spawn(async move {
-            if let Err(http_err) = hyper::server::conn::Http::new()
-                    .http1_only(true)
-                    //.http1_keep_alive(true)
-                    .serve_connection(incoming, service_fn(hello))
-                    .await {
+            if let Err(http_err) = serve.await {
                 eprintln!("Error while serving HTTP connection: {}", http_err);
             }
         });
@@ -361,6 +359,9 @@ impl Server {
             let handle = tokio::runtime::Handle::current();
             let t = std::thread::spawn(move || {
                 //     debug!("Starting new std::thread for server.");
+                let mut http = hyper::server::conn::Http::new();
+                http.http1_only(true);
+                http.pipeline_flush(true);
                 //     let srv_rwlck = tokio::sync::RwLock::new(Server::new());
                 //     // Setup scope that reads then release the RwLock
                 //     let state = srv_rwlck.read().await;
@@ -381,13 +382,13 @@ impl Server {
                 debug!("About to spawn async task from outside the Tokio runtime.");
                 handle.spawn(async move {
                     //debug!("About to build new Tokio thread for Hyper server.");
-                    {
+
                         //let local = tokio::task::LocalSet::new();
                         //debug!("About to block for server (local set)");
                         //local.run_until(run_ct()).await;
                         debug!("About to run server");
-                        run_ct().await;
-                    }
+                        run_ct(http).await;
+
                     //futures::future::ok<i32, i32>(0);
                 });
                 //         // Bind to 127.0.0.1:8888
