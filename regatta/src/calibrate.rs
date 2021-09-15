@@ -2,6 +2,12 @@ pub mod client;
 pub mod error;
 pub mod handler;
 
+//pub use hyper::proto::h2::server::H2Stream;
+
+use async_stream::stream;
+use futures_util::pin_mut;
+use futures::{Stream, StreamExt};
+//use futures_util::pin_mut;
 use tracing::{self, debug, error, info, span, trace, warn, Instrument as _, Level, Span};
 //use tracing_subscriber::{filter::EnvFilter, reload::Handle};
 use tracing::instrument;
@@ -70,10 +76,101 @@ async fn run_simple() {
     //Ok(())
 }
 
+// // fn server_stream<'a, S, R: 'a, B>(
+// //     session: &'a mut hyper::server::conn::Connection<S, R, B>,
+// //     count: usize,
+// // ) -> impl futures::Stream<Item = &mut hyper::server::conn::Connection<S, R, B>> + 'a
+// // where
+// //     S: Send + Sync + 'static + Fn(hyper::Request<B>) -> R + std::marker::Unpin + tokio::io::AsyncRead + tokio::io::AsyncWrite,
+// //     B: hyper::body::HttpBody + 'static + std::clone::Clone,
+// //     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+// //     R: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + hyper::service::Service<hyper::Request<hyper::Body>, Response = hyper::Response<B>>,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: 'static + Sync,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: std::marker::Send,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: std::error::Error,
+// //     hyper::server::conn::Connection<S, R, B>: std::fmt::Debug,
+// fn server_stream<'a, F: 'a>(
+//     session: std::sync::Arc<std::sync::Mutex<<F as futures_util::Future>::Output>>,
+//     count: usize,
+// ) -> impl futures::stream::Stream<Item = F> + 'a
+// where
+//     F: futures_util::Future + futures_util::Future<Output = F> + std::fmt::Debug,
+// {
+//     stream! {
+//         for i in 0..count {
+//             let sc = session.clone();
+//             let s = std::sync::Arc::try_unwrap(sc).unwrap();
+//             let s = s.into_inner().unwrap();
+//             yield s.await;
+//         }
+//     }
+// }
+
+// /// Invokes client get URL, return a stream of response durations.
+// /// Note: Does *not* spawn new threads. Requests are concurrent not parallel.
+// /// Async code runs on the caller thread.
+// ///    -> impl Stream<Item=Duration> + 'a {
+// // #[instrument]
+// // fn make_server_stream<'a, S, R: 'a, B>(
+// //     session: &'a mut hyper::server::conn::Connection<S, R, B>,
+// //     count: usize,
+// // )
+// // //-> impl futures::Stream<Item = &mut hyper::server::conn::Connection<S, R, B>> + 'a
+// // where
+// //     S: Send + Sync + 'static + Fn(hyper::Request<B>) -> R + std::marker::Unpin + tokio::io::AsyncRead + tokio::io::AsyncWrite,
+// //     //S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+// //     //hyper::rt::Executor<hyper::proto::h2::server::H2Stream<<R as hyper::service::Service<hyper::Request<hyper::Body>>>::Future, B>>
+// //     B: hyper::body::HttpBody + 'static + std::clone::Clone + hyper::rt::Executor<hyper::proto::h2::server::H2Stream<<R as hyper::service::Service<hyper::Request<hyper::Body>>>::Future, B>>,
+// //     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+// //     R: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + hyper::service::Service<hyper::Request<hyper::Body>, Response = hyper::Response<B>>,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: 'static + Sync,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: std::marker::Send,
+// //     <R as hyper::service::Service<hyper::Request<Body>>>::Error: std::error::Error,
+// //     hyper::server::conn::Connection<S, R, B>: std::fmt::Debug,
+// #[instrument]
+// async fn make_server_stream<'a, F: 'a, S: 'a>(
+//     session: std::sync::Arc<std::sync::Mutex<F>>,
+//     count: usize,
+// ) -> impl futures_util::Future + futures_util::Stream<Item = S> + 'a
+// where
+//     F: futures_util::Future + futures_util::Stream + std::fmt::Debug,
+//     S: futures_util::Stream + std::iter::Iterator,
+//     //Pin<S>: std::iter::Iterator,
+// {
+//     let concurrency_limit = 512;
+//     //server_stream(count).buffer_unordered(concurrency_limit);
+//     //let ams = std::sync::Arc::new(std::sync::Mutex::new(session));
+//     let sc = session.clone();
+//     let s = server_stream(sc, count);
+//     pin_mut!(s); // needed for iteration
+//     while let Some(f) = s.next().await {
+//         f.buffer_unordered(concurrency_limit);
+//     }
+//     //pin_mut!(s); // needed for iteration
+//     //
+//     // while let Some(value) = s.next().await {
+//     //     println!("got {}", value);
+//     // }
+//     // let stream_size = futures::stream::iter(0..count);
+//     // stream_size.fold( session, | state, x| async move {
+//     //         //let session = &mut *session;
+//     //         let conn_start = tokio::time::Instant::now();
+//     //         //let _response = session.await;
+
+//     //         // let (_parts, _body)  = response.unwrap().into_parts();
+//     //         //futures::future::ready(if x == count { Some(conn_start.elapsed()) } else { None })
+//     //         state.await
+//     //         //conn_start.elapsed();
+//     //     })
+//     //     // This will run up to `concurrency_limit` futures at a time:
+//     //     .buffer_unordered(concurrency_limit)
+// }
+
+
 // Run for HyperServer restricted to current thread
 // -> futures::future::Ready<std::result::Result<i32,i32>>
 #[instrument]
-async fn run_ct(mut http: hyper::server::conn::Http) {
+async fn run_ct(http: hyper::server::conn::Http) {
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
     // let make_svc = make_service_fn(|_| async {
