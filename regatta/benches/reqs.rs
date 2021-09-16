@@ -109,6 +109,7 @@ async fn init_real_server() {
         }
     };
     let handle = tokio::spawn(async { accepting.await });
+    // handle.await.expect("Something");
     // let mut next = 0;
     //for socket in listener.incoming() {
     // let socket = match socket {
@@ -220,7 +221,8 @@ async fn process(socket: TcpStream) {
         std::thread::current().id()
     );
 
-    let http = hyper::server::conn::Http::new();
+    let mut http = hyper::server::conn::Http::new();
+    http.http1_only(true);
     let serve = http.serve_connection(socket, hyper::service::service_fn(hello));
     if let Err(e) = serve.await {
         debug!("server connection error: {}", e);
@@ -378,7 +380,7 @@ async fn capacity(count: usize) {
                 .run_until(async move {
                     //let task = tokio::task::spawn_local(async move {
                     debug!("Client: About to spawn local (Tokio)");
-                    tokio::task::spawn_local(run_stream_ct(session.clone(), statement, count / 2).await)
+                    tokio::task::spawn_local(run_stream_ct(session.clone(), statement, count / 2))
                         .await
                         .expect("Tokio spawn local (streams for clients)");
                 })
@@ -399,12 +401,12 @@ async fn capacity(count: usize) {
 
 fn calibrate_limit(c: &mut Criterion) {
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::TRACE)
+        .with_max_level(tracing::Level::INFO)
         .try_init()
         .expect("Tracing subscriber in benchmark");
     debug!("Running on thread {:?}", std::thread::current().id());
     let mut group = c.benchmark_group("Calibrate");
-    let count = 1;
+    let count = 100000;
     let tokio_executor = tokio::runtime::Runtime::new().expect("initializing tokio runtime");
     group.bench_with_input(
         BenchmarkId::new("calibrate-limit", count),
