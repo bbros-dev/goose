@@ -1,0 +1,121 @@
+WARNING: HTML report generation will become a non-default optional feature in Criterion.rs 0.4.0.
+This feature is being moved to cargo-criterion (https://github.com/bheisler/cargo-criterion) and will be optional in a future version of Criterion.rs. To silence this warning, either switch to cargo-criterion or enable the 'html_reports' feature in your Cargo.toml.
+
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Listening on http://127.0.0.1:8888
+Throughput: 36199.6 request/s
+Throughput: 37480.1 request/s
+Throughput: 36301.5 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 276.4s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 276.36 s (100 iterations)
+Throughput: 32863.0 request/s
+Throughput: 35546.9 request/s
+Throughput: 33492.6 request/s
+Throughput: 36228.8 request/s
+Throughput: 33847.3 request/s
+Throughput: 35360.8 request/s
+Throughput: 34185.0 request/s
+Throughput: 36191.1 request/s
+Throughput: 34829.8 request/s
+Throughput: 34117.9 request/s
+Throughput: 35204.1 request/s
+Throughput: 34433.3 request/s
+Throughput: 36004.9 request/s
+Throughput: 35379.4 request/s
+Throughput: 35174.0 request/s
+Throughput: 36205.0 request/s
+Throughput: 34288.2 request/s
+Throughput: 36190.8 request/s
+Throughput: 34570.9 request/s
+Throughput: 35857.9 request/s
+Throughput: 35674.2 request/s
+Throughput: 32997.0 request/s
+Throughput: 35013.2 request/s
+Throughput: 32974.5 request/s
+Throughput: 36813.3 request/s
+Throughput: 34709.2 request/s
+Throughput: 35350.2 request/s
+Throughput: 34584.8 request/s
+Throughput: 34285.0 request/s
+Throughput: 35639.7 request/s
+Throughput: 34056.3 request/s
+Throughput: 34862.1 request/s
+Throughput: 33894.3 request/s
+Throughput: 35583.2 request/s
+Throughput: 34130.2 request/s
+Throughput: 36151.5 request/s
+Throughput: 36216.5 request/s
+Throughput: 34365.9 request/s
+Throughput: 35269.4 request/s
+Throughput: 34822.2 request/s
+Throughput: 35459.1 request/s
+Throughput: 33309.3 request/s
+Throughput: 33355.3 request/s
+Throughput: 34091.1 request/s
+Throughput: 34467.2 request/s
+Throughput: 35636.5 request/s
+Throughput: 33027.7 request/s
+Throughput: 34637.0 request/s
+Throughput: 33863.1 request/s
+Throughput: 34222.5 request/s
+Throughput: 36366.4 request/s
+Throughput: 35455.8 request/s
+Throughput: 35175.6 request/s
+Throughput: 35554.1 request/s
+Throughput: 34041.3 request/s
+Throughput: 34521.7 request/s
+Throughput: 35277.2 request/s
+Throughput: 35308.3 request/s
+Throughput: 36906.6 request/s
+Throughput: 35432.2 request/s
+Throughput: 34891.3 request/s
+Throughput: 34620.5 request/s
+Throughput: 35529.2 request/s
+Throughput: 34285.3 request/s
+Throughput: 35718.6 request/s
+Throughput: 33670.8 request/s
+Throughput: 33766.2 request/s
+Throughput: 34290.0 request/s
+Throughput: 31724.4 request/s
+Throughput: 36346.6 request/s
+Throughput: 32997.3 request/s
+Throughput: 31830.5 request/s
+Throughput: 32724.8 request/s
+Throughput: 33145.0 request/s
+Throughput: 34532.9 request/s
+Throughput: 35920.3 request/s
+Throughput: 35887.7 request/s
+Throughput: 34225.7 request/s
+Throughput: 33737.2 request/s
+Throughput: 34445.0 request/s
+Throughput: 34126.1 request/s
+Throughput: 34251.1 request/s
+Throughput: 34756.1 request/s
+Throughput: 36114.7 request/s
+Throughput: 33108.8 request/s
+Throughput: 34738.0 request/s
+Throughput: 34576.1 request/s
+Throughput: 33705.3 request/s
+Throughput: 34233.1 request/s
+Throughput: 35306.3 request/s
+Throughput: 35368.9 request/s
+Throughput: 35328.9 request/s
+Throughput: 35266.0 request/s
+Throughput: 35615.5 request/s
+Throughput: 33415.9 request/s
+Throughput: 34642.3 request/s
+Throughput: 35008.4 request/s
+Throughput: 34733.1 request/s
+Throughput: 34410.1 request/s
+Throughput: 34811.9 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [2.8677 s 2.8847 s 2.9022 s]
+                        change: [+4.9909% +5.7346% +6.5688%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+

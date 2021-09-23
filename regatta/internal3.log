@@ -1,0 +1,944 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/hedge/src/swanling/regatta/Cargo.toml
+workspace: /home/hedge/src/swanling/Cargo.toml
+   Compiling regatta v0.1.0 (/home/hedge/src/swanling/regatta)
+warning: unused import: `crate::calibrate::error`
+ --> regatta/src/calibrate/client.rs:1:5
+  |
+1 | use crate::calibrate::error;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Method`, `Request`, `body::to_bytes`
+ --> regatta/src/calibrate/client.rs:3:34
+  |
+3 | use hyper::{body::HttpBody as _, body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
+  |                                  ^^^^^^^^^^^^^^                                                      ^^^^^^  ^^^^^^^
+
+warning: unused import: `lazy_static::lazy_static`
+ --> regatta/src/calibrate/client.rs:5:5
+  |
+5 | use lazy_static::lazy_static;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde::Deserialize`
+ --> regatta/src/calibrate/client.rs:6:5
+  |
+6 | use serde::Deserialize;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `serde_json::from_slice`
+ --> regatta/src/calibrate/client.rs:7:5
+  |
+7 | use serde_json::from_slice;
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::convert::Infallible`
+ --> regatta/src/calibrate/error.rs:2:5
+  |
+2 | use std::convert::Infallible;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Result`, `client::HttpClient`
+ --> regatta/src/calibrate/handler.rs:2:5
+  |
+2 |     client::HttpClient,
+  |     ^^^^^^^^^^^^^^^^^^
+3 |     Result,
+  |     ^^^^^^
+
+warning: unused import: `crate::calibrate::client::HttpClient`
+ --> regatta/src/calibrate.rs:5:5
+  |
+5 | use crate::calibrate::client::HttpClient;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Client as HyperClient`
+  --> regatta/src/calibrate.rs:10:19
+   |
+10 | use hyper::{Body, Client as HyperClient, Request, Response, Server as HyperServer};
+   |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `libp2p::futures::StreamExt`
+ --> regatta/src/p2p.rs:3:5
+  |
+3 | use libp2p::futures::StreamExt;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Transport`
+ --> regatta/src/p2p.rs:9:31
+  |
+9 |     NetworkBehaviour, PeerId, Transport,
+  |                               ^^^^^^^^^
+
+warning: unused import: `io::AsyncBufReadExt`
+  --> regatta/src/p2p.rs:15:17
+   |
+15 | use tokio::{fs, io::AsyncBufReadExt, sync::mpsc};
+   |                 ^^^^^^^^^^^^^^^^^^^
+
+warning: constant is never used: `URI`
+  --> regatta/src/calibrate/client.rs:13:1
+   |
+13 | const URI: &str = "https://127.0.0.1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: associated function is never used: `get_url`
+  --> regatta/src/calibrate/client.rs:36:8
+   |
+36 |     fn get_url(&self) -> hyper::Uri {
+   |        ^^^^^^^
+
+warning: function is never used: `fetch_url`
+  --> regatta/src/calibrate/client.rs:60:10
+   |
+60 | async fn fetch_url(url: hyper::Uri) -> Result<()> {
+   |          ^^^^^^^^^
+
+warning: type alias is never used: `Result`
+  --> regatta/src/calibrate.rs:16:1
+   |
+16 | type Result<T> = std::result::Result<T, Infallible>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function is never used: `read_local_recipes`
+   --> regatta/src/p2p.rs:204:10
+    |
+204 | async fn read_local_recipes() -> Result<Recipes> {
+    |          ^^^^^^^^^^^^^^^^^^
+
+warning: function is never used: `setup_progress_spinner`
+   --> regatta/src/lib.rs:152:10
+    |
+152 | async fn setup_progress_spinner() -> Result<indicatif::ProgressBar, anyhow::Error> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `regatta` (lib) generated 18 warnings
+warning: unused import: `black_box`
+ --> regatta/benches/reqs.rs:1:30
+  |
+1 | use criterion::{BenchmarkId, black_box, criterion_group, criterion_main, Criterion};
+  |                              ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `tokio::runtime::Runtime`
+ --> regatta/benches/reqs.rs:3:5
+  |
+3 | use tokio::runtime::Runtime;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_stream::stream`
+ --> regatta/benches/reqs.rs:5:5
+  |
+5 | use async_stream::stream;
+  |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `stream`
+ --> regatta/benches/reqs.rs:6:15
+  |
+6 | use futures::{stream, Stream, StreamExt};
+  |               ^^^^^^
+
+warning: unused import: `hyper::body::Bytes`
+ --> regatta/benches/reqs.rs:7:5
+  |
+7 | use hyper::body::Bytes;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `lazy_static::lazy_static`
+ --> regatta/benches/reqs.rs:8:5
+  |
+8 | use lazy_static::lazy_static;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Uniform`
+ --> regatta/benches/reqs.rs:9:41
+  |
+9 | use rand::distributions::{Distribution, Uniform};
+  |                                         ^^^^^^^
+
+warning: unused import: `sleep`
+  --> regatta/benches/reqs.rs:11:19
+   |
+11 | use tokio::time::{sleep, Instant};
+   |                   ^^^^^
+
+warning: unused import: `Distribution`
+ --> regatta/benches/reqs.rs:9:27
+  |
+9 | use rand::distributions::{Distribution, Uniform};
+  |                           ^^^^^^^^^^^^
+
+warning: unused variable: `statement`
+  --> regatta/benches/reqs.rs:21:17
+   |
+21 |             let statement = statement.clone();
+   |                 ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_statement`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `i`
+  --> regatta/benches/reqs.rs:20:21
+   |
+20 |         .map( move |i| async move {
+   |                     ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `session`
+  --> regatta/benches/reqs.rs:14:31
+   |
+14 | fn make_clientless_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::...
+   |                               ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+warning: unused variable: `i`
+  --> regatta/benches/reqs.rs:41:21
+   |
+41 |         .map( move |i| async move {
+   |                     ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `duration`
+  --> regatta/benches/reqs.rs:57:24
+   |
+57 |         while let Some(duration) = stream.next().await {}
+   |                        ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_duration`
+
+warning: unused variable: `duration`
+  --> regatta/benches/reqs.rs:67:24
+   |
+67 |         while let Some(duration) = stream.next().await {}
+   |                        ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_duration`
+
+warning: unused variable: `s`
+   --> regatta/benches/reqs.rs:113:85
+    |
+113 |     group.bench_with_input(BenchmarkId::new("calibrate-limit", count), &count, |b, &s| {
+    |                                                                                     ^ help: if this is intentional, prefix it with an underscore: `_s`
+
+warning: unused variable: `s`
+   --> regatta/benches/reqs.rs:127:96
+    |
+127 |     group.bench_with_input(BenchmarkId::new("calibrate-clientless-limit", count), &count, |b, &s| {
+    |                                                                                                ^ help: if this is intentional, prefix it with an underscore: `_s`
+
+warning: unused `Result` that must be used
+  --> regatta/benches/reqs.rs:59:5
+   |
+59 |     task.await;
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_must_use)]` on by default
+   = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused `Result` that must be used
+  --> regatta/benches/reqs.rs:69:5
+   |
+69 |     task.await;
+   |     ^^^^^^^^^^^
+   |
+   = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: `regatta` (bench "reqs") generated 19 warnings
+warning: unused imports: `Distribution`, `Uniform`
+   --> regatta/bin/regatta.rs:101:27
+    |
+101 | use rand::distributions::{Distribution, Uniform};
+    |                           ^^^^^^^^^^^^  ^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `signal_hook::low_level`
+   --> regatta/bin/regatta.rs:103:5
+    |
+103 | use signal_hook::low_level;
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `regatta` (bin "regatta") generated 2 warnings
+warning: unused `#[macro_use]` import
+ --> regatta/bin/tender.rs:4:1
+  |
+4 | #[macro_use]
+  | ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused `Result` that must be used
+  --> regatta/bin/tender.rs:96:13
+   |
+96 |             tx1.send(x);
+   |             ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_must_use)]` on by default
+   = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused `Result` that must be used
+   --> regatta/bin/tender.rs:156:13
+    |
+156 |             tx2.send(x);
+    |             ^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused `Result` that must be used
+   --> regatta/bin/tender.rs:207:13
+    |
+207 |             tx3.send(x);
+    |             ^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: unused `Result` that must be used
+   --> regatta/bin/tender.rs:227:9
+    |
+227 |         terminal.draw(|f| regatta::tender::ui::draw(f, model));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: `regatta` (bin "tender") generated 5 warnings
+warning: unused import: `async_stream::stream`
+ --> regatta/bin/reqs.rs:1:5
+  |
+1 | use async_stream::stream;
+  |     ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `stream`
+ --> regatta/bin/reqs.rs:2:15
+  |
+2 | use futures::{stream, Stream, StreamExt};
+  |               ^^^^^^
+
+warning: unused import: `lazy_static::lazy_static`
+ --> regatta/bin/reqs.rs:3:5
+  |
+3 | use lazy_static::lazy_static;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Uniform`
+ --> regatta/bin/reqs.rs:4:41
+  |
+4 | use rand::distributions::{Distribution, Uniform};
+  |                                         ^^^^^^^
+
+warning: unused import: `std::time::Duration`
+ --> regatta/bin/reqs.rs:5:5
+  |
+5 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sleep`
+ --> regatta/bin/reqs.rs:6:19
+  |
+6 | use tokio::time::{sleep, Instant};
+  |                   ^^^^^
+
+warning: unused import: `Distribution`
+ --> regatta/bin/reqs.rs:4:27
+  |
+4 | use rand::distributions::{Distribution, Uniform};
+  |                           ^^^^^^^^^^^^
+
+warning: unused variable: `statement`
+  --> regatta/bin/reqs.rs:22:17
+   |
+22 |             let statement = statement.clone();
+   |                 ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_statement`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `i`
+  --> regatta/bin/reqs.rs:19:21
+   |
+19 |         .map( move |i| async move {
+   |                     ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `session`
+  --> regatta/bin/reqs.rs:13:20
+   |
+13 | fn make_stream<'a>(session: &'a hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>, statement: &'a hyper::Uri, count:...
+   |                    ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_session`
+
+warning: unused variable: `duration`
+  --> regatta/bin/reqs.rs:40:24
+   |
+40 |         while let Some(duration) = stream.next().await {}
+   |                        ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_duration`
+
+warning: unused `Result` that must be used
+  --> regatta/bin/reqs.rs:42:5
+   |
+42 |     task.await;
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_must_use)]` on by default
+   = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: `regatta` (bin "reqs") generated 12 warnings
+warning: unused imports: `FloodsubEvent`, `MdnsEvent`, `NetworkBehaviourEventProcess`, `NetworkBehaviour`, `PeerId`, `Swarm`, `Topic`, `identity`
+  --> regatta/bin/p2p.rs:8:26
+   |
+8  |     floodsub::{Floodsub, FloodsubEvent, Topic},
+   |                          ^^^^^^^^^^^^^  ^^^^^
+9  |     identity,
+   |     ^^^^^^^^
+10 |     mdns::{Mdns, MdnsEvent},
+   |                  ^^^^^^^^^
+...
+13 |     swarm::{NetworkBehaviourEventProcess, Swarm, SwarmBuilder},
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^
+14 |     tcp::TokioTcpConfig,
+15 |     NetworkBehaviour, PeerId, Transport,
+   |     ^^^^^^^^^^^^^^^^  ^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `error`
+  --> regatta/bin/p2p.rs:17:11
+   |
+17 | use log::{error, info};
+   |           ^^^^^
+
+warning: unused import: `once_cell::sync::Lazy`
+  --> regatta/bin/p2p.rs:18:5
+   |
+18 | use once_cell::sync::Lazy;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize`, `Serialize`
+  --> regatta/bin/p2p.rs:19:13
+   |
+19 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `std::collections::HashSet`
+  --> regatta/bin/p2p.rs:22:5
+   |
+22 | use std::collections::HashSet;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `fs`
+  --> regatta/bin/p2p.rs:23:13
+   |
+23 | use tokio::{fs, io::AsyncBufReadExt, sync::mpsc};
+   |             ^^
+
+warning: unused import: `regatta::p2p::*`
+  --> regatta/bin/p2p.rs:25:5
+   |
+25 | use regatta::p2p::*;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `regatta::*`
+  --> regatta/bin/p2p.rs:26:5
+   |
+26 | use regatta::*;
+   |     ^^^^^^^^^^
+
+warning: unreachable statement
+   --> regatta/bin/p2p.rs:119:5
+    |
+94  | /     loop {
+95  | |         let evt = {
+96  | |             tokio::select! {
+97  | |                 line = stdin.next_line() => Some(regatta::p2p::EventType::Input(line.expect("can get line").expect("can read line from st...
+...   |
+115 | |         }
+116 | |     }
+    | |_____- any code following this expression is unreachable
+...
+119 |       handle.close();
+    |       ^^^^^^^^^^^^^^^ unreachable statement
+    |
+    = note: `#[warn(unreachable_code)]` on by default
+
+warning: unused variable: `handle`
+  --> regatta/bin/p2p.rs:51:9
+   |
+51 |     let handle = signals.handle();
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_handle`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `signals_task`
+  --> regatta/bin/p2p.rs:53:9
+   |
+53 |     let signals_task = tokio::spawn(handle_shutdown(signals));
+   |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_signals_task`
+
+warning: unused `Result` that must be used
+   --> regatta/bin/p2p.rs:120:5
+    |
+120 |     signals_task.await;
+    |     ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_must_use)]` on by default
+    = note: this `Result` may be an `Err` variant, which should be handled
+
+warning: `regatta` (bin "p2p") generated 12 warnings
+    Finished bench [optimized] target(s) in 11m 50s
+     Running unittests (/home/hedge/src/swanling/target/release/deps/reqs-2c98bd8c3b38780e)
+WARNING: HTML report generation will become a non-default optional feature in Criterion.rs 0.4.0.
+This feature is being moved to cargo-criterion (https://github.com/bheisler/cargo-criterion) and will be optional in a future version of Criterion.rs. To silence this warning, either switch to cargo-criterion or enable the 'html_reports' feature in your Cargo.toml.
+
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/10000
+Benchmarking Calibrate/calibrate-limit/10000: Warming up for 3.0000 s
+Listening on http://127.0.0.1:8888
+Throughput: 10852.1 request/s
+Throughput: 11098.6 request/s
+Throughput: 5634.6 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 129.3s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/10000: Collecting 100 samples in estimated 129.35 s (100 iterations)
+Throughput: 11306.1 request/s
+Throughput: 14293.4 request/s
+Throughput: 11449.5 request/s
+Throughput: 12526.9 request/s
+Throughput: 13200.2 request/s
+Throughput: 10270.2 request/s
+Throughput: 11174.4 request/s
+Throughput: 11404.3 request/s
+Throughput: 10004.6 request/s
+Throughput: 11088.4 request/s
+Throughput: 9172.9 request/s
+Throughput: 8718.4 request/s
+Throughput: 9261.5 request/s
+Throughput: 12211.8 request/s
+Throughput: 11919.8 request/s
+Throughput: 10536.2 request/s
+Throughput: 11859.8 request/s
+Throughput: 9572.5 request/s
+Throughput: 6259.7 request/s
+Throughput: 9622.8 request/s
+Throughput: 8849.4 request/s
+Throughput: 8537.8 request/s
+Throughput: 6431.0 request/s
+Throughput: 5332.4 request/s
+Throughput: 6473.8 request/s
+Throughput: 6158.2 request/s
+Throughput: 6212.2 request/s
+Throughput: 7937.5 request/s
+Throughput: 7327.7 request/s
+Throughput: 9075.2 request/s
+Throughput: 9298.2 request/s
+Throughput: 10861.8 request/s
+Throughput: 10851.8 request/s
+Throughput: 10825.9 request/s
+Throughput: 12464.0 request/s
+Throughput: 10355.5 request/s
+Throughput: 11492.2 request/s
+Throughput: 11226.3 request/s
+Throughput: 10105.6 request/s
+Throughput: 10784.4 request/s
+Throughput: 10954.7 request/s
+Throughput: 5624.5 request/s
+Throughput: 9240.0 request/s
+Throughput: 10071.6 request/s
+Throughput: 11569.1 request/s
+Throughput: 10178.7 request/s
+Throughput: 11183.5 request/s
+Throughput: 7808.7 request/s
+Throughput: 11135.6 request/s
+Throughput: 10964.1 request/s
+Throughput: 11186.7 request/s
+Throughput: 9996.4 request/s
+Throughput: 11333.9 request/s
+Throughput: 10376.0 request/s
+Throughput: 10812.3 request/s
+Throughput: 10969.4 request/s
+Throughput: 10315.3 request/s
+Throughput: 8901.7 request/s
+Throughput: 8953.6 request/s
+Throughput: 11588.3 request/s
+Throughput: 12082.4 request/s
+Throughput: 12061.5 request/s
+Throughput: 8729.4 request/s
+Throughput: 15064.8 request/s
+Throughput: 11848.4 request/s
+Throughput: 11252.6 request/s
+Throughput: 11651.3 request/s
+Throughput: 10989.5 request/s
+Throughput: 9372.7 request/s
+Throughput: 12317.5 request/s
+Throughput: 11956.5 request/s
+Throughput: 10877.1 request/s
+Throughput: 11723.3 request/s
+Throughput: 11836.0 request/s
+Throughput: 10418.0 request/s
+Throughput: 12265.6 request/s
+Throughput: 12923.4 request/s
+Throughput: 11681.6 request/s
+Throughput: 10691.8 request/s
+Throughput: 10958.6 request/s
+Throughput: 10982.3 request/s
+Throughput: 11643.1 request/s
+Throughput: 13552.4 request/s
+Throughput: 11491.9 request/s
+Throughput: 11334.0 request/s
+Throughput: 11853.1 request/s
+Throughput: 11239.3 request/s
+Throughput: 11406.3 request/s
+Throughput: 12449.6 request/s
+Throughput: 9185.3 request/s
+Throughput: 6979.9 request/s
+Throughput: 6166.4 request/s
+Throughput: 8276.6 request/s
+Throughput: 10408.8 request/s
+Throughput: 9368.4 request/s
+Throughput: 9181.7 request/s
+Throughput: 9498.4 request/s
+Throughput: 9442.9 request/s
+Throughput: 6045.3 request/s
+Throughput: 8452.7 request/s
+Benchmarking Calibrate/calibrate-limit/10000: Analyzing
+Calibrate/calibrate-limit/10000
+                        time:   [988.56 ms 1.0346 s 1.0847 s]
+                        change: [-79.170% -52.874% +24.888%] (p = 0.63 > 0.05)
+                        No change in performance detected.
+Found 10 outliers among 100 measurements (10.00%)
+  8 (8.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking Calibrate-Clientless/calibrate-clientless-limit/10000
+Benchmarking Calibrate-Clientless/calibrate-clientless-limit/10000: Warming up for 3.0000 s
+Throughput: 2711496.7 request/s
+Throughput: 1007455.2 request/s
+Throughput: 679763.4 request/s
+Throughput: 394679.7 request/s
+Throughput: 844951.4 request/s
+Throughput: 1789869.3 request/s
+Throughput: 942773.6 request/s
+Throughput: 1777777.8 request/s
+Throughput: 1841281.5 request/s
+Throughput: 454938.4 request/s
+Throughput: 2016942.3 request/s
+Throughput: 800576.4 request/s
+Throughput: 2714440.8 request/s
+Throughput: 2693965.5 request/s
+Throughput: 1265342.3 request/s
+Throughput: 1958096.7 request/s
+Throughput: 2589332.0 request/s
+Throughput: 1673640.2 request/s
+Throughput: 1272588.4 request/s
+Throughput: 2769316.0 request/s
+Throughput: 2679528.4 request/s
+Throughput: 2281021.9 request/s
+Throughput: 2783189.5 request/s
+Throughput: 1265983.0 request/s
+Throughput: 717463.1 request/s
+Throughput: 793461.9 request/s
+Throughput: 2715915.3 request/s
+Throughput: 1673640.2 request/s
+Throughput: 1435750.2 request/s
+Throughput: 2321801.7 request/s
+Throughput: 1850138.8 request/s
+Throughput: 2767783.0 request/s
+Throughput: 2187226.6 request/s
+Throughput: 1857700.2 request/s
+Throughput: 2064835.8 request/s
+Throughput: 1994813.5 request/s
+Throughput: 2647603.9 request/s
+Throughput: 2466699.6 request/s
+Throughput: 1567152.5 request/s
+Throughput: 721240.5 request/s
+Throughput: 2848191.4 request/s
+Throughput: 1314233.1 request/s
+Throughput: 592838.5 request/s
+Throughput: 2111486.5 request/s
+Throughput: 2260397.8 request/s
+Throughput: 2039983.7 request/s
+Throughput: 935891.4 request/s
+Throughput: 854481.8 request/s
+Throughput: 1086484.1 request/s
+Throughput: 1677852.3 request/s
+Throughput: 1924187.0 request/s
+Throughput: 1340302.9 request/s
+Throughput: 526814.9 request/s
+Throughput: 2736726.9 request/s
+Throughput: 1696640.7 request/s
+Throughput: 2796420.6 request/s
+Throughput: 1796299.6 request/s
+Throughput: 1591343.1 request/s
+Throughput: 1824151.8 request/s
+Throughput: 2027164.0 request/s
+Throughput: 2523977.8 request/s
+Throughput: 2678093.2 request/s
+Throughput: 2636435.5 request/s
+Throughput: 1944768.6 request/s
+Throughput: 1721170.4 request/s
+Throughput: 2741979.7 request/s
+Throughput: 2651113.5 request/s
+Throughput: 2244165.2 request/s
+Throughput: 1346257.4 request/s
+Throughput: 548546.4 request/s
+Throughput: 1944768.6 request/s
+Throughput: 1414027.1 request/s
+Throughput: 1857700.2 request/s
+Throughput: 2695417.8 request/s
+Throughput: 1853568.1 request/s
+Throughput: 2751031.6 request/s
+Throughput: 2750275.0 request/s
+Throughput: 1547269.1 request/s
+Throughput: 2747252.7 request/s
+Throughput: 2522068.1 request/s
+Throughput: 1997203.9 request/s
+Throughput: 2718869.0 request/s
+Throughput: 1469291.8 request/s
+Throughput: 2712232.2 request/s
+Throughput: 2739726.0 request/s
+Throughput: 1779992.9 request/s
+Throughput: 2642007.9 request/s
+Throughput: 2759381.9 request/s
+Throughput: 2037489.8 request/s
+Throughput: 1369863.0 request/s
+Throughput: 2760905.6 request/s
+Throughput: 2268602.5 request/s
+Throughput: 1119946.2 request/s
+Throughput: 996015.9 request/s
+Throughput: 515676.6 request/s
+Throughput: 1241773.3 request/s
+Throughput: 2478929.1 request/s
+Throughput: 2759381.9 request/s
+Throughput: 2725538.3 request/s
+Throughput: 2548420.0 request/s
+Throughput: 2688172.0 request/s
+Throughput: 1912045.9 request/s
+Throughput: 2797202.8 request/s
+Throughput: 681663.3 request/s
+Throughput: 1005833.8 request/s
+Throughput: 1198753.3 request/s
+Throughput: 716691.8 request/s
+Throughput: 822368.4 request/s
+Throughput: 1984127.0 request/s
+Throughput: 1326259.9 request/s
+Throughput: 2734481.8 request/s
+Throughput: 2746498.2 request/s
+Throughput: 2760143.5 request/s
+Throughput: 2745744.1 request/s
+Throughput: 2029632.6 request/s
+Throughput: 1681802.9 request/s
+Throughput: 2734481.8 request/s
+Throughput: 882612.5 request/s
+Throughput: 2562788.3 request/s
+Throughput: 2475247.5 request/s
+Throughput: 2266032.2 request/s
+Throughput: 2721088.4 request/s
+Throughput: 2691065.7 request/s
+Throughput: 2630886.6 request/s
+Throughput: 2643404.7 request/s
+Throughput: 2757099.5 request/s
+Throughput: 2732987.2 request/s
+Benchmarking Calibrate-Clientless/calibrate-clientless-limit/10000: Collecting 100 samples in estimated 5.7986 s (200 iterations)
+Throughput: 1509434.0 request/s
+Throughput: 862663.9 request/s
+Throughput: 2751031.6 request/s
+Throughput: 2746498.2 request/s
+Throughput: 2751031.6 request/s
+Throughput: 2581311.3 request/s
+Throughput: 2771618.6 request/s
+Throughput: 2781641.2 request/s
+Throughput: 763242.3 request/s
+Throughput: 1767721.4 request/s
+Throughput: 1990842.1 request/s
+Throughput: 2669514.1 request/s
+Throughput: 2802690.6 request/s
+Throughput: 1958096.7 request/s
+Throughput: 378300.7 request/s
+Throughput: 727961.0 request/s
+Throughput: 1184693.8 request/s
+Throughput: 1576292.6 request/s
+Throughput: 744879.0 request/s
+Throughput: 1789228.8 request/s
+Throughput: 2212389.4 request/s
+Throughput: 2715915.3 request/s
+Throughput: 2732987.2 request/s
+Throughput: 2745744.1 request/s
+Throughput: 2760905.6 request/s
+Throughput: 2704164.4 request/s
+Throughput: 2735978.1 request/s
+Throughput: 1362954.9 request/s
+Throughput: 2433682.2 request/s
+Throughput: 2280501.7 request/s
+Throughput: 1011122.3 request/s
+Throughput: 2548420.0 request/s
+Throughput: 2470966.1 request/s
+Throughput: 2697599.1 request/s
+Throughput: 817594.6 request/s
+Throughput: 886996.6 request/s
+Throughput: 1807337.8 request/s
+Throughput: 1055743.2 request/s
+Throughput: 2753304.0 request/s
+Throughput: 1678415.6 request/s
+Throughput: 2762430.9 request/s
+Throughput: 2532286.7 request/s
+Throughput: 2431315.3 request/s
+Throughput: 2711496.7 request/s
+Throughput: 2633658.2 request/s
+Throughput: 2610284.5 request/s
+Throughput: 2725538.3 request/s
+Throughput: 2549719.5 request/s
+Throughput: 2350176.3 request/s
+Throughput: 2673796.8 request/s
+Throughput: 1328903.7 request/s
+Throughput: 504770.1 request/s
+Throughput: 2673082.1 request/s
+Throughput: 1128031.6 request/s
+Throughput: 1087311.1 request/s
+Throughput: 2809778.0 request/s
+Throughput: 2775464.9 request/s
+Throughput: 2721088.4 request/s
+Throughput: 1311475.4 request/s
+Throughput: 2471576.9 request/s
+Throughput: 1337434.8 request/s
+Throughput: 2467308.2 request/s
+Throughput: 2761668.0 request/s
+Throughput: 2207505.5 request/s
+Throughput: 2567394.1 request/s
+Throughput: 2732240.4 request/s
+Throughput: 2773925.1 request/s
+Throughput: 2714440.8 request/s
+Throughput: 2718129.9 request/s
+Throughput: 2379252.9 request/s
+Throughput: 1295169.0 request/s
+Throughput: 2750275.0 request/s
+Throughput: 2207992.9 request/s
+Throughput: 2691790.0 request/s
+Throughput: 2647603.9 request/s
+Throughput: 2653223.7 request/s
+Throughput: 1672520.5 request/s
+Throughput: 1748863.2 request/s
+Throughput: 2653927.8 request/s
+Throughput: 1275998.5 request/s
+Throughput: 2693965.5 request/s
+Throughput: 2059732.2 request/s
+Throughput: 1809627.2 request/s
+Throughput: 1945903.9 request/s
+Throughput: 2775464.9 request/s
+Throughput: 2527167.0 request/s
+Throughput: 2745744.1 request/s
+Throughput: 2398081.5 request/s
+Throughput: 2760143.5 request/s
+Throughput: 1890359.2 request/s
+Throughput: 2743484.2 request/s
+Throughput: 2567394.1 request/s
+Throughput: 1121830.8 request/s
+Throughput: 1619171.0 request/s
+Throughput: 2732240.4 request/s
+Throughput: 1274534.8 request/s
+Throughput: 2866150.8 request/s
+Throughput: 2095996.6 request/s
+Throughput: 1370614.0 request/s
+Throughput: 2783189.5 request/s
+Throughput: 2192501.6 request/s
+Throughput: 1815211.5 request/s
+Throughput: 1872659.2 request/s
+Throughput: 2558199.0 request/s
+Throughput: 2565418.2 request/s
+Throughput: 2600780.2 request/s
+Throughput: 2618486.5 request/s
+Throughput: 2741979.7 request/s
+Throughput: 2025111.4 request/s
+Throughput: 2583311.8 request/s
+Throughput: 2824858.8 request/s
+Throughput: 2463661.0 request/s
+Throughput: 2724053.4 request/s
+Throughput: 2597402.6 request/s
+Throughput: 2750275.0 request/s
+Throughput: 2781641.2 request/s
+Throughput: 1479727.7 request/s
+Throughput: 2783189.5 request/s
+Throughput: 2797202.8 request/s
+Throughput: 2703433.4 request/s
+Throughput: 2832058.9 request/s
+Throughput: 2172968.3 request/s
+Throughput: 2768549.3 request/s
+Throughput: 2610284.5 request/s
+Throughput: 2749518.8 request/s
+Throughput: 2444390.1 request/s
+Throughput: 2648305.1 request/s
+Throughput: 1621271.1 request/s
+Throughput: 2701242.6 request/s
+Throughput: 2777006.4 request/s
+Throughput: 2742731.8 request/s
+Throughput: 2588661.7 request/s
+Throughput: 2491901.3 request/s
+Throughput: 1823154.1 request/s
+Throughput: 1508523.2 request/s
+Throughput: 675493.1 request/s
+Throughput: 1171234.5 request/s
+Throughput: 1253447.0 request/s
+Throughput: 2719608.4 request/s
+Throughput: 1502178.2 request/s
+Throughput: 2433090.0 request/s
+Throughput: 2751031.6 request/s
+Throughput: 2746498.2 request/s
+Throughput: 2543235.0 request/s
+Throughput: 2704895.9 request/s
+Throughput: 2748007.7 request/s
+Throughput: 2367424.2 request/s
+Throughput: 1484340.2 request/s
+Throughput: 2710027.1 request/s
+Throughput: 2771618.6 request/s
+Throughput: 1405086.4 request/s
+Throughput: 2805836.1 request/s
+Throughput: 1806358.4 request/s
+Throughput: 2468526.3 request/s
+Throughput: 957579.2 request/s
+Throughput: 2665245.2 request/s
+Throughput: 2751031.6 request/s
+Throughput: 1086956.5 request/s
+Throughput: 2726281.4 request/s
+Throughput: 2712968.0 request/s
+Throughput: 1559332.6 request/s
+Throughput: 2477700.7 request/s
+Throughput: 2696144.5 request/s
+Throughput: 2756339.6 request/s
+Throughput: 704672.0 request/s
+Throughput: 2575991.8 request/s
+Throughput: 2051702.9 request/s
+Throughput: 1909854.9 request/s
+Throughput: 317762.9 request/s
+Throughput: 306410.1 request/s
+Throughput: 862961.7 request/s
+Throughput: 1203659.1 request/s
+Throughput: 1083188.9 request/s
+Throughput: 951655.9 request/s
+Throughput: 2744237.1 request/s
+Throughput: 2293578.0 request/s
+Throughput: 2738975.6 request/s
+Throughput: 2811357.9 request/s
+Throughput: 881367.9 request/s
+Throughput: 1360914.5 request/s
+Throughput: 1141291.9 request/s
+Throughput: 2134471.7 request/s
+Throughput: 2754062.2 request/s
+Throughput: 539083.6 request/s
+Throughput: 2646903.1 request/s
+Throughput: 599592.3 request/s
+Throughput: 2726281.4 request/s
+Throughput: 2769316.0 request/s
+Throughput: 2460629.9 request/s
+Throughput: 2709292.9 request/s
+Throughput: 848608.3 request/s
+Throughput: 2794076.6 request/s
+Throughput: 2804262.5 request/s
+Throughput: 2375296.9 request/s
+Throughput: 2709292.9 request/s
+Throughput: 1067463.7 request/s
+Throughput: 2629503.0 request/s
+Throughput: 2663115.8 request/s
+Throughput: 1898614.0 request/s
+Throughput: 2504382.7 request/s
+Benchmarking Calibrate-Clientless/calibrate-clientless-limit/10000: Analyzing
+Calibrate-Clientless/calibrate-clientless-limit/10000
+                        time:   [24.292 ms 26.543 ms 28.954 ms]
+                        change: [+1.1775% +14.358% +28.837%] (p = 0.03 < 0.05)
+                        Performance has regressed.
+Found 8 outliers among 100 measurements (8.00%)
+  7 (7.00%) high mild
+  1 (1.00%) high severe
+

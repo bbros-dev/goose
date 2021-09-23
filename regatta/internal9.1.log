@@ -1,0 +1,325 @@
+##
+# Uses #cpu's for system threads and hooks up Tokio mpsc channel per thread.
+# Implements the robust HTTP server
+#
+#
+    Finished release [optimized] target(s) in 1m 15s
+     Running unittests (/home/hedge/src/swanling/target/release/deps/reqs-36bbb7bbaf8f9af4)
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:38004, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Throughput: 29875.4 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 334.9s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 334.87 s (100 iterations)
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:53308, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31094.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:40380, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31263.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:55684, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31069.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:42756, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30744.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:58060, fd: 61 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31125.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:45132, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31265.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:60436, fd: 24 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31339.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:47508, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31359.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:34580, fd: 132 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31237.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:49884, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31350.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:36956, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31478.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:52260, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31442.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:39332, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31140.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:54636, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31056.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:41708, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31153.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:57012, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31353.3 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:44084, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31118.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:59388, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30616.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:46460, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31199.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:33532, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31234.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:48836, fd: 13 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31042.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:35912, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31269.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:51216, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30870.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:38288, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30653.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:53592, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30944.3 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:40664, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31293.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:55968, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31457.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:43040, fd: 76 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31054.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:58344, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31362.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:45416, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31185.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:60720, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31390.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:47792, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31091.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:34864, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31207.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:50168, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31243.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:37240, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31373.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:52544, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31035.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:39616, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30721.3 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:54920, fd: 20 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31367.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:41992, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30908.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:57296, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31464.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:44368, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31376.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:59672, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 29446.3 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:46744, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30630.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:33816, fd: 44 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30702.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:49120, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30993.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:36192, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31139.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:51496, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31260.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:38568, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30414.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:53872, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 29836.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:40944, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30292.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:56248, fd: 39 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30341.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:43320, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31232.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:58624, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30782.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:45696, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31056.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:32770, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30824.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:48074, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30764.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:35146, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31076.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:50450, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31386.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:37522, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31232.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:52826, fd: 40 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30987.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:39898, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31257.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:55202, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31050.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:42274, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31370.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:57578, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31195.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:44650, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31076.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:59954, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31074.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:47026, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30793.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:34098, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31131.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:49402, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31418.5 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:36474, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31243.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:51778, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31226.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:38850, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30649.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:54154, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30997.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:41226, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31057.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:56530, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31126.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:43602, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30813.7 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:58906, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31087.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:45978, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31236.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:33050, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31478.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:48354, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31446.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:35426, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30782.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:50730, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31234.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:37802, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31489.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:53106, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30855.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:40178, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30615.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:55482, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30797.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:42554, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31132.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:57858, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31354.2 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:44930, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30957.9 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:60234, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30815.3 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:47306, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31333.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:34378, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30950.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:49682, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30686.4 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:36754, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30980.1 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:52058, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31315.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:39130, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30884.0 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:54434, fd: 12 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31393.6 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:41506, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30246.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:56810, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 30821.8 request/s
+Listening on address: 127.0.0.1:8888
+thread 'tokio-runtime-worker' panicked at 'worker thread died: SendError(PollEvented { io: Some(TcpStream { addr: 127.0.0.1:8888, peer: 127.0.0.1:43882, fd: 11 }) })', regatta/benches/reqs.rs:92:49
+Throughput: 31083.1 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [3.2159 s 3.2227 s 3.2301 s]
+                        change: [+10.983% +11.562% +12.159%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe

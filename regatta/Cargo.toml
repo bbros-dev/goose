@@ -81,6 +81,7 @@ ctrlc = { version = "3.1", features = ["termination"] }
 env_logger = "0.9"
 futures = "0.3.15"
 futures-signals = "0.3.22"
+futures-util = "0.3.17"
 hdrhistogram = "7"
 heapless = "0.7"
 hyper = { version = "0.14", features = ["full"] }
@@ -165,3 +166,7 @@ harness = false
 [[bench]]
 name = "reqs"
 harness = false
+
+# [[bench]]
+# name = "repro"
+# harness = false

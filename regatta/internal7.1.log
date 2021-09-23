@@ -1,0 +1,121 @@
+## Manual Notes
+# Possibly static single thread
+#
+Gnuplot not found, using plotters backend
+Running on thread ThreadId(1)
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Listening on thread ThreadId(4) at http://127.0.0.1:8888
+Throughput: 40985.3 request/s
+Throughput: 40559.7 request/s
+Throughput: 41491.1 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 247.4s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 247.39 s (100 iterations)
+Throughput: 39910.3 request/s
+Throughput: 40389.3 request/s
+Throughput: 40522.4 request/s
+Throughput: 40779.2 request/s
+Throughput: 38854.5 request/s
+Throughput: 41395.7 request/s
+Throughput: 41334.4 request/s
+Throughput: 40263.0 request/s
+Throughput: 41796.3 request/s
+Throughput: 40148.1 request/s
+Throughput: 40849.2 request/s
+Throughput: 39968.4 request/s
+Throughput: 41563.5 request/s
+Throughput: 39595.1 request/s
+Throughput: 41240.5 request/s
+Throughput: 39728.6 request/s
+Throughput: 41594.3 request/s
+Throughput: 39766.1 request/s
+Throughput: 42330.1 request/s
+Throughput: 41666.6 request/s
+Throughput: 40416.9 request/s
+Throughput: 41407.6 request/s
+Throughput: 40314.2 request/s
+Throughput: 41405.4 request/s
+Throughput: 40005.0 request/s
+Throughput: 41341.4 request/s
+Throughput: 40499.5 request/s
+Throughput: 41011.2 request/s
+Throughput: 40468.9 request/s
+Throughput: 39912.5 request/s
+Throughput: 41162.5 request/s
+Throughput: 39311.1 request/s
+Throughput: 40824.1 request/s
+Throughput: 40335.8 request/s
+Throughput: 41575.4 request/s
+Throughput: 40050.9 request/s
+Throughput: 40977.3 request/s
+Throughput: 40587.0 request/s
+Throughput: 40965.0 request/s
+Throughput: 40518.5 request/s
+Throughput: 40408.8 request/s
+Throughput: 37663.7 request/s
+Throughput: 40482.1 request/s
+Throughput: 40378.1 request/s
+Throughput: 40833.5 request/s
+Throughput: 39612.2 request/s
+Throughput: 41162.8 request/s
+Throughput: 40251.9 request/s
+Throughput: 41419.8 request/s
+Throughput: 41744.6 request/s
+Throughput: 39599.1 request/s
+Throughput: 41827.9 request/s
+Throughput: 38715.5 request/s
+Throughput: 40360.0 request/s
+Throughput: 40510.0 request/s
+Throughput: 40497.1 request/s
+Throughput: 38665.6 request/s
+Throughput: 40004.8 request/s
+Throughput: 40295.0 request/s
+Throughput: 40559.0 request/s
+Throughput: 39279.4 request/s
+Throughput: 41132.5 request/s
+Throughput: 39890.0 request/s
+Throughput: 40756.4 request/s
+Throughput: 39781.3 request/s
+Throughput: 38927.9 request/s
+Throughput: 39968.8 request/s
+Throughput: 40467.3 request/s
+Throughput: 39242.9 request/s
+Throughput: 40694.3 request/s
+Throughput: 38922.1 request/s
+Throughput: 39805.3 request/s
+Throughput: 38572.3 request/s
+Throughput: 41270.9 request/s
+Throughput: 39859.0 request/s
+Throughput: 41235.9 request/s
+Throughput: 39824.5 request/s
+Throughput: 40416.0 request/s
+Throughput: 40560.9 request/s
+Throughput: 41141.1 request/s
+Throughput: 40100.0 request/s
+Throughput: 40860.5 request/s
+Throughput: 39975.1 request/s
+Throughput: 41026.9 request/s
+Throughput: 38538.9 request/s
+Throughput: 40547.9 request/s
+Throughput: 38793.7 request/s
+Throughput: 41405.2 request/s
+Throughput: 39322.8 request/s
+Throughput: 39936.6 request/s
+Throughput: 40127.5 request/s
+Throughput: 41418.3 request/s
+Throughput: 39913.3 request/s
+Throughput: 40496.9 request/s
+Throughput: 41243.6 request/s
+Throughput: 40682.0 request/s
+Throughput: 40780.4 request/s
+Throughput: 39768.5 request/s
+Throughput: 40872.0 request/s
+Throughput: 39508.7 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [2.4683 s 2.4786 s 2.4893 s]
+                        change: [-7.6238% -6.4908% -5.4660%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild

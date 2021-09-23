@@ -1,0 +1,121 @@
+## Manual notes
+#
+# with #cpu * 2
+#
+    Finished release [optimized] target(s) in 10m 53s
+     Running unittests (/home/hedge/src/swanling/target/release/deps/reqs-c773bdbdeca187b9)
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Throughput: 23056.1 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 433.9s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 433.88 s (100 iterations)
+Throughput: 24914.1 request/s
+Throughput: 23807.2 request/s
+Throughput: 24194.1 request/s
+Throughput: 24540.1 request/s
+Throughput: 24146.1 request/s
+Throughput: 24466.6 request/s
+Throughput: 24646.3 request/s
+Throughput: 23682.1 request/s
+Throughput: 24704.1 request/s
+Throughput: 24389.6 request/s
+Throughput: 24441.1 request/s
+Throughput: 24210.2 request/s
+Throughput: 24293.6 request/s
+Throughput: 24578.4 request/s
+Throughput: 24394.3 request/s
+Throughput: 24339.1 request/s
+Throughput: 24872.1 request/s
+Throughput: 24188.2 request/s
+Throughput: 24047.6 request/s
+Throughput: 24206.9 request/s
+Throughput: 24427.0 request/s
+Throughput: 24109.6 request/s
+Throughput: 25104.3 request/s
+Throughput: 24842.4 request/s
+Throughput: 24913.8 request/s
+Throughput: 25000.4 request/s
+Throughput: 25086.2 request/s
+Throughput: 24451.9 request/s
+Throughput: 24929.0 request/s
+Throughput: 24849.9 request/s
+Throughput: 24648.4 request/s
+Throughput: 25174.9 request/s
+Throughput: 24338.6 request/s
+Throughput: 24477.4 request/s
+Throughput: 23830.7 request/s
+Throughput: 24474.6 request/s
+Throughput: 24102.9 request/s
+Throughput: 24523.7 request/s
+Throughput: 24310.6 request/s
+Throughput: 24723.0 request/s
+Throughput: 24182.8 request/s
+Throughput: 24533.1 request/s
+Throughput: 24447.5 request/s
+Throughput: 24847.1 request/s
+Throughput: 24502.4 request/s
+Throughput: 23971.6 request/s
+Throughput: 24261.1 request/s
+Throughput: 24392.0 request/s
+Throughput: 24241.4 request/s
+Throughput: 24819.0 request/s
+Throughput: 24581.5 request/s
+Throughput: 23659.8 request/s
+Throughput: 22961.7 request/s
+Throughput: 23820.3 request/s
+Throughput: 24198.8 request/s
+Throughput: 24668.9 request/s
+Throughput: 24471.7 request/s
+Throughput: 24379.2 request/s
+Throughput: 23882.4 request/s
+Throughput: 24605.1 request/s
+Throughput: 24095.9 request/s
+Throughput: 22442.7 request/s
+Throughput: 23602.6 request/s
+Throughput: 22306.0 request/s
+Throughput: 25123.3 request/s
+Throughput: 25142.3 request/s
+Throughput: 24701.9 request/s
+Throughput: 25007.6 request/s
+Throughput: 24836.1 request/s
+Throughput: 24691.4 request/s
+Throughput: 24593.0 request/s
+Throughput: 25036.8 request/s
+Throughput: 24803.6 request/s
+Throughput: 24637.6 request/s
+Throughput: 24894.3 request/s
+Throughput: 25004.7 request/s
+Throughput: 24595.6 request/s
+Throughput: 24945.6 request/s
+Throughput: 25012.2 request/s
+Throughput: 24401.2 request/s
+Throughput: 25052.6 request/s
+Throughput: 25206.4 request/s
+Throughput: 24770.0 request/s
+Throughput: 24694.9 request/s
+Throughput: 24911.3 request/s
+Throughput: 24880.2 request/s
+Throughput: 25346.4 request/s
+Throughput: 25049.7 request/s
+Throughput: 24905.9 request/s
+Throughput: 25012.8 request/s
+Throughput: 25294.2 request/s
+Throughput: 25179.9 request/s
+Throughput: 25113.4 request/s
+Throughput: 25226.6 request/s
+Throughput: 25518.6 request/s
+Throughput: 25346.1 request/s
+Throughput: 25064.4 request/s
+Throughput: 25323.0 request/s
+Throughput: 25569.4 request/s
+Throughput: 24928.1 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [4.0555 s 4.0735 s 4.0929 s]
+                        change: [-23.809% -16.841% -10.046%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe

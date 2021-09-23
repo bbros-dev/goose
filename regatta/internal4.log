@@ -1,0 +1,119 @@
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Listening on http://127.0.0.1:8888
+Throughput: 35044.4 request/s
+Throughput: 35060.2 request/s
+Throughput: 36698.6 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 284.6s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 284.55 s (100 iterations)
+Throughput: 37570.5 request/s
+Throughput: 35011.3 request/s
+Throughput: 36585.3 request/s
+Throughput: 35117.9 request/s
+Throughput: 35868.1 request/s
+Throughput: 34167.8 request/s
+Throughput: 36074.9 request/s
+Throughput: 35564.9 request/s
+Throughput: 36948.3 request/s
+Throughput: 37936.9 request/s
+Throughput: 34253.3 request/s
+Throughput: 34559.9 request/s
+Throughput: 36616.0 request/s
+Throughput: 36386.6 request/s
+Throughput: 36464.0 request/s
+Throughput: 36492.3 request/s
+Throughput: 35059.1 request/s
+Throughput: 35476.6 request/s
+Throughput: 37087.1 request/s
+Throughput: 35807.7 request/s
+Throughput: 35780.5 request/s
+Throughput: 36188.4 request/s
+Throughput: 36724.1 request/s
+Throughput: 35817.9 request/s
+Throughput: 35757.0 request/s
+Throughput: 36022.9 request/s
+Throughput: 36211.7 request/s
+Throughput: 36723.1 request/s
+Throughput: 36694.0 request/s
+Throughput: 37100.5 request/s
+Throughput: 35960.1 request/s
+Throughput: 37285.9 request/s
+Throughput: 36756.6 request/s
+Throughput: 35725.5 request/s
+Throughput: 37582.1 request/s
+Throughput: 36012.1 request/s
+Throughput: 34743.2 request/s
+Throughput: 36208.4 request/s
+Throughput: 36823.7 request/s
+Throughput: 36858.3 request/s
+Throughput: 36448.5 request/s
+Throughput: 36756.7 request/s
+Throughput: 37316.4 request/s
+Throughput: 35720.5 request/s
+Throughput: 35825.3 request/s
+Throughput: 36899.7 request/s
+Throughput: 37404.6 request/s
+Throughput: 37303.4 request/s
+Throughput: 36219.4 request/s
+Throughput: 36790.2 request/s
+Throughput: 36643.0 request/s
+Throughput: 36405.4 request/s
+Throughput: 35796.5 request/s
+Throughput: 36457.5 request/s
+Throughput: 35726.1 request/s
+Throughput: 35775.7 request/s
+Throughput: 36398.8 request/s
+Throughput: 36627.0 request/s
+Throughput: 37578.1 request/s
+Throughput: 35544.6 request/s
+Throughput: 34994.5 request/s
+Throughput: 35794.6 request/s
+Throughput: 36446.0 request/s
+Throughput: 36546.7 request/s
+Throughput: 36198.1 request/s
+Throughput: 36163.3 request/s
+Throughput: 36530.0 request/s
+Throughput: 36079.4 request/s
+Throughput: 35596.5 request/s
+Throughput: 35344.6 request/s
+Throughput: 37352.7 request/s
+Throughput: 35548.6 request/s
+Throughput: 36718.3 request/s
+Throughput: 36165.1 request/s
+Throughput: 37969.9 request/s
+Throughput: 35417.0 request/s
+Throughput: 35890.0 request/s
+Throughput: 34399.5 request/s
+Throughput: 36374.3 request/s
+Throughput: 37012.9 request/s
+Throughput: 36273.0 request/s
+Throughput: 35879.1 request/s
+Throughput: 35630.2 request/s
+Throughput: 32932.5 request/s
+Throughput: 35960.2 request/s
+Throughput: 37169.6 request/s
+Throughput: 36777.3 request/s
+Throughput: 36556.2 request/s
+Throughput: 36635.8 request/s
+Throughput: 35989.4 request/s
+Throughput: 36557.1 request/s
+Throughput: 36036.9 request/s
+Throughput: 36447.2 request/s
+Throughput: 36237.9 request/s
+Throughput: 35395.8 request/s
+Throughput: 35145.0 request/s
+Throughput: 35702.5 request/s
+Throughput: 36478.6 request/s
+Throughput: 35978.4 request/s
+Throughput: 35279.0 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [2.7548 s 2.7673 s 2.7802 s]
+                        change: [-5.6284% -4.5343% -3.5856%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+

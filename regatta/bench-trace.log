@@ -1,0 +1,331 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/hedge/src/swanling/regatta/Cargo.toml
+workspace: /home/hedge/src/swanling/Cargo.toml
+warning: /home/hedge/src/swanling/regatta/Cargo.toml: unused manifest key: target.x86_64-unknown-linux-gnu.linker
+warning: /home/hedge/src/swanling/regatta/Cargo.toml: unused manifest key: target.x86_64-unknown-linux-gnu.rustflags
+    Blocking waiting for file lock on package cache
+   Compiling cc v1.0.68
+   Compiling uuid v0.8.2
+   Compiling log v0.4.14
+   Compiling debugid v0.7.2
+   Compiling backtrace v0.3.60
+   Compiling socket2 v0.4.1
+   Compiling object v0.25.3
+   Compiling quick-xml v0.20.0
+   Compiling mio v0.7.13
+   Compiling symbolic-common v8.3.0
+   Compiling inferno v0.10.6
+   Compiling symbolic-demangle v8.3.0
+   Compiling tokio v1.8.2
+   Compiling chrono v0.4.19
+   Compiling csv v1.1.6
+   Compiling tracing-subscriber v0.2.20
+   Compiling prost-build v0.8.0
+   Compiling tokio-util v0.6.7
+   Compiling tokio-stream v0.1.7
+   Compiling criterion v0.3.4
+   Compiling h2 v0.3.3
+   Compiling pprof v0.5.0
+   Compiling hyper v0.14.9
+   Compiling regatta v0.1.0 (/home/hedge/src/swanling/regatta)
+warning: unused imports: `Instrument as _`, `Level`, `Span`, `error`, `info`, `span`, `trace`
+ --> regatta/benches/repro.rs:4:28
+  |
+4 | use tracing::{self, debug, error, info, span, trace, warn, Instrument as _, Level, Span};
+  |                            ^^^^^  ^^^^  ^^^^  ^^^^^        ^^^^^^^^^^^^^^^  ^^^^^  ^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Body`, `Method`, `Request`, `body::HttpBody as _`, `body::to_bytes`
+  --> regatta/benches/repro.rs:18:13
+   |
+18 | use hyper::{body::HttpBody as _, body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
+   |             ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^                         ^^^^                         ^^^^^^  ^^^^^^^
+
+warning: variable does not need to be mutable
+   --> regatta/benches/repro.rs:129:9
+    |
+129 |     let mut head = resp.headers_mut();
+    |         ----^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+  --> regatta/benches/repro.rs:74:18
+   |
+74 |         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+   |                  ----^^
+   |                  |
+   |                  help: remove this `mut`
+
+warning: unused variable: `s`
+   --> regatta/benches/repro.rs:303:14
+    |
+303 |         |b, &s| {
+    |              ^ help: if this is intentional, prefix it with an underscore: `_s`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `v`
+  --> regatta/benches/repro.rs:98:29
+   |
+98 |                         let v = match channels[next].send(stream) {
+   |                             ^ help: if this is intentional, prefix it with an underscore: `_v`
+
+warning: unused variable: `v`
+  --> regatta/benches/repro.rs:99:32
+   |
+99 | ...                   Ok(v) => {
+   |                          ^ help: if this is intentional, prefix it with an underscore: `_v`
+
+warning: unused variable: `handle`
+   --> regatta/benches/repro.rs:120:9
+    |
+120 |     let handle = tokio::spawn(async { accepting.await });
+    |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_handle`
+
+warning: unused variable: `duration`
+   --> regatta/benches/repro.rs:247:32
+    |
+247 |                 while let Some(duration) = stream.next().await {
+    |                                ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_duration`
+
+warning: unused variable: `task`
+   --> regatta/benches/repro.rs:242:17
+    |
+242 |             let task = tokio::task::spawn_local(async move {
+    |                 ^^^^ help: if this is intentional, prefix it with an underscore: `_task`
+
+warning: constant is never used: `URI`
+  --> regatta/benches/repro.rs:14:1
+   |
+14 | const URI: &str = "https://127.0.0.1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: associated function is never used: `get_url`
+  --> regatta/benches/repro.rs:49:8
+   |
+49 |     fn get_url(&self) -> hyper::Uri {
+   |        ^^^^^^^
+
+warning: `regatta` (bench "repro") generated 12 warnings
+    Finished release [optimized] target(s) in 7m 25s
+     Running unittests (/home/hedge/src/swanling/target/release/deps/repro-63e23b89f6b297cf)
+Gnuplot not found, using plotters backend
+Benchmarking Calibrate/calibrate-limit/100000
+Benchmarking Calibrate/calibrate-limit/100000: Warming up for 3.0000 s
+Listening on address: 127.0.0.1:8888
+Throughput: 24961.3 request/s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 400.6s, or reduce sample count to 10.
+Benchmarking Calibrate/calibrate-limit/100000: Collecting 100 samples in estimated 400.64 s (100 iterations)
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27628.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 26155.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27581.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 29278.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27436.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 23347.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27411.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27954.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 554.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 24930.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27725.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 28332.6 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 29065.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 33462.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30349.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 33179.5 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 554.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30127.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30984.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31965.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 29501.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 17232.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30405.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30928.5 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30484.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31325.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27618.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31193.6 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 28955.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31324.6 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31940.6 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31088.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 29211.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 33201.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 35128.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32133.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 35010.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32000.6 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32063.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 35048.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 34607.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 554.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 33748.5 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32811.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31878.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32671.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32848.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32398.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32720.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 29366.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 28383.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 26416.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 28578.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32658.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 35319.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32162.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 34115.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30936.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30941.5 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 27567.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32359.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30479.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30660.5 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31436.8 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31705.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30553.0 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 30071.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 31408.9 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.3 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 33314.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 34740.4 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32007.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 32315.1 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 34015.7 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Listening on address: 127.0.0.1:8888
+Throughput: 555.2 request/s
+Benchmarking Calibrate/calibrate-limit/100000: Analyzing
+Calibrate/calibrate-limit/100000
+                        time:   [40.442 s 56.352 s 72.278 s]
+                        change: [+1099.5% +1498.7% +1955.3%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+
