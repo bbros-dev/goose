@@ -26,6 +26,7 @@ exclude = [
 
 [workspace]
 members = ["regatta"]
+exclude = ["issue"]
 
 [dependencies]
 async-trait = "0.1"
