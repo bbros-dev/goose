@@ -4,7 +4,7 @@
 ; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
 ;
 [subrepo]
-	remote = https://github.com/taqtiqa-mark/issue.git/
+	remote = none
 	branch = master
 	commit =
 	method = merge
