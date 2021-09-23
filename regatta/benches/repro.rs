@@ -1,55 +1,126 @@
+/// All bin and lib files are empty:
+//
+/// Cargo.toml: start
+//
+// [package]
+// name = "regatta"
+// version = "0.1.0"
+// edition = "2018"
+
+// [dependencies]
+// async-stream = "0.3"
+// async-trait = "0.1"
+// futures = "0.3.15"
+// futures-util = "0.3.17"
+// hyper = { version = "0.14", features = ["full"] }
+// lazy_static = "1.4.0"
+// num_cpus = "1.13.0"
+// tokio = { version = "^1.8", features = [
+//     "fs",
+//     "io-std",
+//     "io-util",
+//     "macros",
+//     "net",
+//     "rt",
+//     "rt-multi-thread",
+//     "signal",
+//     "sync",
+//     "time"
+// ] }
+// tokio-stream = "0.1"
+// tracing = "0.1.26"
+// tracing-subscriber = "0.2.20"
+// url = "2.2"
+
+// [dev-dependencies]
+// cargo-criterion = "1.0.1"
+// criterion = {version = "0.3", features = ["async_tokio", "html_reports"]}
+// critcmp = "0.1.7"
+// lazy_static = "=1.4.0"
+// pprof = { version = "0.5", features = ["criterion", "flamegraph", "protobuf"] }
+
+// [profile.dev]
+// lto = false
+
+// [target.x86_64-unknown-linux-gnu]
+// linker = "/usr/bin/clang"
+// rustflags = [
+//     "-Clink-arg=-fuse-ld=lld", "-Zshare-generics=y"
+// ]
+
+// [[bench]]
+// name = "repro"
+// harness = false
+
+/// Cargo.toml: end
+
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use pprof::criterion::{Output, PProfProfiler};
 
 use tracing::{self, debug, error, info, span, trace, warn, Instrument as _, Level, Span};
-//use tracing_subscriber::{filter::EnvFilter, reload::Handle};
 use tracing::instrument;
-//use tracing_attributes::instrument;
-
-//use criterion::async_executor::FuturesExecutor;
-//use tokio::runtime::Runtime;
-
-//use async_stream::stream;
-use futures::{Stream, StreamExt};
-//use hyper::body::Bytes;
+use futures::StreamExt;
 use lazy_static::lazy_static;
-//use rand::distributions::{Distribution, Uniform};
-//use std::time::Duration;
-use tokio::time::Instant;
+use async_trait::async_trait;
 
 lazy_static! {
     static ref URL: hyper::Uri = hyper::Uri::from_static("http://127.0.0.1:8888");
 }
 
+const URI: &str = "https://127.0.0.1";
+
 extern crate futures;
 extern crate hyper;
+use hyper::{body::HttpBody as _, body::to_bytes, client::HttpConnector, Body, Client as HyperClient, Method, Request};
 extern crate num_cpus;
-//extern crate service_fn;
-//extern crate tokio_core;
 
 use std::io;
-use std::net::{self, SocketAddr};
-use std::thread;
+use std::net::SocketAddr;
 use std::time;
 
-use futures::Future;
-//use futures::stream::Stream;
-use futures::channel::mpsc;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
-use hyper::server::conn::Http;
-use hyper::Response;
-//use service_fn::service_fn;
 use tokio::net::TcpStream;
-//use tokio::reactor::Core;
 
 static HELLO: &[u8] = b"Hello World!";
 
-/// This is the main function from this gist:
-/// https://gist.github.com/klausi/f94b9aff7d36a1cb4ebbca746f0a099f
-//
-// Consider implementing this approach to managing spawned tasks
-// https://stackoverflow.com/questions/65631020/get-the-first-received-value-from-an-iterator-of-channels-in-rust
+#[async_trait]
+pub trait HttpClient: Send + Sync + Clone + 'static {
+    async fn get_url(&self) -> hyper::Uri;
+}
 
+#[derive(Clone)]
+pub struct Client {
+    pub client: HyperClient<HttpConnector>,
+    //pub client_tls: HyperClient<HttpsConnector<HttpConnector>>,
+}
+
+impl Client {
+    pub fn new() -> Self {
+        Self {
+            //client_tls: https_client(),
+            client: http_client(),
+        }
+    }
+
+    fn get_url(&self) -> hyper::Uri {
+        // HTTPS requires picking a TLS implementation, so give a better
+        // warning if the user tries to request an 'https' URL.
+        //let url =
+        URI.to_owned().parse::<hyper::Uri>().unwrap()
+        // if url.scheme_str() != Some("http") {
+        //     println!("This example only works with 'http' URLs.");
+        //     return "http://127.0.0.1".parse::<hyper::Uri>().unwrap();
+        // }
+        //url
+    }
+}
+
+fn http_client() -> HyperClient<hyper::client::HttpConnector> {
+    HyperClient::new()
+}
+
+/// This is the main function, evolved from this gist:
+/// https://gist.github.com/klausi/f94b9aff7d36a1cb4ebbca746f0a099f
 #[instrument]
 async fn init_real_server() {
     let addr: SocketAddr = ([127, 0, 0, 1], 8888).into();
@@ -83,7 +154,7 @@ async fn init_real_server() {
                         let v = match channels[next].send(stream) {
                             Ok(v) => {
                                 next = (next + 1) % channels.len();
-                            },
+                            }
                             Err(e) => return warn!("Send failed ({})", e),
                         };
                     }
@@ -135,7 +206,6 @@ async fn worker(mut rx: tokio::sync::mpsc::UnboundedReceiver<tokio::net::TcpStre
         tokio::spawn(async move {
             process(socket).await;
         });
-        //return ();
     }
     debug!("The worker has stopped!");
 }
@@ -246,7 +316,7 @@ async fn capacity(count: usize) {
     debug!("About to init server");
     init_real_server().await;
     debug!("About to init client");
-    let session = regatta::calibrate::client::Client::new().client;
+    let session = Client::new().client;
     let statement = &URL;
     let benchmark_start = tokio::time::Instant::now();
     debug!("Client: About to spawn blocking (Tokio)");
