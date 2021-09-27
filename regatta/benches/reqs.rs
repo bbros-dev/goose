@@ -50,7 +50,7 @@ static HELLO: &[u8] = b"Hello World!";
 //
 // Consider implementing this approach to managing spawned tasks
 // https://stackoverflow.com/questions/65631020/get-the-first-received-value-from-an-iterator-of-channels-in-rust
-
+// https://sergey-melnychuk.github.io/2019/08/01/rust-mio-tcp-server/
 #[instrument]
 async fn init_real_server() {
     let addr: SocketAddr = ([127, 0, 0, 1], 8888).into();
@@ -261,6 +261,8 @@ async fn process(socket: TcpStream) {
 
     let mut http = hyper::server::conn::Http::new();
     http.http1_only(true);
+    http.max_buf_size(256);
+    http.pipeline_flush(true);
     let serve = http.serve_connection(socket, hyper::service::service_fn(hello));
     if let Err(e) = serve.await {
         debug!("server connection error: {}", e);
@@ -303,7 +305,7 @@ fn make_stream<'a>(
     statement: &'a hyper::Uri,
     count: usize,
 ) -> impl futures::Stream + 'a {
-    let concurrency_limit = 512;
+    let concurrency_limit = 100;
 
     futures::stream::iter(0..count)
         .map(move |_| async move {

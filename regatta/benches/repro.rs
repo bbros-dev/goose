@@ -59,12 +59,14 @@ use pprof::criterion::{Output, PProfProfiler};
 
 use tracing::{self, debug, error, info, span, trace, warn, Instrument as _, Level, Span};
 use tracing::instrument;
+
 use futures::StreamExt;
 use lazy_static::lazy_static;
 use async_trait::async_trait;
+use std::convert::TryInto;
 
 lazy_static! {
-    static ref URL: hyper::Uri = hyper::Uri::from_static("http://127.0.0.1:8888");
+    static ref URL: surf::Url = surf::Url::parse("http://127.0.0.1:8888").expect("URL");
 }
 
 const URI: &str = "https://127.0.0.1";
@@ -219,6 +221,8 @@ async fn process(socket: TcpStream) {
 
     let mut http = hyper::server::conn::Http::new();
     http.http1_only(true);
+    http.max_buf_size(8192);
+    http.pipeline_flush(true);
     let serve = http.serve_connection(socket, hyper::service::service_fn(hello));
     if let Err(e) = serve.await {
         debug!("server connection error: {}", e);
@@ -254,22 +258,25 @@ fn connection_error(e: &io::Error) -> bool {
 /// Invokes client get URL, return a stream of response durations.
 /// Note: Does *not* spawn new threads. Requests are concurrent not parallel.
 /// Async code runs on the caller thread.
+//     session: &'a hyper::Client<hyper::client::HttpConnector>
 ///    -> impl Stream<Item=Duration> + 'a {
 #[instrument]
 fn make_stream<'a>(
-    session: &'a hyper::Client<hyper::client::HttpConnector>,
-    statement: &'a hyper::Uri,
+    session: &'a surf::Client,
+    // statement: &'a hyper::Uri,
     count: usize,
 ) -> impl futures::Stream + 'a {
-    let concurrency_limit = 512;
+    let concurrency_limit = 5000;
 
     futures::stream::iter(0..count)
         .map(move |_| async move {
-            let statement = statement.clone();
+            //let statement = statement.clone();
             debug!("Concurrently iterating client code as future");
             let query_start = tokio::time::Instant::now();
-            let _response = session.get(statement).await;
+            let mut response = session.get("/").await.expect("Surf response");
             // let (_parts, _body)  = response.unwrap().into_parts();
+            let body = response.body_string().await.expect("Surf body");
+            debug!("\nSTATUS:{:?}\nBODY:\n{:?}", response.status(), body);
             query_start.elapsed()
         })
         // This will run up to `concurrency_limit` futures at a time:
@@ -283,11 +290,11 @@ impl std::fmt::Debug for URL {
             .finish()
     }
 }
-
+// session: hyper::Client<hyper::client::HttpConnector>,
 #[instrument]
 async fn run_stream_ct(
-    session: hyper::Client<hyper::client::HttpConnector>,
-    statement: &'static URL,
+    session: surf::Client,
+    //statement: &'static URL,
     count: usize,
 ) {
     // Construct a local task set that can run `!Send` futures.
@@ -297,9 +304,9 @@ async fn run_stream_ct(
         .run_until(async move {
             let task = tokio::task::spawn_local(async move {
                 let session = &session;
-                let statement = &statement;
+                //let statement = &statement;
                 debug!("About to make stream");
-                let mut stream = make_stream(&session, statement, count);
+                let mut stream = make_stream(&session, count);
                 while let Some(duration) = stream.next().await {
                     debug!("Stream next polled.");
                 }
@@ -316,8 +323,17 @@ async fn capacity(count: usize) {
     debug!("About to init server");
     init_real_server().await;
     debug!("About to init client");
-    let session = Client::new().client;
-    let statement = &URL;
+    //let session = Client::new().client;
+    let session: surf::Client = surf::Config::new()
+        .set_http_client(http_client::h1::H1Client::new())
+        .set_base_url(URL.clone())
+        //.set_timeout(Some(std::time::Duration::from_secs(180)))
+        .set_tcp_no_delay(true)
+        .set_http_keep_alive(true)
+        .set_max_connections_per_host(5000)
+        .try_into()
+        .unwrap();
+    //let statement = &URL;
     let benchmark_start = tokio::time::Instant::now();
     debug!("Client: About to spawn blocking (Tokio)");
     tokio::task::spawn_blocking(move || {
@@ -329,7 +345,7 @@ async fn capacity(count: usize) {
             local
                 .run_until(async move {
                     debug!("Client: About to spawn local (Tokio)");
-                    tokio::task::spawn_local(run_stream_ct(session.clone(), statement, count / 2))
+                    tokio::task::spawn_local(run_stream_ct(session.clone(), count / 2))
                         .await
                         .expect("Tokio spawn local (streams for clients)");
                 })
