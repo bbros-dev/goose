@@ -130,7 +130,7 @@ We include these instructions for completeness.  The results weren't
 particularly useful.  Meaning we couldn't interactively explore them, and we
 didn't find a way to use its output with other tools.  We didn't look too hard
 after we discovered pprof could be used with Criterion benchmarks (next),
-across so please let us know if we have overlooked anything significant.
+so please let us know if we have overlooked anything significant.
 
 ```BASH
 cargo install flamegraph
