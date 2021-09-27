@@ -15,43 +15,43 @@ skip-build = []
 # See 2): https://stackoverflow.com/a/46017284
 #build-p2p = ["libp2p"]
 
-[[bin]]
-name = "regatta"
-path = "bin/regatta.rs"
-# [criterion-bench-workaround]
-bench = false
+# [[bin]]
+# name = "regatta"
+# path = "bin/regatta.rs"
+# # [criterion-bench-workaround]
+# bench = false
 
-[[bin]]
-name = "p2p"
-path = "bin/p2p.rs"
-# [criterion-bench-workaround]
-bench = false
-# See 2): https://stackoverflow.com/a/46017284
-#required-features = ["build-p2p"]
+# [[bin]]
+# name = "p2p"
+# path = "bin/p2p.rs"
+# # [criterion-bench-workaround]
+# bench = false
+# # See 2): https://stackoverflow.com/a/46017284
+# #required-features = ["build-p2p"]
 
-[[bin]]
-name = "raft"
-path = "bin/raft.rs"
-# [criterion-bench-workaround]
-bench = false
+# [[bin]]
+# name = "raft"
+# path = "bin/raft.rs"
+# # [criterion-bench-workaround]
+# bench = false
 
-[[bin]]
-name = "raft-access"
-path = "bin/raft-access.rs"
-# [criterion-bench-workaround]
-bench = false
+# [[bin]]
+# name = "raft-access"
+# path = "bin/raft-access.rs"
+# # [criterion-bench-workaround]
+# bench = false
 
-[[bin]]
-name = "raft-admin"
-path = "bin/raft-admin.rs"
-# [criterion-bench-workaround]
-bench = false
+# [[bin]]
+# name = "raft-admin"
+# path = "bin/raft-admin.rs"
+# # [criterion-bench-workaround]
+# bench = false
 
-[[bin]]
-name = "tender"
-path = "bin/tender.rs"
-# [criterion-bench-workaround]
-bench = false
+# [[bin]]
+# name = "tender"
+# path = "bin/tender.rs"
+# # [criterion-bench-workaround]
+# bench = false
 
 [[bin]]
 name = "reqs"
@@ -84,6 +84,8 @@ futures-signals = "0.3.22"
 futures-util = "0.3.17"
 hdrhistogram = "7"
 heapless = "0.7"
+http-client = {version = "6.5.1", features = ["h1_client"]}
+http-types = "2.12.0"
 hyper = { version = "0.14", features = ["full"] }
 hyper-rustls = "0.22.1"
 # A progress bar and cli reporting library for Rust
@@ -108,6 +110,7 @@ signal-hook-tokio = { version = "0.3.0", features = ["futures-v0_3"]}
 structopt = "0.3.13"
 strum = "0.21"
 strum_macros = "0.21"
+surf = {version = "2.3.1", features = ["h1-client"] }
 termion = { version = "1.5", optional = true }
 # derive(Error)
 thiserror = "1.0"
@@ -159,14 +162,14 @@ rustflags = [
     "-Clink-arg=-fuse-ld=lld", "-Zshare-generics=y"
 ]
 
-[[bench]]
-name = "p2p"
-harness = false
+# [[bench]]
+# name = "p2p"
+# harness = false
 
 [[bench]]
 name = "reqs"
 harness = false
 
-# [[bench]]
-# name = "repro"
-# harness = false
+[[bench]]
+name = "repro"
+harness = false
