@@ -61,7 +61,7 @@ async fn main() -> anyhow::Result<()> {
                 message: core_message::Req::serialize(&msg),
                 core: true,
             };
-            let endpoint = Endpoint::from_shared(id)
+            let endpoint = tonic::transport::channel::endpoint::Endpoint::from_shared(id)
                 .unwrap()
                 .timeout(Duration::from_secs(1));
             let mut conn = connection::connect(endpoint).await?;
@@ -115,7 +115,7 @@ async fn main() -> anyhow::Result<()> {
                 message: core_message::Req::serialize(&msg),
                 core: true,
             };
-            let endpoint = Endpoint::from_shared(id)
+            let endpoint = tonic::transport::channel::endpoint::Endpoint::from_shared(id)
                 .unwrap()
                 .timeout(Duration::from_secs(1));
             let mut conn = connection::connect(endpoint).await?;
@@ -175,7 +175,7 @@ async fn main() -> anyhow::Result<()> {
                 message: core_message::Req::serialize(&msg),
                 core: true,
             };
-            let endpoint = Endpoint::from_shared(id)
+            let endpoint = tonic::transport::channel::endpoint::Endpoint::from_shared(id)
                 .unwrap()
                 .timeout(Duration::from_secs(1));
             let mut conn = connection::connect(endpoint).await?;
