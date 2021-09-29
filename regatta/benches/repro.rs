@@ -109,10 +109,11 @@ pub trait HttpClient: Send + Sync + Clone + 'static {
     async fn get_url(&self) -> hyper::Uri;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client {
     pub client: HyperClient<HttpConnector>,
     //pub client_tls: HyperClient<HttpsConnector<HttpConnector>>,
+    pub addresses: std::vec::Vec<std::net::SocketAddr>
 }
 
 impl Client {
@@ -120,6 +121,7 @@ impl Client {
         Self {
             //client_tls: https_client(),
             client: http_client(),
+            addresses: vec![]
         }
     }
 
@@ -142,6 +144,7 @@ fn http_client() -> HyperClient<hyper::client::HttpConnector> {
 
 enum Msg {
     Echo(String),
+    Client { client: HyperClient<hyper::client::HttpConnector>, addresses: std::vec::Vec<std::net::SocketAddr> },
 }
 
 // This is a very neat pattern for stopping a thread...
@@ -149,14 +152,25 @@ enum Msg {
 //     drop(worker.take());
 //
 // https://matklad.github.io/2018/03/03/stopping-a-rust-worker.html
-fn spawn_server() -> std::sync::mpsc::Sender<Msg> {
+fn spawn_server(message: std::sync::Arc<std::sync::Mutex<Option<Msg>>> ) -> std::sync::mpsc::Sender<Msg> {
+    // let client = Msg::Client{ client: http_client(), addresses: vec![]};
+    // let message: std::sync::Arc<std::sync::Mutex<Option<Msg>>> = std::sync::Arc::new(std::sync::Mutex::new(Some(client)));
     let (tx, rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
         while let Ok(msg) = rx.recv() {
             match msg {
-                Msg::Echo(msg) => {
+                Msg::Echo(_txt) => {
+                    let l = message.lock().unwrap().take().unwrap();
+                    if let Msg::Client{client,mut addresses} = l {
+                        let listener = mio::net::TcpListener::bind("127.0.0.1:0".parse().unwrap()).unwrap();
+                        let address = listener.local_addr().unwrap();
+                        addresses.push(address);
+                    }
                     init_mio_server();
                 },
+                Msg::Client { client,addresses} => {
+                    debug!("Do we need this?")
+                }
             }
         }
         println!("The server has stopped!");
@@ -168,6 +182,7 @@ fn spawn_server() -> std::sync::mpsc::Sender<Msg> {
 // https://github.com/sergey-melnychuk/mio-tcp-server
 use mio::{Events, Poll, Interest, Token};
 fn init_mio_server() {
+    // Get assigned free port. Store in a struct.
     let address = "127.0.0.1:8888";
     // let listener = mio::net::TcpListener::bind(&address.parse().unwrap()).unwrap();
     let mut listener = reuse_mio_listener(&address.parse().unwrap()).expect("Could not bind to addr");
