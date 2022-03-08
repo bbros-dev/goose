@@ -1,4 +1,5 @@
 # Calibration
+
 * Scope
 * In-process HTTP server
 
@@ -115,7 +116,7 @@ level comparable to [kcup].
 
 #### Flamegraphs
 
-There are several option in this space.  [cargo-flamegraph] and [pprof-rs] and
+There are a couple of crates in this space:  [cargo-flamegraph] and [pprof-rs] and
 the pprof-rs integration with Criterion.
 
 Setup:

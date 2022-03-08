@@ -55,7 +55,7 @@ Sub-command `calibrate` returns, as req/s:
 
 ### Conjectures
 
-If you are inclined to benchmarking conjectures and the experimental; we are
+If you are inclined to benchmark conjectures and the experimental; we are
 interested in whether performance is improved by adopting ideas embodied in
 the following crates:
 
